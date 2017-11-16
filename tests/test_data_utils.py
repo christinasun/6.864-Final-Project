@@ -25,7 +25,34 @@ def test_get_data_dict():
     print "Body for qid 23563: {}".format(body)
     assert title == "why is `` shutdown p 01:00 '' not working ?"
     assert body == ""
-    
+
+def test_get_train_examples():
+    train_examples = du.get_train_examples()
+    print "Number of train examples: {}".format(len(train_examples))
+    first_example = train_examples[0]
+    print "First example: {}".format(first_example)
+
+    assert first_example[0] == 262144
+    assert first_example[1] == [211039]
+    assert first_example[2] == map(int,"227387 413633 113297 356390 256881 145638 296272 318659 86529 48563 53080 65996 334032 517236 470002 177348 502185 248772 457062 339049 265060 264524 15971 40468 422021 177982 513266 437762 318889 163711 491359 72668 523366 513514 119253 167106 395661 411198 284222 75399 352479 250977 476895 384032 379657 47506 214327 295133 165345 278645 40986 147959 498308 328292 49304 518817 418947 155658 522902 316447 487482 100000 436018 235318 314941 187592 439142 26205 180583 418425 41667 188060 147132 68407 191082 455272 486933 229959 153150 101914 254265 314232 384593 366741 227996 384171 302283 335076 452240 144708 395995 221644 392821 197651 404031 319280 257320 38398 287787 83851".split(" "))
+
+def test_get_dev_examples():
+    dev_examples = du.get_dev_examples()
+    print "Number of dev examples: {}".format(len(dev_examples))
+    first_example = dev_examples[0]
+    print "First example: {}".format(first_example)
+    assert len(dev_examples) == 200
+
+def test_get_test_examples():
+    test_examples = du.get_test_examples()
+    print "Number of test examples: {}".format(len(test_examples))
+    first_example = test_examples[0]
+    print "First example: {}".format(first_example)
+    assert len(test_examples) == 200
+
 if __name__ == "__main__":
     # test_get_embeddings_dict()
-    test_get_data_dict()
+    # test_get_data_dict()
+    # test_get_train_examples()
+    test_get_dev_examples()
+    test_get_test_examples()
