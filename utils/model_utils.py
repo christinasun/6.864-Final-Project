@@ -13,7 +13,6 @@ import pdb
 # Depending on arg, build dataset
 def get_model(embeddings, args):
     print("\nBuilding model...")
-
     if args.model_name == 'lstm':
         return DAN(embeddings, args)
     elif args.model_name == 'cnn':

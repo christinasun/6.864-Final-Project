@@ -1,3 +1,4 @@
+.idea/*
 *.pyc
 data/text_tokenized.txt
 data/vector/vectors_pruned.200.txt
