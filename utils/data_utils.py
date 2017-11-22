@@ -61,6 +61,8 @@ class AskUbuntuDataset(data.Dataset):
 
     def __getitem__(self,index):
         sample = self.dataset[index]
+        sample['qid_tensors'] = self.tensor_dict[sample['qid']]
+        sample['candidate_tensors'] = [self.tensor_dict[cqid] for cqid in sample['candidates']]
         return sample
 
 def get_indices_tensor(text_arr, word_to_indx, max_length):
