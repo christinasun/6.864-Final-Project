@@ -73,9 +73,7 @@ class CNN(AbstractAskUbuntuModel):
         return out
         
 
-
 class LSTM(AbstractAskUbuntuModel):
-
 
     def __init__(self, embeddings, args):
         super(LSTM, self).__init__(embeddings, args)

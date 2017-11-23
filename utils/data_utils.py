@@ -15,7 +15,6 @@ DEV_SET_FILE = os.path.join(DATA_PATH,"dev.txt")
 TEST_SET_FILE = os.path.join(DATA_PATH,"test.txt")
 
 # TODO figure out when the people in the paper threw away examples
-
 class AskUbuntuDataset(data.Dataset):
 
     # TODO: modify the max_length based on the specifications in the paper
@@ -30,6 +29,7 @@ class AskUbuntuDataset(data.Dataset):
             train_examples = get_train_examples()[:max_dataset_size]
             for example in train_examples:
                 self.update_dataset_from_train_example(example)
+        #TODO: implement 'dev' and 'test'
         else:
             raise Exception("Data set name {} not supported!".format(name))
 
@@ -94,19 +94,6 @@ def get_embeddings_tensor():
     embedding_tensor = np.array(embedding_tensor, dtype=np.float32)
     return embedding_tensor, word_to_indx
 
-
-def get_embeddings_dict():
-    embeddings_dict = {}
-
-    with gzip.open(VECTORS_FILE) as f:
-        content = f.readlines()
-        for line in content:
-            word, vector_string = line.strip().split(" ",1)
-            vector = map(float, vector_string.split(" "))
-            embeddings_dict[word] = vector
-
-    return embeddings_dict
-
 def get_data_dict():
     data_dict = {}
 
@@ -159,6 +146,3 @@ def get_test_examples():
 
 def get_dev_examples():
     return get_examples_helper(DEV_SET_FILE)
-
-def get_embedding_for_word(word,embeddings_dict):
-    return embeddings_dict(word)
