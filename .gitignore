@@ -1,3 +1,4 @@
+model.pt
 .idea/*
 *.pyc
 data/text_tokenized.txt

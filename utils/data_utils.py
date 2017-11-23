@@ -19,40 +19,54 @@ TEST_SET_FILE = os.path.join(DATA_PATH,"test.txt")
 class AskUbuntuDataset(data.Dataset):
 
     # TODO: modify the max_length based on the specifications in the paper
-    def __init__(self, name, word_to_indx, max_length=200):
+    def __init__(self, name, word_to_indx, max_length=200, max_dataset_size=100):
         self.name = name
         self.dataset = []
         self.word_to_indx  = word_to_indx
         self.max_length = max_length
         self.data_dict = get_data_dict()
-        self.tensor_dict = {}
 
         if name == 'train':
-            train_examples = get_train_examples()
+            train_examples = get_train_examples()[:max_dataset_size]
             for example in train_examples:
                 self.update_dataset_from_train_example(example)
-                self.update_tensor_dict()
         else:
             raise Exception("Data set name {} not supported!".format(name))
 
-    def update_tensor_dict(self):
-        for sample in dataset:
-            qids = [sample['qid']] + sample['candidates']
-            for qid in qids:
-                if qid not in self.tensor_dict:
-                    title, body = self.data_dict[qid]
-                    title = get_indices_tensor(title, self.word_to_indx, self.max_length)
-                    body = get_indices_tensor(body, self.word_to_indx, self.max_length)
-                    self.tensor_dict[qid] = (title, body)
+    # def update_tensor_dict(self):
+    #     for sample in self.dataset:
+    #         qids = [sample['qid']] + sample['candidates']
+    #         for qid in qids:
+    #             if qid not in self.tensor_dict:
+    #                 title, body = self.data_dict[qid]
+    #                 title = get_indices_tensor(title, self.word_to_indx, self.max_length)
+    #                 body = get_indices_tensor(body, self.word_to_indx, self.max_length)
+    #                 self.tensor_dict[qid] = (title, body)
 
     ## Convert one example to {x: example, y: label (always 0)}
     def update_dataset_from_train_example(self, example):
         # adds samples to dataset for each training example
         # each training example generates multiple samples
         qid, similar_qids, random_qids = example
+        qid_tensors = map(self.get_indices_tensor, self.data_dict[qid])
+
+        random_candidate_tensors = [map(self.get_indices_tensor,self.data_dict[cqid]) for cqid in random_qids]
+        random_candidate_title_tensors, random_candidate_body_tensors = zip(*random_candidate_tensors)
+        random_candidate_title_tensors = list(random_candidate_title_tensors)
+        random_candidate_body_tensors = list(random_candidate_body_tensors)
+
+
         for similar_qid in similar_qids:
             candidates = [similar_qid] + random_qids
-            sample = {'qid': qid, 'candidates': candidates}
+            similar_qid_tensors = map(self.get_indices_tensor, self.data_dict[similar_qid])
+
+            sample = {'qid': qid,
+                      'candidates': candidates,
+                      'qid_title_tensor': qid_tensors[0],
+                      'qid_body_tensor': qid_tensors[1],
+                      'candidate_title_tensors': [similar_qid_tensors[0]] + random_candidate_title_tensors,
+                      'candidate_body_tensors': [similar_qid_tensors[1]] + random_candidate_body_tensors
+                      }
             self.dataset.append(sample)
         return
 
@@ -61,17 +75,15 @@ class AskUbuntuDataset(data.Dataset):
 
     def __getitem__(self,index):
         sample = self.dataset[index]
-        sample['qid_tensors'] = self.tensor_dict[sample['qid']]
-        sample['candidate_tensors'] = self.tensor_dict[sample['qid']]
         return sample
 
-def get_indices_tensor(text_arr, word_to_indx, max_length):
-    nil_indx = 0
-    text_indx = [ word_to_indx[x] if x in word_to_indx else nil_indx for x in text_arr][:max_length]
-    if len(text_indx) < max_length:
-        text_indx.extend( [nil_indx for _ in range(max_length - len(text_indx))])
-    x =  torch.LongTensor(text_indx)
-    return x
+    def get_indices_tensor(self, text_arr):
+        nil_indx = 0
+        text_indx = [ self.word_to_indx[x] if x in self.word_to_indx else nil_indx for x in text_arr][:self.max_length]
+        if len(text_indx) < self.max_length:
+            text_indx.extend( [nil_indx for _ in range(self.max_length - len(text_indx))])
+        x =  torch.LongTensor(text_indx)
+        return x
 
 
 def get_embeddings_tensor():

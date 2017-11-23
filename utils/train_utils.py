@@ -45,17 +45,26 @@ def run_epoch(data, is_training, model, optimizer, args):
 
     loss_function = torch.nn.MultiMarginLoss(p=1, margin=1, weight=None, size_average=True)
 
-    for batch in tqdm(data_loader):
+    print "GOT HERE"
+    for batch in data_loader:
 
-        q_tensors, candidate_tensors = autograd.Variable(batch['qid_tensors']), autograd.Variable(batch['candidate_tensors'])
-        print "Len candidate tensors"
-        print len(candidate_tensors)
-        targets = autograd.Variable(torch.from_numpy(np.zeros(len(candidate_tensors))))
+        q_title_tensors = autograd.Variable(batch['qid_title_tensor'])
+        q_body_tensors = autograd.Variable(batch['qid_body_tensor'])
+        candidate_title_tensors = autograd.Variable(torch.stack(batch['candidate_title_tensors']))
+
+        print "title candidates"
+        print candidate_title_tensors.size()
+
+        candidate_body_tensors = autograd.Variable(torch.stack(batch['candidate_body_tensors']))
+        print "body candidates"
+        print candidate_body_tensors.size()
+
+        targets = autograd.Variable(torch.LongTensor([0]*args.batch_size))
 
         if is_training:
             optimizer.zero_grad()
 
-        cosine_similarities = model(q_tensors, candidate_tensors)
+        cosine_similarities = model(q_title_tensors, q_body_tensors, candidate_title_tensors, candidate_body_tensors)
 
         loss = loss_function(cosine_similarities, targets)
 
