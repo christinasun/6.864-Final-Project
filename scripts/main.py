@@ -8,8 +8,6 @@ import utils.model_utils as model_utils
 import torch
 
 
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch AskUbuntu Question Retrieval Network')
     # learning
@@ -37,7 +35,7 @@ if __name__ == '__main__':
     embeddings, word_to_indx = data_utils.get_embeddings_tensor()
     print "Getting Train Data"
     train_data = data_utils.AskUbuntuDataset('train', word_to_indx)
-    dev_data = "blah"
+    dev_data = "blah" #TODO: implemement AskUbuntuDataset to work for dev and test
 
     # model
     if args.snapshot is None:

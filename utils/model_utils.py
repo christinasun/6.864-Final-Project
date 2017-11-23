@@ -43,6 +43,7 @@ class AbstractAskUbuntuModel(nn.Module):
         body_embeddings = self.forward_helper(candidate_body_tensors.view(num_candidates*d2,d3))
         candidate_embeddings_before_mean = torch.stack([title_embeddings, body_embeddings])
         candidate_embeddings = torch.mean(candidate_embeddings_before_mean, dim=0)
+        # TODO: Consider making it possible to select a random subset of 20 from the candidates
 
         expanded_q_embedding = q_embedding.view(1,d2,d3).expand(num_candidates,d2,d3).contiguous().view(num_candidates*d2,d3)
 

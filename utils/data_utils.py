@@ -19,7 +19,7 @@ TEST_SET_FILE = os.path.join(DATA_PATH,"test.txt")
 class AskUbuntuDataset(data.Dataset):
 
     # TODO: modify the max_length based on the specifications in the paper
-    def __init__(self, name, word_to_indx, max_length=200, max_dataset_size=100):
+    def __init__(self, name, word_to_indx, max_length=200, max_dataset_size=500):
         self.name = name
         self.dataset = []
         self.word_to_indx  = word_to_indx
@@ -32,16 +32,6 @@ class AskUbuntuDataset(data.Dataset):
                 self.update_dataset_from_train_example(example)
         else:
             raise Exception("Data set name {} not supported!".format(name))
-
-    # def update_tensor_dict(self):
-    #     for sample in self.dataset:
-    #         qids = [sample['qid']] + sample['candidates']
-    #         for qid in qids:
-    #             if qid not in self.tensor_dict:
-    #                 title, body = self.data_dict[qid]
-    #                 title = get_indices_tensor(title, self.word_to_indx, self.max_length)
-    #                 body = get_indices_tensor(body, self.word_to_indx, self.max_length)
-    #                 self.tensor_dict[qid] = (title, body)
 
     ## Convert one example to {x: example, y: label (always 0)}
     def update_dataset_from_train_example(self, example):
