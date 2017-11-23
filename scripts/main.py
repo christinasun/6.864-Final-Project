@@ -5,12 +5,8 @@ sys.path.append(dirname(dirname(realpath(__file__))))
 import utils.data_utils as data_utils
 import utils.train_utils as train_utils
 import utils.model_utils as model_utils
-
-import os
 import torch
-import datetime
-import cPickle as pickle
-import pdb
+
 
 
 
@@ -25,6 +21,7 @@ if __name__ == '__main__':
     # model
     parser.add_argument('--model_name', nargs="?", type=str, default='cnn', help="Form of model, i.e dan, rnn, etc.")
     # device
+    parser.add_argument('--cuda', action='store_true', default=False, help='enable the gpu')
     parser.add_argument('--train', action='store_true', default=False, help='enable train')
     # task
     parser.add_argument('--snapshot', type=str, default=None, help='filename of model snapshot to load[default: None]')

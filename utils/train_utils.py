@@ -7,6 +7,9 @@ import numpy as np
 
 def train_model(train_data, dev_data, model, args):
 
+    if args.cuda:
+        model = model.cuda()
+
     optimizer = torch.optim.Adam(model.parameters() , lr=args.lr)
 
     model.train()
@@ -51,15 +54,17 @@ def run_epoch(data, is_training, model, optimizer, args):
         q_title_tensors = autograd.Variable(batch['qid_title_tensor'])
         q_body_tensors = autograd.Variable(batch['qid_body_tensor'])
         candidate_title_tensors = autograd.Variable(torch.stack(batch['candidate_title_tensors']))
-
-        print "title candidates"
-        print candidate_title_tensors.size()
-
         candidate_body_tensors = autograd.Variable(torch.stack(batch['candidate_body_tensors']))
-        print "body candidates"
-        print candidate_body_tensors.size()
 
         targets = autograd.Variable(torch.LongTensor([0]*args.batch_size))
+
+        if args.cuda:
+            q_title_tensors = q_title_tensors.cuda()
+            q_title_tensors = q_title_tensors.cuda()
+            q_body_tensors = q_body_tensors.cuda()
+            candidate_title_tensors = candidate_title_tensors.cuda()
+            candidate_body_tensors = candidate_body_tensors.cuda()
+            targets = targets.cuda()
 
         if is_training:
             optimizer.zero_grad()
