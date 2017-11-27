@@ -15,6 +15,8 @@ DEV_SET_FILE = os.path.join(DATA_PATH,"dev.txt")
 TEST_SET_FILE = os.path.join(DATA_PATH,"test.txt")
 
 # TODO figure out when the people in the paper threw away examples
+# TODO determine what we want the max length to be and if we want to make it configurable using an argument
+# TODO determine if we want to add the option to use titles only
 class AskUbuntuDataset(data.Dataset):
 
     # TODO: modify the max_length based on the specifications in the paper
@@ -30,6 +32,14 @@ class AskUbuntuDataset(data.Dataset):
             for example in train_examples:
                 self.update_dataset_from_train_example(example)
         #TODO: implement 'dev' and 'test'
+        elif name == 'dev':
+            dev_examples = get_dev_examples()[:max_dataset_size]
+            for example in dev_examples:
+                self.update_dataset_from_dev_or_test_example(example)
+        elif name == 'test':
+            test_examples = get_test_examples()[:max_dataset_size]
+            for example in test_examples:
+                self.update_dataset_from_dev_or_test_example(example)
         else:
             raise Exception("Data set name {} not supported!".format(name))
 
@@ -58,6 +68,31 @@ class AskUbuntuDataset(data.Dataset):
                       'candidate_body_tensors': [similar_qid_tensors[1]] + random_candidate_body_tensors
                       }
             self.dataset.append(sample)
+        return
+
+    def update_dataset_from_dev_or_test_example(self, example):
+        # adds samples to dataset for each training example
+        # each training example generates multiple samples
+        qid, similar_qids, candidate_qids, BM25_scores  = example
+        qid_tensors = map(self.get_indices_tensor, self.data_dict[qid])
+
+        candidate_tensors = [map(self.get_indices_tensor,self.data_dict[cqid]) for cqid in candidate_qids]
+        candidate_title_tensors, candidate_body_tensors = zip(*candidate_tensors)
+        candidate_title_tensors = list(candidate_title_tensors)
+        candidate_body_tensors = list(candidate_body_tensors)
+
+
+        sample = \
+            {'qid': qid,
+             'similar_qids': similar_qids,
+             'candidates': candidate_qids,
+             'qid_title_tensor': qid_tensors[0],
+             'qid_body_tensor': qid_tensors[1],
+             'candidate_title_tensors': candidate_title_tensors,
+             'candidate_body_tensors': candidate_body_tensors,
+             'BM25_scores': BM25_scores
+             }
+        self.dataset.append(sample)
         return
 
     def __len__(self):
