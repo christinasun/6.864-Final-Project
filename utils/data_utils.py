@@ -20,7 +20,7 @@ TEST_SET_FILE = os.path.join(DATA_PATH,"test.txt")
 class AskUbuntuDataset(data.Dataset):
 
     # TODO: modify the max_length based on the specifications in the paper
-    def __init__(self, name, word_to_indx, max_length=200, max_dataset_size=500):
+    def __init__(self, name, word_to_indx, max_length=100, max_dataset_size=600):
         self.name = name
         self.dataset = []
         self.word_to_indx  = word_to_indx
@@ -81,6 +81,8 @@ class AskUbuntuDataset(data.Dataset):
         candidate_title_tensors = list(candidate_title_tensors)
         candidate_body_tensors = list(candidate_body_tensors)
 
+        labels = [1 if cqid in similar_qids else 0 for cqid in candidate_qids]
+
 
         sample = \
             {'qid': qid,
@@ -90,7 +92,8 @@ class AskUbuntuDataset(data.Dataset):
              'qid_body_tensor': qid_tensors[1],
              'candidate_title_tensors': candidate_title_tensors,
              'candidate_body_tensors': candidate_body_tensors,
-             'BM25_scores': BM25_scores
+             'BM25_scores': BM25_scores,
+             'labels': labels
              }
         self.dataset.append(sample)
         return
@@ -171,7 +174,6 @@ def get_examples_helper(dataset_file):
             candidates = map(int, candidates.split(' '))
             bm25_scores = map(float, bm25_scores.split(' '))
             examples.append((int(qid), similar_qids, candidates, bm25_scores))
-
     return examples
 
 

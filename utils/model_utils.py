@@ -20,13 +20,13 @@ class AbstractAskUbuntuModel(nn.Module):
         super(AbstractAskUbuntuModel, self).__init__()
 
         self.args = args
+
         vocab_size, embed_dim = embeddings.shape
 
         self.embedding_layer = nn.Embedding(vocab_size, embed_dim)
         self.embedding_layer.weight.data = torch.from_numpy( embeddings )
 
-        self.W_hidden = nn.Linear(embed_dim, 200)
-        self.W_out = nn.Linear(200, 200)
+        self.out_dim = embed_dim
         return
 
     def forward(self, q_title_tensors, q_body_tensors, candidate_title_tensors, candidate_body_tensors):
@@ -43,9 +43,11 @@ class AbstractAskUbuntuModel(nn.Module):
         body_embeddings = self.forward_helper(candidate_body_tensors.view(num_candidates*d2,d3))
         candidate_embeddings_before_mean = torch.stack([title_embeddings, body_embeddings])
         candidate_embeddings = torch.mean(candidate_embeddings_before_mean, dim=0)
+
         # TODO: Consider making it possible to select a random subset of 20 from the candidates
 
-        expanded_q_embedding = q_embedding.view(1,d2,d3).expand(num_candidates,d2,d3).contiguous().view(num_candidates*d2,d3)
+        #TODO rather than using d3, you should use the true output size
+        expanded_q_embedding = q_embedding.view(1,d2,self.out_dim).expand(num_candidates,d2,self.out_dim).contiguous().view(num_candidates*d2,self.out_dim)
 
         expanded_cosine_similarites = F.cosine_similarity(expanded_q_embedding, candidate_embeddings, dim=1)
 
@@ -63,6 +65,10 @@ class CNN(AbstractAskUbuntuModel):
 
     def __init__(self, embeddings, args):
         super(CNN, self).__init__(embeddings, args)
+        vocab_size, embed_dim = embeddings.shape
+        self.W_hidden = nn.Linear(embed_dim, embed_dim)
+        self.W_out = nn.Linear(embed_dim, embed_dim)
+
 
     def forward_helper(self, tensor):
         # TODO: Implement the CNN

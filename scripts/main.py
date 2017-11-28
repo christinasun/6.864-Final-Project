@@ -14,6 +14,7 @@ if __name__ == '__main__':
     parser.add_argument('--lr', type=float, default=0.001, help='initial learning rate [default: 0.001]')
     parser.add_argument('--epochs', type=int, default=256, help='number of epochs for train [default: 256]')
     parser.add_argument('--batch_size', type=int, default=128, help='batch size for training [default: 128]')
+    parser.add_argument('--num_negative', type=int, default=20, help='# negative examples for training [default: 20]')
     # data loading
     parser.add_argument('--num_workers', nargs='?', type=int, default=4, help='num workers for data loader')
     # model
@@ -24,6 +25,8 @@ if __name__ == '__main__':
     # task
     parser.add_argument('--snapshot', type=str, default=None, help='filename of model snapshot to load[default: None]')
     parser.add_argument('--save_path', type=str, default="model.pt", help='Path where to dump model')
+    # other
+    parser.add_argument('--len_query', type=int, default=100, help='how much of the query body to use [default 100]')
 
     args = parser.parse_args()
     # update args and print
@@ -34,8 +37,9 @@ if __name__ == '__main__':
     print "Getting Embeddings"
     embeddings, word_to_indx = data_utils.get_embeddings_tensor()
     print "Getting Train Data"
-    train_data = data_utils.AskUbuntuDataset('train', word_to_indx)
-    dev_data = "blah" #TODO: implemement AskUbuntuDataset to work for dev and test
+    train_data = data_utils.AskUbuntuDataset('train', word_to_indx, max_length=args.len_query)
+    dev_data = data_utils.AskUbuntuDataset('dev', word_to_indx, max_length=args.len_query)
+    print "len devdata {}".format(len(dev_data))
 
     # model
     if args.snapshot is None:
