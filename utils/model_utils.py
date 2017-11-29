@@ -70,9 +70,10 @@ class CNN(AbstractAskUbuntuModel):
 
         self.hidden_size = 20
         self.out_dim = 20
-        self.convolutions = nn.ModuleList([nn.Conv2d(1, 1, (3, embed_dim), padding= (2,0)) for k in xrange(self.hidden_size)])
+        self.conv = nn.Conv2d(1, 20, (3, embed_dim), padding= (2,0))
+        # self.convolutions = nn.ModuleList([nn.Conv2d(1, 1, (3, embed_dim), padding= (2,0)) for k in xrange(self.hidden_size)])
         self.tanh = nn.Tanh()
-        self.pooling = torch.nn.AvgPool2d((args.len_query,1))
+        self.pooling = torch.nn.AvgPool2d((1,args.len_query))
 
 
 
@@ -80,16 +81,13 @@ class CNN(AbstractAskUbuntuModel):
         x = self.embedding_layer(tensor) # (batch size, width (length of text), height (embedding dim))
         x = x.unsqueeze(1) # (batch size, 1, width, height)
 
-        hiddens = [];
-        for k in xrange(self.hidden_size):
-            hiddens.append(self.convolutions[k](x).squeeze(3).squeeze(1))
-        hiddens = torch.stack(hiddens,2)
-        # print "hiddens shape: {}".format(hiddens.data.shape) # (batch size, width, hidden size)
+        hiddens = self.conv(x).squeeze(3)
+        # print "hiddens shape: {}".format(hiddens.data.shape) # (batch size, hidden size, width)
         tanh_x = self.tanh(hiddens)
         # print "tanh shape: {}".format(tanh_x.data.shape) # (batch size, width, hidden size)
         pooled = self.pooling(tanh_x)
         # print "pooled shape: {}".format(pooled.data.shape)  # (batch size, 1, hidden size)
-        output = pooled.squeeze(1)
+        output = pooled.squeeze(2)
         # print "output shape: {}".format(output.data.shape)
         return output
         

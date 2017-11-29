@@ -20,7 +20,7 @@ TEST_SET_FILE = os.path.join(DATA_PATH,"test.txt")
 class AskUbuntuDataset(data.Dataset):
 
     # TODO: modify the max_length based on the specifications in the paper
-    def __init__(self, name, word_to_indx, max_length=100, max_dataset_size=600):
+    def __init__(self, name, word_to_indx, max_length=100, max_dataset_size=100):
         self.name = name
         self.dataset = []
         self.word_to_indx  = word_to_indx
