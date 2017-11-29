@@ -86,7 +86,33 @@ class LSTM(AbstractAskUbuntuModel):
 
     def __init__(self, embeddings, args):
         super(LSTM, self).__init__(embeddings, args)
+        vocab_size, embed_dim = embeddings.shape
+        self.num_layers = 1
+        self.hidden_dim = 240
+        self.batch_size = args.batch_size
 
-    def forward(self):
-        # TODO: Implement
-        pass
+        self.hidden = self.init_hidden()
+        self.lstm = nn.LSTM(embed_dim*args.len_query, self.hidden_dim)
+        self.W_o = nn.Linear(self.hidden_dim, embed_dim)
+
+    def init_hidden(self):
+        # return autograd.Variable(torch.zeros(self.num_layers, self.batch_size, self.hidden_dim))
+        return (autograd.Variable(torch.zeros(self.num_layers, 1, self.hidden_dim)),
+                autograd.Variable(torch.zeros(self.num_layers, 1, self.hidden_dim)))
+
+    def forward_helper(self, tensor):
+        # inputs = self.embedding_layer(tensor)
+        # inputs.shape
+        # print("inputs: ", inputs.size())
+        # out, self.hidden = self.lstm(inputs, self.hidden)
+        # print("out: ", out.size())
+        # out = self.W_o(out)
+        # print("out: ", out.size())
+        # return out
+
+        inputs = self.embedding_layer(tensor)
+        flattened_inputs = inputs.view(len(tensor), 1, -1)
+        lstm_out, self.hidden = self.lstm(flattened_inputs, self.hidden)
+        out = self.W_o(lstm_out.view(len(tensor), -1))
+        # print("out: ", out.size())
+        return out
