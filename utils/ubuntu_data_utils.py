@@ -9,7 +9,7 @@ import torch.utils.data as data
 HOME_PATH = dirname(dirname(realpath(__file__)))
 DATA_PATH = os.path.join(HOME_PATH,'data','ubuntu')
 VECTORS_FILE = os.path.join(DATA_PATH,"vector","vectors_pruned.200.txt.gz")
-DATA_FILE = os.path.join(DATA_PATH,"text_tokenized.txt")
+DATA_FILE = os.path.join(DATA_PATH,"text_tokenized.txt.gz")
 TRAIN_FILE = os.path.join(DATA_PATH,"train_random.txt")
 DEV_SET_FILE = os.path.join(DATA_PATH,"dev.txt")
 TEST_SET_FILE = os.path.join(DATA_PATH,"test.txt")
@@ -152,7 +152,7 @@ def get_train_examples():
     # list of tuples of the form (qid, similar qids, randomly selected qids)
     train_examples = []
 
-    with open(TRAIN_FILE,"rb") as f:
+    with gzip.open(TRAIN_FILE) as f:
         content = f.readlines()
         for line in content:
             qid, similar_qids, random_qids = line.strip().split("\t",2)
