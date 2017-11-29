@@ -31,7 +31,6 @@ class AskUbuntuDataset(data.Dataset):
             train_examples = get_train_examples()[:max_dataset_size]
             for example in train_examples:
                 self.update_dataset_from_train_example(example)
-        #TODO: implement 'dev' and 'test'
         elif name == 'dev':
             dev_examples = get_dev_examples()[:max_dataset_size]
             for example in dev_examples:

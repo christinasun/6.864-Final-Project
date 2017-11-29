@@ -62,6 +62,7 @@ def run_epoch(data, is_training, model, optimizer, args):
         candidate_title_tensors = torch.stack(batch['candidate_title_tensors'])
         candidate_body_tensors = torch.stack(batch['candidate_body_tensors'])
 
+        print "candidate_title_tensors shape".format(candidate_title_tensors.shape)
         # Generate random sampling of negative examples
         # We do - 1 because candidate_title_tensors includes the title tensor for the query itself (at position 0)
         num_available_candidates = candidate_title_tensors.shape[0] - 1
@@ -73,8 +74,12 @@ def run_epoch(data, is_training, model, optimizer, args):
             inds[1:,i,:] = random_sample.repeat(args.len_query, 1)
         inds = torch.LongTensor(inds)
 
+
         selected_candidate_title_tensors = autograd.Variable(candidate_title_tensors.gather(0,inds))
         selected_candidate_body_tensors = autograd.Variable(candidate_body_tensors.gather(0,inds))
+        print "selected_candidate_title_tensors shape".format(selected_candidate_title_tensors.data.shape)
+
+
 
         targets = autograd.Variable(torch.LongTensor([0]*args.batch_size))
 

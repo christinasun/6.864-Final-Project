@@ -20,6 +20,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_workers', nargs='?', type=int, default=4, help='num workers for data loader')
     # model
     parser.add_argument('--model_name', nargs="?", type=str, default='cnn', help="Form of model, i.e dan, rnn, etc.")
+    parser.add_argument('--hidden_dim', type=int, default=20, help='dimension of the hidden/output layer [default: 20]')
     # device
     parser.add_argument('--cuda', action='store_true', default=False, help='enable the gpu')
     parser.add_argument('--train', action='store_true', default=False, help='enable train')
@@ -35,11 +36,11 @@ if __name__ == '__main__':
     for attr, value in sorted(args.__dict__.items()):
         print "\t{}={}".format(attr.upper(), value)
 
-    print "Getting Embeddings"
+    print "Getting Embeddings..."
     embeddings, word_to_indx = data_utils.get_embeddings_tensor()
-    print "Getting Train Data"
+    print "Getting Train Data..."
     train_data = data_utils.AskUbuntuDataset('train', word_to_indx, max_length=args.len_query)
-    print "Getting Test Data"
+    print "Getting Test Data..."
     dev_data = data_utils.AskUbuntuDataset('dev', word_to_indx, max_length=args.len_query)
 
     # model
@@ -62,7 +63,7 @@ if __name__ == '__main__':
     print "Total number of parameters: {}".format(paramter_num)
     print "Number of trainable parameters: {}".format(paramter_num - embedding_paramter_num)
 
-    print "Training"
+    print "\nTraining..."
     # train
     if args.train :
         train_utils.train_model(train_data, dev_data, model, args)
