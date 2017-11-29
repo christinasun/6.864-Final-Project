@@ -135,7 +135,7 @@ def get_embeddings_tensor():
 def get_data_dict():
     data_dict = {}
 
-    with open(DATA_FILE,"rb") as f:
+    with gzip.open(DATA_FILE) as f:
         content = f.readlines()
         for line in content:
             qid, question = line.strip().split("\t",1)
@@ -152,7 +152,7 @@ def get_train_examples():
     # list of tuples of the form (qid, similar qids, randomly selected qids)
     train_examples = []
 
-    with gzip.open(TRAIN_FILE) as f:
+    with open(TRAIN_FILE,"rb") as f:
         content = f.readlines()
         for line in content:
             qid, similar_qids, random_qids = line.strip().split("\t",2)
