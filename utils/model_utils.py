@@ -25,6 +25,7 @@ class AbstractAskUbuntuModel(nn.Module):
 
         self.embedding_layer = nn.Embedding(vocab_size, embed_dim)
         self.embedding_layer.weight.data = torch.from_numpy( embeddings )
+        self.embedding_layer.requires_grad = False
 
         self.out_dim = embed_dim
         return

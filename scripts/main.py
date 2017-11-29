@@ -54,9 +54,13 @@ if __name__ == '__main__':
             exit()
     print model
     paramter_num = 0
+    embedding_paramter_num = 0
     for param in model.parameters():
+        if paramter_num == 0:
+            embedding_paramter_num = np.prod(param.data.shape)
         paramter_num += np.prod(param.data.shape)
-    print "Number of parameters: {}".format(paramter_num)
+    print "Total number of parameters: {}".format(paramter_num)
+    print "Number of trainable parameters: {}".format(paramter_num - embedding_paramter_num)
 
     print "Training"
     # train
