@@ -1,7 +1,7 @@
 from os.path import dirname, realpath
 import sys
 sys.path.append(dirname(dirname(realpath(__file__))))
-import utils.data_utils as du
+import utils.ubuntu_data_utils as du
 import numpy as np
 
 def test_get_embeddings_tensor():

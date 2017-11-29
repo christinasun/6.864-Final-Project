@@ -7,7 +7,7 @@ import torch.utils.data as data
 
 
 HOME_PATH = dirname(dirname(realpath(__file__)))
-DATA_PATH = os.path.join(HOME_PATH,'data')
+DATA_PATH = os.path.join(HOME_PATH,'data','ubuntu')
 VECTORS_FILE = os.path.join(DATA_PATH,"vector","vectors_pruned.200.txt.gz")
 DATA_FILE = os.path.join(DATA_PATH,"text_tokenized.txt")
 TRAIN_FILE = os.path.join(DATA_PATH,"train_random.txt")

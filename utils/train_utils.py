@@ -29,7 +29,7 @@ def train_model(train_data, dev_data, model, args):
         print 'Train MSE loss: {:.6f}\n'.format(loss)
 
         # TODO: Commented out because its not done.
-        # eval_utils.evaluate_model(dev_data, model, args)
+        eval_utils.evaluate_model(dev_data, model, args)
 
         # Save model
         torch.save(model, args.save_path)
@@ -58,6 +58,7 @@ def run_epoch(data, is_training, model, optimizer, args):
 
         q_title_tensors = autograd.Variable(batch['qid_title_tensor'])
         q_body_tensors = autograd.Variable(batch['qid_body_tensor'])
+
         candidate_title_tensors = torch.stack(batch['candidate_title_tensors'])
         candidate_body_tensors = torch.stack(batch['candidate_body_tensors'])
 
