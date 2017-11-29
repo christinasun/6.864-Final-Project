@@ -39,7 +39,6 @@ if __name__ == '__main__':
     print "Getting Train Data"
     train_data = data_utils.AskUbuntuDataset('train', word_to_indx, max_length=args.len_query)
     dev_data = data_utils.AskUbuntuDataset('dev', word_to_indx, max_length=args.len_query)
-    print "len devdata {}".format(len(dev_data))
 
     # model
     if args.snapshot is None:
@@ -52,6 +51,9 @@ if __name__ == '__main__':
             print "Sorry, This snapshot doesn't exist."
             exit()
     print model
+    "Parameters shapes:"
+    for param in model.parameters():
+        print param.data.shape
 
     print "Training"
     # train

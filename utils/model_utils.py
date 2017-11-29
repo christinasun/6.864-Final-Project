@@ -66,17 +66,33 @@ class CNN(AbstractAskUbuntuModel):
     def __init__(self, embeddings, args):
         super(CNN, self).__init__(embeddings, args)
         vocab_size, embed_dim = embeddings.shape
-        self.W_hidden = nn.Linear(embed_dim, embed_dim)
-        self.W_out = nn.Linear(embed_dim, embed_dim)
+
+        self.hidden_size = 20
+        self.out_dim = 20
+        self.convolutions = nn.ModuleList([nn.Conv2d(1, 1, (3, embed_dim), padding= (2,0)) for k in xrange(self.hidden_size)])
+        self.tanh = nn.Tanh()
+        self.pooling = torch.nn.AvgPool2d((args.len_query,1))
+
 
 
     def forward_helper(self, tensor):
-        # TODO: Implement the CNN
-        all_x = self.embedding_layer(tensor)
-        avg_x = torch.mean(all_x, dim=1)
-        hidden = F.relu( self.W_hidden(avg_x) )
-        out = self.W_out(hidden)
-        return out
+        x = self.embedding_layer(tensor) # (batch size, width (length of text), height (embedding dim))
+        print "x shape: {}".format(x.data.shape)
+        x = x.unsqueeze(1) # (batch size, 1, width, height)
+        print "x shape: {}".format(x.data.shape)
+
+        hiddens = [];
+        for k in xrange(self.hidden_size):
+            hiddens.append(self.convolutions[k](x).squeeze(3).squeeze(1))
+        hiddens = torch.stack(hiddens,2)
+        print "hiddens shape: {}".format(hiddens.data.shape) # (batch size, width, hidden size)
+        tanh_x = self.tanh(hiddens)
+        print "tanh shape: {}".format(tanh_x.data.shape) # (batch size, width, hidden size)
+        pooled = self.pooling(tanh_x)
+        print "pooled shape: {}".format(pooled.data.shape)  # (batch size, 1, hidden size)
+        output = pooled.squeeze(1)
+        print "output shape: {}".format(output.data.shape)
+        return output
         
 
 class LSTM(AbstractAskUbuntuModel):
