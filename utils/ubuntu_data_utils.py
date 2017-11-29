@@ -106,7 +106,7 @@ class AskUbuntuDataset(data.Dataset):
 
     def get_indices_tensor(self, text_arr):
         nil_indx = 0
-        text_indx = [ self.word_to_indx[x] if x in self.word_to_indx else nil_indx for x in text_arr][:self.max_length]
+        text_indx = [self.word_to_indx[x.lower()] if x.lower() in self.word_to_indx else nil_indx for x in text_arr.split()][:self.max_length]
         if len(text_indx) < self.max_length:
             text_indx.extend( [nil_indx for _ in range(self.max_length - len(text_indx))])
         x =  torch.LongTensor(text_indx)
