@@ -77,21 +77,19 @@ class CNN(AbstractAskUbuntuModel):
 
     def forward_helper(self, tensor):
         x = self.embedding_layer(tensor) # (batch size, width (length of text), height (embedding dim))
-        print "x shape: {}".format(x.data.shape)
         x = x.unsqueeze(1) # (batch size, 1, width, height)
-        print "x shape: {}".format(x.data.shape)
 
         hiddens = [];
         for k in xrange(self.hidden_size):
             hiddens.append(self.convolutions[k](x).squeeze(3).squeeze(1))
         hiddens = torch.stack(hiddens,2)
-        print "hiddens shape: {}".format(hiddens.data.shape) # (batch size, width, hidden size)
+        # print "hiddens shape: {}".format(hiddens.data.shape) # (batch size, width, hidden size)
         tanh_x = self.tanh(hiddens)
-        print "tanh shape: {}".format(tanh_x.data.shape) # (batch size, width, hidden size)
+        # print "tanh shape: {}".format(tanh_x.data.shape) # (batch size, width, hidden size)
         pooled = self.pooling(tanh_x)
-        print "pooled shape: {}".format(pooled.data.shape)  # (batch size, 1, hidden size)
+        # print "pooled shape: {}".format(pooled.data.shape)  # (batch size, 1, hidden size)
         output = pooled.squeeze(1)
-        print "output shape: {}".format(output.data.shape)
+        # print "output shape: {}".format(output.data.shape)
         return output
         
 

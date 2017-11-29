@@ -6,6 +6,7 @@ import utils.ubuntu_data_utils as data_utils
 import utils.train_utils as train_utils
 import utils.model_utils as model_utils
 import torch
+import numpy as np
 
 
 if __name__ == '__main__':
@@ -38,6 +39,7 @@ if __name__ == '__main__':
     embeddings, word_to_indx = data_utils.get_embeddings_tensor()
     print "Getting Train Data"
     train_data = data_utils.AskUbuntuDataset('train', word_to_indx, max_length=args.len_query)
+    print "Getting Test Data"
     dev_data = data_utils.AskUbuntuDataset('dev', word_to_indx, max_length=args.len_query)
 
     # model
@@ -51,9 +53,10 @@ if __name__ == '__main__':
             print "Sorry, This snapshot doesn't exist."
             exit()
     print model
-    "Parameters shapes:"
+    paramter_num = 0
     for param in model.parameters():
-        print param.data.shape
+        paramter_num += np.prod(param.data.shape)
+    print "Number of parameters: {}".format(paramter_num)
 
     print "Training"
     # train
