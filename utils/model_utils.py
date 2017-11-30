@@ -116,15 +116,6 @@ class LSTM(AbstractAskUbuntuModel):
                 autograd.Variable(torch.zeros(self.num_layers, 1, self.lstm_hidden_dim)))
 
     def forward_helper(self, tensor):
-        # inputs = self.embedding_layer(tensor)
-        # inputs.shape
-        # print("inputs: ", inputs.size())
-        # out, self.hidden = self.lstm(inputs, self.hidden)
-        # print("out: ", out.size())
-        # out = self.W_o(out)
-        # print("out: ", out.size())
-        # return out
-
         x = self.embedding_layer(tensor)
         flattened_inputs = x.view(len(tensor), 1, -1)
         lstm_out, self.hidden = self.lstm(flattened_inputs, self.hidden)

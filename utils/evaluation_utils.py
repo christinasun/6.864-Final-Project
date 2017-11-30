@@ -43,7 +43,8 @@ def evaluate_model(dev_data, model, args):
 
         sorted_labels = labels[np.expand_dims(np.arange(sorted_indices.shape[0]),1), sorted_indices]
         evaluation = Evaluation(sorted_labels)
-        print "Precision@3: {}".format(evaluation.get_precision(3))
+        print "Precision@5: {}".format(evaluation.get_precision(5))
+        print "Precision@1: {}".format(evaluation.get_precision(1))
         print "MAP: {}".format(evaluation.get_MAP())
         print "MRR: {}".format(evaluation.get_MRR())
         return
