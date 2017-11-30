@@ -11,6 +11,8 @@ def get_model(embeddings, args):
         return CNN(embeddings, args)
     elif args.model_name == 'lstm':
         return LSTM(embeddings, args)
+    elif args.model_name == 'dan':
+        return DAN(embeddings, args)
     else:
         raise Exception("Model name {} not supported!".format(args.model_name))
 
@@ -60,6 +62,22 @@ class AbstractAskUbuntuModel(nn.Module):
 
     def forward_helper(self, tensor):
         pass
+
+
+class DAN(AbstractAskUbuntuModel):
+
+    def __init__(self, embeddings, args):
+        super(DAN, self).__init__(embeddings, args)
+        vocab_size, embed_dim = embeddings.shape
+        self.W_hidden = nn.Linear(embed_dim, embed_dim)
+        self.W_out = nn.Linear(embed_dim, self.hidden_dim)
+
+    def forward_helper(self, tensor):
+        all_x = self.embedding_layer(tensor)
+        avg_x = torch.mean(all_x, dim=1)
+        hidden = F.relu( self.W_hidden(avg_x) )
+        out = self.W_out(hidden)
+        return out
 
 
 class CNN(AbstractAskUbuntuModel):
