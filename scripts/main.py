@@ -21,7 +21,7 @@ if __name__ == '__main__':
     # model
     parser.add_argument('--model_name', nargs="?", type=str, default='cnn', help="Form of model, i.e dan, rnn, etc.")
     parser.add_argument('--hidden_dim', type=int, default=20, help='dimension of the hidden layer [default: 20]')
-    parser.add_argument('--lstm_hidden_dim', type=int, default=240, help='dimension of the output layer [default: 240]')
+    parser.add_argument('--lstm_hidden_dim', type=int, default=240, help='dimension of the lstm hidden layer [default: 240]')
     # device
     parser.add_argument('--cuda', action='store_true', default=False, help='enable the gpu')
     parser.add_argument('--train', action='store_true', default=False, help='enable train')
