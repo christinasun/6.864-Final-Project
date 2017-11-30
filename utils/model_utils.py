@@ -1,4 +1,5 @@
 import torch
+import torch.autograd as autograd
 import torch.nn.functional as F
 import torch.nn as nn
 
@@ -28,6 +29,7 @@ class AbstractAskUbuntuModel(nn.Module):
         self.embedding_layer.requires_grad = False
 
         self.hidden_dim = args.hidden_dim
+        self.lstm_hidden_dim = args.lstm_hidden_dim
         return
 
     def forward(self, q_title_tensors, q_body_tensors, candidate_title_tensors, candidate_body_tensors):
@@ -69,12 +71,9 @@ class CNN(AbstractAskUbuntuModel):
         self.tanh = nn.Tanh()
         self.pooling = torch.nn.AvgPool2d((1,args.len_query))
 
-
-
     def forward_helper(self, tensor):
         x = self.embedding_layer(tensor) # (batch size, width (length of text), height (embedding dim))
         x = x.unsqueeze(1) # (batch size, 1, width, height)
-
         hiddens = self.conv(x).squeeze(3)
         tanh_x = self.tanh(hiddens)
         pooled = self.pooling(tanh_x)
@@ -88,17 +87,15 @@ class LSTM(AbstractAskUbuntuModel):
         super(LSTM, self).__init__(embeddings, args)
         vocab_size, embed_dim = embeddings.shape
         self.num_layers = 1
-        self.hidden_dim = 240
         self.batch_size = args.batch_size
 
         self.hidden = self.init_hidden()
-        self.lstm = nn.LSTM(embed_dim*args.len_query, self.hidden_dim)
-        self.W_o = nn.Linear(self.hidden_dim, embed_dim)
+        self.lstm = nn.LSTM(embed_dim*args.len_query, self.lstm_hidden_dim)
+        self.W_o = nn.Linear(self.lstm_hidden_dim, self.hidden_dim)
 
     def init_hidden(self):
-        # return autograd.Variable(torch.zeros(self.num_layers, self.batch_size, self.hidden_dim))
-        return (autograd.Variable(torch.zeros(self.num_layers, 1, self.hidden_dim)),
-                autograd.Variable(torch.zeros(self.num_layers, 1, self.hidden_dim)))
+        return (autograd.Variable(torch.zeros(self.num_layers, 1, self.lstm_hidden_dim)),
+                autograd.Variable(torch.zeros(self.num_layers, 1, self.lstm_hidden_dim)))
 
     def forward_helper(self, tensor):
         # inputs = self.embedding_layer(tensor)
@@ -110,9 +107,8 @@ class LSTM(AbstractAskUbuntuModel):
         # print("out: ", out.size())
         # return out
 
-        inputs = self.embedding_layer(tensor)
-        flattened_inputs = inputs.view(len(tensor), 1, -1)
+        x = self.embedding_layer(tensor)
+        flattened_inputs = x.view(len(tensor), 1, -1)
         lstm_out, self.hidden = self.lstm(flattened_inputs, self.hidden)
         out = self.W_o(lstm_out.view(len(tensor), -1))
-        # print("out: ", out.size())
         return out
