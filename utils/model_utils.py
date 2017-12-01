@@ -37,25 +37,23 @@ class AbstractAskUbuntuModel(nn.Module):
     def forward(self, q_title_tensors, q_body_tensors, candidate_title_tensors, candidate_body_tensors):
         q_title_embeddings = self.forward_helper(q_title_tensors)
         q_body_embeddings = self.forward_helper(q_body_tensors)
-
-        q_embedding_before_mean = torch.stack([q_title_embeddings, q_body_embeddings])
-
-        q_embedding = torch.mean(q_embedding_before_mean, dim=0)
+        q_output_before_mean = torch.stack([q_title_embeddings, q_body_embeddings])
+        q_output = torch.mean(q_output_before_mean, dim=0)
 
         num_candidates, d2, d3 = candidate_title_tensors.size()
 
         title_embeddings = self.forward_helper(candidate_title_tensors.view(num_candidates*d2,d3))
         body_embeddings = self.forward_helper(candidate_body_tensors.view(num_candidates*d2,d3))
-        candidate_embeddings_before_mean = torch.stack([title_embeddings, body_embeddings])
-        candidate_embeddings = torch.mean(candidate_embeddings_before_mean, dim=0)
+        candidate_outputs_before_mean = torch.stack([title_embeddings, body_embeddings])
+        candidate_outputs = torch.mean(candidate_outputs_before_mean, dim=0)
 
-        expanded_q_embedding = q_embedding.view(1,d2,self.hidden_dim).expand(num_candidates,d2,self.hidden_dim)\
+        expanded_q_output = q_output.view(1,d2,self.hidden_dim).expand(num_candidates,d2,self.hidden_dim)\
             .contiguous().view(num_candidates*d2,self.hidden_dim)
 
-        expanded_cosine_similarites = F.cosine_similarity(expanded_q_embedding, candidate_embeddings, dim=1)
+        expanded_cosine_similarities = F.cosine_similarity(expanded_q_output, candidate_outputs, dim=1)
 
         # TODO: Double check that this transformation is resizing the output as desired
-        output = expanded_cosine_similarites.view(num_candidates,d2,1).view(num_candidates,d2).t()
+        output = expanded_cosine_similarities.view(num_candidates,d2,1).view(num_candidates,d2).t()
 
 
         return output
@@ -87,13 +85,15 @@ class CNN(AbstractAskUbuntuModel):
         vocab_size, embed_dim = embeddings.shape
         self.conv = nn.Conv2d(1, self.hidden_dim, (3, embed_dim), padding= (2,0))
         self.tanh = nn.Tanh()
+        self.dropout = nn.Dropout(p=0.2)
         self.pooling = torch.nn.AvgPool2d((1,args.len_query))
 
     def forward_helper(self, tensor):
         x = self.embedding_layer(tensor) # (batch size, width (length of text), height (embedding dim))
         x = x.unsqueeze(1) # (batch size, 1, width, height)
         hiddens = self.conv(x).squeeze(3)
-        tanh_x = self.tanh(hiddens)
+        post_dropout = self.dropout(hiddens)
+        tanh_x = self.tanh(post_dropout)
         pooled = self.pooling(tanh_x)
         output = pooled.squeeze(2)
         return output
