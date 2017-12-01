@@ -73,7 +73,7 @@ class AbstractAskUbuntuModel(nn.Module):
         # TODO: Double check that this transformation is resizing the output as desired
         output0 = expanded_cosine_similarities.view(num_candidates,d2,1)
         if self.args.debug: misc_utils.print_shape_variable('output0', output0)
-        output1 = output0.view(d2,num_candidates)
+        output1 = output0.view(num_candidates,d2).t()
         if self.args.debug: misc_utils.print_shape_variable('output1', output1)
 
         return output1
