@@ -58,7 +58,6 @@ class Evaluation():
 
 
     def get_precision(self,precision_at):
-        print "data shape: {}".format(self.data.shape)
         scores = []
         for item in self.data:
             temp = item[:precision_at]

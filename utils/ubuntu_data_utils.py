@@ -20,7 +20,7 @@ TEST_SET_FILE = os.path.join(DATA_PATH,"test.txt")
 class AskUbuntuDataset(data.Dataset):
 
     # TODO: modify the max_length based on the specifications in the paper
-    def __init__(self, name, word_to_indx, max_length=100, max_dataset_size=100):
+    def __init__(self, name, word_to_indx, max_length=100, trainning_data_size=200):
         self.name = name
         self.dataset = []
         self.word_to_indx  = word_to_indx
@@ -28,15 +28,15 @@ class AskUbuntuDataset(data.Dataset):
         self.data_dict = get_data_dict()
 
         if name == 'train':
-            train_examples = get_train_examples()[:max_dataset_size]
+            train_examples = get_train_examples()[:trainning_data_size]
             for example in train_examples:
                 self.update_dataset_from_train_example(example)
         elif name == 'dev':
-            dev_examples = get_dev_examples()[:max_dataset_size]
+            dev_examples = get_dev_examples()
             for example in dev_examples:
                 self.update_dataset_from_dev_or_test_example(example)
         elif name == 'test':
-            test_examples = get_test_examples()[:max_dataset_size]
+            test_examples = get_test_examples()
             for example in test_examples:
                 self.update_dataset_from_dev_or_test_example(example)
         else:
