@@ -34,7 +34,7 @@ def evaluate_model(dev_data, model, args):
             candidate_body_tensors = candidate_body_tensors.cuda()
 
         cosine_similarities = model(q_title_tensors, q_body_tensors, candidate_title_tensors, candidate_body_tensors)
-        np_cosine_similarities = cosine_similarities.data.numpy()
+        np_cosine_similarities = cosine_similarities.data.cpu().numpy()
 
 
         sorted_indices = np_cosine_similarities.argsort(axis=1)
