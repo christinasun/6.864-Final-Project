@@ -9,11 +9,11 @@ sys.path.append(dirname(dirname(realpath(__file__))))
 import utils.evaluation_utils as eval_utils
 
 NUM_NEGATIVE_EXCEPTION_MESSAGE = "The number of negative examples desired ({}) is larger than that available ({})."
-use_cuda = torch.cuda.is_available()
+
 # TODO: add dropout
 def train_model(train_data, dev_data, model, args):
 
-    if use_cuda:
+    if args.cuda:
         model = model.cuda()
 
     optimizer = torch.optim.Adam(model.parameters() , lr=args.lr)
@@ -77,13 +77,13 @@ def run_epoch(data, is_training, model, optimizer, args):
 
         selected_candidate_title_tensors = autograd.Variable(candidate_title_tensors.gather(0,inds))
         selected_candidate_body_tensors = autograd.Variable(candidate_body_tensors.gather(0,inds))
-        print "selected_candidate_title_tensors shape: {}".format(selected_candidate_title_tensors.data.shape)
+        print "selected_candidate_title_tensors shape: ".format(selected_candidate_title_tensors.data.shape)
 
 
 
         targets = autograd.Variable(torch.LongTensor([0]*args.batch_size))
 
-        if use_cuda:
+        if args.cuda:
             q_title_tensors = q_title_tensors.cuda()
             q_body_tensors = q_body_tensors.cuda()
             selected_candidate_title_tensors = selected_candidate_title_tensors.cuda()
