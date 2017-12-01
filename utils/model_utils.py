@@ -2,6 +2,10 @@ import torch
 import torch.autograd as autograd
 import torch.nn.functional as F
 import torch.nn as nn
+import sys
+from os.path import dirname, realpath
+sys.path.append(dirname(dirname(realpath(__file__))))
+import utils.misc_utils as misc_utils
 
 
 # Depending on arg, build dataset
@@ -36,27 +40,43 @@ class AbstractAskUbuntuModel(nn.Module):
 
     def forward(self, q_title_tensors, q_body_tensors, candidate_title_tensors, candidate_body_tensors):
         q_title_embeddings = self.forward_helper(q_title_tensors)
+        if self.args.debug: misc_utils.print_shape('q_title_embeddings',q_title_embeddings)
         q_body_embeddings = self.forward_helper(q_body_tensors)
+        if self.args.debug: misc_utils.print_shape('q_body_embeddings',q_body_embeddings)
         q_output_before_mean = torch.stack([q_title_embeddings, q_body_embeddings])
+        if self.args.debug: misc_utils.print_shape('q_output_before_mean',q_output_before_mean)
         q_output = torch.mean(q_output_before_mean, dim=0)
+        if self.args.debug: misc_utils.print_shape('q_output', q_output)
 
         num_candidates, d2, d3 = candidate_title_tensors.size()
 
         title_embeddings = self.forward_helper(candidate_title_tensors.view(num_candidates*d2,d3))
+        if self.args.debug: misc_utils.print_shape('title_embeddings', title_embeddings)
         body_embeddings = self.forward_helper(candidate_body_tensors.view(num_candidates*d2,d3))
+        if self.args.debug: misc_utils.print_shape('body_embeddings', body_embeddings)
         candidate_outputs_before_mean = torch.stack([title_embeddings, body_embeddings])
+        if self.args.debug: misc_utils.print_shape('candidate_outputs_before_mean', candidate_outputs_before_mean)
         candidate_outputs = torch.mean(candidate_outputs_before_mean, dim=0)
+        if self.args.debug: misc_utils.print_shape('candidate_outputs', candidate_outputs)
 
-        expanded_q_output = q_output.view(1,d2,self.hidden_dim).expand(num_candidates,d2,self.hidden_dim)\
-            .contiguous().view(num_candidates*d2,self.hidden_dim)
 
-        expanded_cosine_similarities = F.cosine_similarity(expanded_q_output, candidate_outputs, dim=1)
+        expanded_q_output0 = q_output.view(1,d2,self.hidden_dim)
+        if self.args.debug: misc_utils.print_shape('expanded_q_output0', expanded_q_output0)
+        expanded_q_output1 = expanded_q_output0.expand(num_candidates,d2,self.hidden_dim)
+        if self.args.debug: misc_utils.print_shape('expanded_q_output1', expanded_q_output1)
+        expanded_q_output2 = expanded_q_output1.contiguous().view(num_candidates*d2,self.hidden_dim)
+        if self.args.debug: misc_utils.print_shape('expanded_q_output2', expanded_q_output2)
+
+        expanded_cosine_similarities = F.cosine_similarity(expanded_q_output2, candidate_outputs, dim=1)
+        if self.args.debug: misc_utils.print_shape('expanded_cosine_similarities', expanded_cosine_similarities)
 
         # TODO: Double check that this transformation is resizing the output as desired
-        output = expanded_cosine_similarities.view(num_candidates,d2,1).view(num_candidates,d2).t()
+        output0 = expanded_cosine_similarities.view(num_candidates,d2,1)
+        if self.args.debug: misc_utils.print_shape('output0', output0)
+        output1 = output0.view(d2,num_candidates)
+        if self.args.debug: misc_utils.print_shape('output1', output1)
 
-
-        return output
+        return output1
 
     def forward_helper(self, tensor):
         pass
