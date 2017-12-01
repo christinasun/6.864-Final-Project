@@ -7,6 +7,7 @@ import sys
 from os.path import dirname, realpath
 sys.path.append(dirname(dirname(realpath(__file__))))
 import utils.evaluation_utils as eval_utils
+import utils.misc_utils as misc_utils
 
 NUM_NEGATIVE_EXCEPTION_MESSAGE = "The number of negative examples desired ({}) is larger than that available ({})."
 
@@ -28,7 +29,6 @@ def train_model(train_data, dev_data, model, args):
 
         print 'Train MSE loss: {:.6f}\n'.format(loss)
 
-        # TODO: Commented out because its not done.
         eval_utils.evaluate_model(dev_data, model, args)
 
         # Save model
@@ -61,8 +61,8 @@ def run_epoch(data, is_training, model, optimizer, args):
 
         candidate_title_tensors = torch.stack(batch['candidate_title_tensors'])
         candidate_body_tensors = torch.stack(batch['candidate_body_tensors'])
+        if args.debug: misc_utils.print_shape_tensor('candidate_body_tensors', candidate_body_tensors)
 
-        if args.debug: print "candidate_title_tensors shape: {}".format(candidate_title_tensors.shape)
         # Generate random sampling of negative examples
         # We do - 1 because candidate_title_tensors includes the title tensor for the query itself (at position 0)
         num_available_candidates = candidate_title_tensors.shape[0] - 1
@@ -77,11 +77,11 @@ def run_epoch(data, is_training, model, optimizer, args):
 
         selected_candidate_title_tensors = autograd.Variable(candidate_title_tensors.gather(0,inds))
         selected_candidate_body_tensors = autograd.Variable(candidate_body_tensors.gather(0,inds))
-        if args.debug: print "selected_candidate_title_tensors shape: ".format(selected_candidate_title_tensors.data.shape)
-
+        if args.debug: misc_utils.print_shape_variable('selected_candidate_body_tensors', selected_candidate_body_tensors)
 
 
         targets = autograd.Variable(torch.LongTensor([0]*args.batch_size))
+        if args.debug: misc_utils.print_shape_variable('targets', targets)
 
         if args.cuda:
             q_title_tensors = q_title_tensors.cuda()
@@ -94,6 +94,8 @@ def run_epoch(data, is_training, model, optimizer, args):
             optimizer.zero_grad()
 
         cosine_similarities = model(q_title_tensors, q_body_tensors, selected_candidate_title_tensors, selected_candidate_body_tensors)
+        if args.debug: misc_utils.print_shape_variable('cosine_similarities', cosine_similarities)
+
 
         loss = loss_function(cosine_similarities, targets)
 

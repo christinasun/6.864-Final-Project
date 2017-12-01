@@ -40,41 +40,41 @@ class AbstractAskUbuntuModel(nn.Module):
 
     def forward(self, q_title_tensors, q_body_tensors, candidate_title_tensors, candidate_body_tensors):
         q_title_embeddings = self.forward_helper(q_title_tensors)
-        if self.args.debug: misc_utils.print_shape('q_title_embeddings',q_title_embeddings)
+        if self.args.debug: misc_utils.print_shape_variable('q_title_embeddings', q_title_embeddings)
         q_body_embeddings = self.forward_helper(q_body_tensors)
-        if self.args.debug: misc_utils.print_shape('q_body_embeddings',q_body_embeddings)
+        if self.args.debug: misc_utils.print_shape_variable('q_body_embeddings', q_body_embeddings)
         q_output_before_mean = torch.stack([q_title_embeddings, q_body_embeddings])
-        if self.args.debug: misc_utils.print_shape('q_output_before_mean',q_output_before_mean)
+        if self.args.debug: misc_utils.print_shape_variable('q_output_before_mean', q_output_before_mean)
         q_output = torch.mean(q_output_before_mean, dim=0)
-        if self.args.debug: misc_utils.print_shape('q_output', q_output)
+        if self.args.debug: misc_utils.print_shape_variable('q_output', q_output)
 
         num_candidates, d2, d3 = candidate_title_tensors.size()
 
         title_embeddings = self.forward_helper(candidate_title_tensors.view(num_candidates*d2,d3))
-        if self.args.debug: misc_utils.print_shape('title_embeddings', title_embeddings)
+        if self.args.debug: misc_utils.print_shape_variable('title_embeddings', title_embeddings)
         body_embeddings = self.forward_helper(candidate_body_tensors.view(num_candidates*d2,d3))
-        if self.args.debug: misc_utils.print_shape('body_embeddings', body_embeddings)
+        if self.args.debug: misc_utils.print_shape_variable('body_embeddings', body_embeddings)
         candidate_outputs_before_mean = torch.stack([title_embeddings, body_embeddings])
-        if self.args.debug: misc_utils.print_shape('candidate_outputs_before_mean', candidate_outputs_before_mean)
+        if self.args.debug: misc_utils.print_shape_variable('candidate_outputs_before_mean', candidate_outputs_before_mean)
         candidate_outputs = torch.mean(candidate_outputs_before_mean, dim=0)
-        if self.args.debug: misc_utils.print_shape('candidate_outputs', candidate_outputs)
+        if self.args.debug: misc_utils.print_shape_variable('candidate_outputs', candidate_outputs)
 
 
         expanded_q_output0 = q_output.view(1,d2,self.hidden_dim)
-        if self.args.debug: misc_utils.print_shape('expanded_q_output0', expanded_q_output0)
+        if self.args.debug: misc_utils.print_shape_variable('expanded_q_output0', expanded_q_output0)
         expanded_q_output1 = expanded_q_output0.expand(num_candidates,d2,self.hidden_dim)
-        if self.args.debug: misc_utils.print_shape('expanded_q_output1', expanded_q_output1)
+        if self.args.debug: misc_utils.print_shape_variable('expanded_q_output1', expanded_q_output1)
         expanded_q_output2 = expanded_q_output1.contiguous().view(num_candidates*d2,self.hidden_dim)
-        if self.args.debug: misc_utils.print_shape('expanded_q_output2', expanded_q_output2)
+        if self.args.debug: misc_utils.print_shape_variable('expanded_q_output2', expanded_q_output2)
 
         expanded_cosine_similarities = F.cosine_similarity(expanded_q_output2, candidate_outputs, dim=1)
-        if self.args.debug: misc_utils.print_shape('expanded_cosine_similarities', expanded_cosine_similarities)
+        if self.args.debug: misc_utils.print_shape_variable('expanded_cosine_similarities', expanded_cosine_similarities)
 
         # TODO: Double check that this transformation is resizing the output as desired
         output0 = expanded_cosine_similarities.view(num_candidates,d2,1)
-        if self.args.debug: misc_utils.print_shape('output0', output0)
+        if self.args.debug: misc_utils.print_shape_variable('output0', output0)
         output1 = output0.view(d2,num_candidates)
-        if self.args.debug: misc_utils.print_shape('output1', output1)
+        if self.args.debug: misc_utils.print_shape_variable('output1', output1)
 
         return output1
 
@@ -105,7 +105,7 @@ class CNN(AbstractAskUbuntuModel):
         vocab_size, embed_dim = embeddings.shape
         self.conv = nn.Conv2d(1, self.hidden_dim, (3, embed_dim), padding= (2,0))
         self.tanh = nn.Tanh()
-        self.dropout = nn.Dropout(p=0.2)
+        self.dropout = nn.Dropout(p=self.args.dropout)
         self.pooling = torch.nn.AvgPool2d((1,args.len_query))
 
     def forward_helper(self, tensor):
