@@ -171,33 +171,26 @@ class LSTM(AbstractAskUbuntuModel):
 
     def __init__(self, embeddings, args):
         super(LSTM, self).__init__(embeddings, args)
-        vocab_size, embed_dim = embeddings.shape
+        vocab_size, embed_dim = embeddings.shape # embed_dim = 200
         len_query = args.len_query
         self.num_layers = 1
-        self.lstm = nn.LSTMCell(200, 240)
-        self.W_o = nn.Linear(240, self.hidden_dim)
-
-    def init_hidden(self):
-        return (autograd.Variable(torch.zeros(100, 240)))
-
-    def init_c(self):
-        return (autograd.Variable(torch.zeros(100, 240)))
+        self.lstm = nn.LSTMCell(embed_dim, self.lstm_hidden_dim)
+        self.W_o = nn.Linear(self.lstm_hidden_dim, self.hidden_dim)
 
     def forward_helper(self, tensor):
         x = self.embedding_layer(tensor)
-        hx = autograd.Variable(torch.zeros(1, 240))
-        cx = autograd.Variable(torch.zeros(1, 240))
+        hx = autograd.Variable(torch.zeros(1, self.lstm_hidden_dim))
+        cx = autograd.Variable(torch.zeros(1, self.lstm_hidden_dim))
         batch_output = []
         for i in range(len(tensor)):
             seq = x[i]
             output = []
-            for token in range(100):
+            for token in range(len_query):
                 hx, cx = self.lstm(seq[token], (hx, cx))
                 output.append(hx)
             out = torch.mean(torch.stack(output),0)
             batch_output.append(out)
         total = torch.stack(batch_output)
         final_output = self.W_o(total).squeeze(1)
-        print("final_output: ", final_output.size())
         return final_output
 
