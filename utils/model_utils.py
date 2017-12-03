@@ -3,6 +3,7 @@ import torch.autograd as autograd
 import torch.nn.functional as F
 import torch.nn as nn
 import sys
+import numpy as np
 from os.path import dirname, realpath
 sys.path.append(dirname(dirname(realpath(__file__))))
 import utils.misc_utils as misc_utils
@@ -116,28 +117,87 @@ class CNN(AbstractAskUbuntuModel):
         tanh_x = self.tanh(post_dropout)
         pooled = self.pooling(tanh_x)
         output = pooled.squeeze(2)
+        print("output: ", output.size())
         return output
         
 
 class LSTM(AbstractAskUbuntuModel):
 
-    def __init__(self, embeddings, args):
-        super(LSTM, self).__init__(embeddings, args)
-        vocab_size, embed_dim = embeddings.shape
-        self.num_layers = 1
-        self.hidden = self.init_hidden()
-        self.lstm = nn.LSTM(embed_dim, self.lstm_hidden_dim)
-        self.W_o = nn.Linear(embed_dim, self.hidden_dim)
-        self.pooling = torch.nn.AvgPool1d(args.len_query)
+    # def __init__(self, embeddings, args):
+    #     super(LSTM, self).__init__(embeddings, args)
+    #     vocab_size, embed_dim = embeddings.shape
+    #     self.num_layers = 1
+    #     self.hidden = self.init_hidden()
+    #     self.lstm = nn.LSTM(embed_dim, self.lstm_hidden_dim)
+    #     self.W_o = nn.Linear(embed_dim*self.lstm_hidden_dim/2, self.hidden_dim)
+
+    # def init_hidden(self):
+    #     return (autograd.Variable(torch.zeros(self.num_layers, 1, self.lstm_hidden_dim)),
+    #             autograd.Variable(torch.zeros(self.num_layers, 1, self.lstm_hidden_dim)))
+
+    # def forward_helper(self, tensor):
+    #     x = self.embedding_layer(tensor)
+    #     lstm_out, self.hidden = self.lstm(x, self.hidden)
+    #     flattened = lstm_out.view(len(tensor), 1, -1).squeeze(1)
+    #     out = self.W_o(flattened)
+    #     return out
+
+
+
+    # def __init__(self, embeddings, args):
+    #     super(LSTM, self).__init__(embeddings, args)
+    #     vocab_size, embed_dim = embeddings.shape
+    #     len_query = args.len_query
+    #     self.num_layers = 1
+    #     self.lstm = nn.LSTMCell(200, 240)
+
+    # def init_hidden(self):
+    #     return (autograd.Variable(torch.zeros(100, 240)))
+
+    # def init_c(self):
+    #     return (autograd.Variable(torch.zeros(100, 240)))
+
+    # def forward_helper(self, tensor):
+    #     output = []
+    #     x = self.embedding_layer(tensor)
+    #     hx = autograd.Variable(torch.zeros(100, 240))
+    #     cx = autograd.Variable(torch.zeros(100, 240))
+    #     for i in range(len(tensor)):
+    #         hx, cx = self.lstm(x[i], (hx, cx))
+    #         output.append(hx)
+    #     out = torch.mean(torch.stack(output),0)
+    #     print("out: ", out.size())
+    #     return out
+
+    # def __init__(self, embeddings, args):
+    #     super(LSTM, self).__init__(embeddings, args)
+    #     vocab_size, embed_dim = embeddings.shape
+    #     len_query = args.len_query
+    #     self.num_layers = 1
+    #     self.lstm = nn.LSTMCell(200, 240)
+    #     self.W_o = nn.Linear(240, self.hidden_dim)
 
     def init_hidden(self):
-        return (autograd.Variable(torch.zeros(self.num_layers, 1, self.lstm_hidden_dim)),
-                autograd.Variable(torch.zeros(self.num_layers, 1, self.lstm_hidden_dim)))
+        return (autograd.Variable(torch.zeros(100, 240)))
+
+    def init_c(self):
+        return (autograd.Variable(torch.zeros(100, 240)))
 
     def forward_helper(self, tensor):
         x = self.embedding_layer(tensor)
-        lstm_out, self.hidden = self.lstm(x, self.hidden)
-        pooled = self.pooling(lstm_out)
-        flattened = pooled.view(len(tensor), 1, -1).squeeze(1)
-        out = self.W_o(flattened)
-        return out
+        hx = autograd.Variable(torch.zeros(1, 240))
+        cx = autograd.Variable(torch.zeros(1, 240))
+        batch_output = []
+        for i in range(len(tensor)):
+            seq = x[i]
+            output = []
+            for token in range(100):
+                hx, cx = self.lstm(seq[token], (hx, cx))
+                output.append(hx)
+            out = torch.mean(torch.stack(output),0)
+            batch_output.append(out)
+        total = torch.stack(batch_output)
+        final_output = self.W_o(total).squeeze(1)
+        print("final_output: ", final_output.size())
+        return final_output
+
