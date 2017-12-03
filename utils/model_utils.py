@@ -172,7 +172,7 @@ class LSTM(AbstractAskUbuntuModel):
     def __init__(self, embeddings, args):
         super(LSTM, self).__init__(embeddings, args)
         vocab_size, embed_dim = embeddings.shape # embed_dim = 200
-        len_query = args.len_query
+        self.len_query = args.len_query
         self.num_layers = 1
         self.lstm = nn.LSTMCell(embed_dim, self.lstm_hidden_dim)
         self.W_o = nn.Linear(self.lstm_hidden_dim, self.hidden_dim)
@@ -185,7 +185,7 @@ class LSTM(AbstractAskUbuntuModel):
         for i in range(len(tensor)):
             seq = x[i]
             output = []
-            for token in range(len_query):
+            for token in range(self.len_query):
                 hx, cx = self.lstm(seq[token], (hx, cx))
                 output.append(hx)
             out = torch.mean(torch.stack(output),0)
