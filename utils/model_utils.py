@@ -125,11 +125,10 @@ class LSTM(AbstractAskUbuntuModel):
         super(LSTM, self).__init__(embeddings, args)
         vocab_size, embed_dim = embeddings.shape
         self.num_layers = 1
-        self.batch_size = args.batch_size
-
         self.hidden = self.init_hidden()
-        self.lstm = nn.LSTM(embed_dim*args.len_query, self.lstm_hidden_dim)
-        self.W_o = nn.Linear(self.lstm_hidden_dim, self.hidden_dim)
+        self.lstm = nn.LSTM(embed_dim, self.lstm_hidden_dim)
+        self.W_o = nn.Linear(embed_dim, self.hidden_dim)
+        self.pooling = torch.nn.AvgPool1d(args.len_query)
 
     def init_hidden(self):
         return (autograd.Variable(torch.zeros(self.num_layers, 1, self.lstm_hidden_dim)),
@@ -137,7 +136,8 @@ class LSTM(AbstractAskUbuntuModel):
 
     def forward_helper(self, tensor):
         x = self.embedding_layer(tensor)
-        flattened_inputs = x.view(len(tensor), 1, -1)
-        lstm_out, self.hidden = self.lstm(flattened_inputs, self.hidden)
-        out = self.W_o(lstm_out.view(len(tensor), -1))
+        lstm_out, self.hidden = self.lstm(x, self.hidden)
+        pooled = self.pooling(lstm_out)
+        flattened = pooled.view(len(tensor), 1, -1).squeeze(1)
+        out = self.W_o(flattened)
         return out
