@@ -169,13 +169,13 @@ class LSTM(AbstractAskUbuntuModel):
     #     print("out: ", out.size())
     #     return out
 
-    # def __init__(self, embeddings, args):
-    #     super(LSTM, self).__init__(embeddings, args)
-    #     vocab_size, embed_dim = embeddings.shape
-    #     len_query = args.len_query
-    #     self.num_layers = 1
-    #     self.lstm = nn.LSTMCell(200, 240)
-    #     self.W_o = nn.Linear(240, self.hidden_dim)
+    def __init__(self, embeddings, args):
+        super(LSTM, self).__init__(embeddings, args)
+        vocab_size, embed_dim = embeddings.shape
+        len_query = args.len_query
+        self.num_layers = 1
+        self.lstm = nn.LSTMCell(200, 240)
+        self.W_o = nn.Linear(240, self.hidden_dim)
 
     def init_hidden(self):
         return (autograd.Variable(torch.zeros(100, 240)))
