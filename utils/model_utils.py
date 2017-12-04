@@ -36,7 +36,6 @@ class AbstractAskUbuntuModel(nn.Module):
         self.embedding_layer.requires_grad = False
 
         self.hidden_dim = args.hidden_dim
-        self.lstm_hidden_dim = args.lstm_hidden_dim
         return
 
     def forward(self, q_title_tensors, q_body_tensors, candidate_title_tensors, candidate_body_tensors):
@@ -117,83 +116,54 @@ class CNN(AbstractAskUbuntuModel):
         tanh_x = self.tanh(post_dropout)
         pooled = self.pooling(tanh_x)
         output = pooled.squeeze(2)
-        # print("output: ", output.size())
+        print("output: ", output.size())
         return output
         
 
 class LSTM(AbstractAskUbuntuModel):
 
-    # def __init__(self, embeddings, args):
-    #     super(LSTM, self).__init__(embeddings, args)
-    #     vocab_size, embed_dim = embeddings.shape
-    #     self.num_layers = 1
-    #     self.hidden = self.init_hidden()
-    #     self.lstm = nn.LSTM(embed_dim, self.lstm_hidden_dim)
-    #     self.W_o = nn.Linear(embed_dim*self.lstm_hidden_dim/2, self.hidden_dim)
-
-    # def init_hidden(self):
-    #     return (autograd.Variable(torch.zeros(self.num_layers, 1, self.lstm_hidden_dim)),
-    #             autograd.Variable(torch.zeros(self.num_layers, 1, self.lstm_hidden_dim)))
-
-    # def forward_helper(self, tensor):
-    #     x = self.embedding_layer(tensor)
-    #     lstm_out, self.hidden = self.lstm(x, self.hidden)
-    #     flattened = lstm_out.view(len(tensor), 1, -1).squeeze(1)
-    #     out = self.W_o(flattened)
-    #     return out
-
-
-
-    # def __init__(self, embeddings, args):
-    #     super(LSTM, self).__init__(embeddings, args)
-    #     vocab_size, embed_dim = embeddings.shape
-    #     len_query = args.len_query
-    #     self.num_layers = 1
-    #     self.lstm = nn.LSTMCell(200, 240)
-
-    # def init_hidden(self):
-    #     return (autograd.Variable(torch.zeros(100, 240)))
-
-    # def init_c(self):
-    #     return (autograd.Variable(torch.zeros(100, 240)))
-
-    # def forward_helper(self, tensor):
-    #     output = []
-    #     x = self.embedding_layer(tensor)
-    #     hx = autograd.Variable(torch.zeros(100, 240))
-    #     cx = autograd.Variable(torch.zeros(100, 240))
-    #     for i in range(len(tensor)):
-    #         hx, cx = self.lstm(x[i], (hx, cx))
-    #         output.append(hx)
-    #     out = torch.mean(torch.stack(output),0)
-    #     print("out: ", out.size())
-    #     return out
-
     def __init__(self, embeddings, args):
         super(LSTM, self).__init__(embeddings, args)
-        vocab_size, embed_dim = embeddings.shape # embed_dim = 200
-        self.len_query = args.len_query
+        vocab_size, embed_dim = embeddings.shape
         self.num_layers = 1
-        self.lstm = nn.LSTMCell(embed_dim, self.lstm_hidden_dim)
-        self.W_o = nn.Linear(self.lstm_hidden_dim, self.hidden_dim)
+        self.hidden = self.init_hidden()
+        self.lstm = nn.LSTM(embed_dim, self.hidden_dim)
+
+    def init_hidden(self):
+        return (autograd.Variable(torch.zeros(self.num_layers, 1, self.hidden_dim)),
+                autograd.Variable(torch.zeros(self.num_layers, 1, self.hidden_dim)))
 
     def forward_helper(self, tensor):
         x = self.embedding_layer(tensor)
-        hx = autograd.Variable(torch.zeros(1, self.lstm_hidden_dim))
-        cx = autograd.Variable(torch.zeros(1, self.lstm_hidden_dim))
-        if self.args.cuda:
-            hx = hx.cuda()
-            cx = cx.cuda()
-        batch_output = []
-        for i in range(len(tensor)):
-            seq = x[i]
-            output = []
-            for token in range(self.len_query):
-                hx, cx = self.lstm(seq[token], (hx, cx))
-                output.append(hx)
-            out = torch.mean(torch.stack(output),0)
-            batch_output.append(out)
-        total = torch.stack(batch_output)
-        final_output = self.W_o(total).squeeze(1)
-        return final_output
+        lstm_out, self.hidden = self.lstm(x, self.hidden)
+        out = torch.mean(lstm_out, 1)
+        return out
+
+    # def __init__(self, embeddings, args):
+    #     super(LSTM, self).__init__(embeddings, args)
+    #     vocab_size, embed_dim = embeddings.shape # embed_dim = 200
+    #     self.len_query = args.len_query
+    #     self.num_layers = 1
+    #     self.lstm = nn.LSTMCell(embed_dim, self.lstm_hidden_dim)
+    #     self.W_o = nn.Linear(self.lstm_hidden_dim, self.hidden_dim)
+
+    # def forward_helper(self, tensor):
+    #     x = self.embedding_layer(tensor)
+    #     hx = autograd.Variable(torch.zeros(1, self.lstm_hidden_dim))
+    #     cx = autograd.Variable(torch.zeros(1, self.lstm_hidden_dim))
+    #     if self.args.cuda:
+    #         hx = hx.cuda()
+    #         cx = cx.cuda()
+    #     batch_output = []
+    #     for i in range(len(tensor)):
+    #         seq = x[i]
+    #         output = []
+    #         for token in range(self.len_query):
+    #             hx, cx = self.lstm(seq[token], (hx, cx))
+    #             output.append(hx)
+    #         out = torch.mean(torch.stack(output),0)
+    #         batch_output.append(out)
+    #     total = torch.stack(batch_output)
+    #     final_output = self.W_o(total).squeeze(1)
+    #     return final_output
 
