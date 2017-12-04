@@ -5,6 +5,7 @@ sys.path.append(dirname(dirname(realpath(__file__))))
 import utils.ubuntu_data_utils as data_utils
 import utils.train_utils as train_utils
 import utils.model_utils as model_utils
+import utils.evaluation_utils as evaluation_utils
 import torch
 import numpy as np
 
@@ -70,3 +71,6 @@ if __name__ == '__main__':
     # train
     if args.train :
         train_utils.train_model(train_data, dev_data, model, args)
+
+    if args.eval:
+        evaluation_utils.evaluate_model(dev_data, model, args)
