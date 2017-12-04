@@ -117,7 +117,7 @@ class CNN(AbstractAskUbuntuModel):
         tanh_x = self.tanh(post_dropout)
         pooled = self.pooling(tanh_x)
         output = pooled.squeeze(2)
-        print("output: ", output.size())
+        # print("output: ", output.size())
         return output
         
 
