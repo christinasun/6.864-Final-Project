@@ -28,6 +28,7 @@ if __name__ == '__main__':
     # device
     parser.add_argument('--cuda', action='store_true', default=False, help='enable the gpu')
     parser.add_argument('--train', action='store_true', default=False, help='enable train')
+    parser.add_argument('--eval', action='store_true', default=False, help='enable eval')
     # task
     parser.add_argument('--snapshot', type=str, default=None, help='filename of model snapshot to load[default: None]')
     parser.add_argument('--save_path', type=str, default="model.pt", help='Path where to dump model')
