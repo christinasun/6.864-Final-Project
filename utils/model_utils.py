@@ -182,8 +182,8 @@ class LSTM(AbstractAskUbuntuModel):
         hx = autograd.Variable(torch.zeros(1, self.lstm_hidden_dim))
         cx = autograd.Variable(torch.zeros(1, self.lstm_hidden_dim))
         if self.args.cuda:
-            hx = hx.cuda
-            cx = cx.cuda
+            hx = hx.cuda()
+            cx = cx.cuda()
         batch_output = []
         for i in range(len(tensor)):
             seq = x[i]
