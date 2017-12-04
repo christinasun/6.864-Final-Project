@@ -95,7 +95,7 @@ def run_epoch(data, is_training, model, optimizer, args):
 
         cosine_similarities = model(q_title_tensors, q_body_tensors, selected_candidate_title_tensors, selected_candidate_body_tensors)
         if args.debug: misc_utils.print_shape_variable('cosine_similarities', cosine_similarities)
-
+        print "cosine_similarities: {}".format(cosine_similarities)
 
         loss = loss_function(cosine_similarities, targets)
 
