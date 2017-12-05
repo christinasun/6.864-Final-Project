@@ -114,7 +114,6 @@ class CNN(AbstractAskUbuntuModel):
         self.pooling = 'mean'
 
     def forward_helper(self, tensor):
-        # if self.args.debug: misc_utils.print_shape_variable('tensor',tensor)
         mask = (tensor != 0)
         if self.args.cuda:
             mask = mask.type(torch.cuda.FloatTensor)
@@ -123,39 +122,25 @@ class CNN(AbstractAskUbuntuModel):
 
         if self.pooling == 'mean':
             lengths = torch.sum(mask,1)
-            # if self.args.debug: misc_utils.print_shape_variable('lengths', lengths)
-            # if self.args.debug: print lengths
             lengths = torch.unsqueeze(lengths,1)
             lengths = lengths.expand(tensor.data.shape)
-            # if self.args.debug: misc_utils.print_shape_variable('lengths', lengths)
             mask = torch.div(mask,lengths)
 
-        # if self.args.debug: print "mask: {}".format(mask)
         x = self.embedding_layer(tensor) # (batch size, width (length of text), height (embedding dim))
-        # if self.args.debug: misc_utils.print_shape_variable('x',x)
         x_perm = x.permute(0,2,1)
-        # if self.args.debug: misc_utils.print_shape_variable('x_perm',x_perm)
         hiddens = self.conv(x_perm)
-        # if self.args.debug: misc_utils.print_shape_variable('hiddens',hiddens)
         post_dropout = self.dropout(hiddens)
-        # if self.args.debug: misc_utils.print_shape_variable('post_dropout', post_dropout)
         tanh_x = self.tanh(post_dropout)
-        # if self.args.debug: misc_utils.print_shape_variable('tanh_x', tanh_x)
         tanh_x_cropped = tanh_x[:,:,:self.args.len_query]
-        # if self.args.debug: misc_utils.print_shape_variable('tanh_x_cropped', tanh_x_cropped)
 
         N, hd, co =  tanh_x_cropped.data.shape
         mask = torch.unsqueeze(mask,1)
-        # if self.args.debug: misc_utils.print_shape_variable('mask', mask)
         expanded_mask = mask.expand(N, hd, co)
-        # if self.args.debug: misc_utils.print_shape_variable('expanded_mask', expanded_mask)
 
         masked = torch.mul(expanded_mask,tanh_x_cropped)
-        # if self.args.debug: misc_utils.print_shape_variable('masked', masked)
 
         if self.pooling == 'mean':
             summed = torch.sum(masked, dim=2)
-            # if self.args.debug: misc_utils.print_shape_variable('summed', summed)
             output = summed
         elif self.pooling == 'max':
             raise Exception("Pooling method {} not implemented".format(self.pooling))
@@ -194,7 +179,7 @@ class LSTM(AbstractAskUbuntuModel):
             lengths = torch.unsqueeze(lengths,1)
             lengths = lengths.expand(tensor.data.shape)
             mask = torch.div(mask,lengths)
-            mask = torch.unsqueeze(mask,2)
+            mask = torch.unsqueeze(mask,1)
 
         x = self.embedding_layer(tensor)
         self.hidden = self.init_hidden()
