@@ -179,7 +179,7 @@ class LSTM(AbstractAskUbuntuModel):
             lengths = torch.unsqueeze(lengths,1)
             lengths = lengths.expand(tensor.data.shape)
             mask = torch.div(mask,lengths)
-            mask = torch.unsqueeze(mask,1)
+            mask = torch.unsqueeze(mask,2)
 
         x = self.embedding_layer(tensor)
         self.hidden = self.init_hidden()
