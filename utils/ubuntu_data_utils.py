@@ -47,35 +47,24 @@ class AskUbuntuDataset(data.Dataset):
         # adds samples to dataset for each training example
         # each training example generates multiple samples
         qid, similar_qids, random_qids = example
-        qid_tensors_all = map(self.get_indices_tensor, self.data_dict[qid])
-        qid_tensors, qid_tensors_length = zip(*qid_tensors_all)
+        qid_tensors = map(self.get_indices_tensor, self.data_dict[qid])
 
-        random_candidate_tensors_all = [map(self.get_indices_tensor,self.data_dict[cqid]) for cqid in random_qids]
-        random_candidate_tensors = [zip(*rct)[0] for rct in random_candidate_tensors_all]
-        random_candidate_tensors_length = [zip(*rct)[1] for rct in random_candidate_tensors_all]
+        random_candidate_tensors = [map(self.get_indices_tensor,self.data_dict[cqid]) for cqid in random_qids]
         random_candidate_title_tensors, random_candidate_body_tensors = zip(*random_candidate_tensors)
-        random_candidate_title_tensors_length, random_candidate_body_tensors_length = zip(*random_candidate_tensors_length)
         random_candidate_title_tensors = list(random_candidate_title_tensors)
         random_candidate_body_tensors = list(random_candidate_body_tensors)
-        random_candidate_title_tensors_length = list(random_candidate_title_tensors_length)
-        random_candidate_body_tensors_length = list(random_candidate_body_tensors_length)
 
 
         for similar_qid in similar_qids:
             candidates = [similar_qid] + random_qids
-            similar_qid_tensors_all = map(self.get_indices_tensor, self.data_dict[similar_qid])
-            similar_qid_tensors, similar_qid_tensors_length = zip(*similar_qid_tensors_all)
+            similar_qid_tensors = map(self.get_indices_tensor, self.data_dict[similar_qid])
 
             sample = {'qid': qid,
                       'candidates': candidates,
                       'qid_title_tensor': qid_tensors[0],
-                      'qid_title_tensor_length': qid_tensors_length[0],
                       'qid_body_tensor': qid_tensors[1],
-                      'qid_body_tensor_length': qid_tensors_length[1],
                       'candidate_title_tensors': [similar_qid_tensors[0]] + random_candidate_title_tensors,
-                      'candidate_title_tensors_length': [similar_qid_tensors_length[0]] + random_candidate_title_tensors_length,
-                      'candidate_body_tensors': [similar_qid_tensors[1]] + random_candidate_body_tensors,
-                      'candidate_body_tensors_length': [similar_qid_tensors_length[1]] + random_candidate_body_tensors_length
+                      'candidate_body_tensors': [similar_qid_tensors[1]] + random_candidate_body_tensors
                       }
             self.dataset.append(sample)
         return
@@ -84,19 +73,12 @@ class AskUbuntuDataset(data.Dataset):
         # adds samples to dataset for each training example
         # each training example generates multiple samples
         qid, similar_qids, candidate_qids, BM25_scores  = example
-        qid_tensors_all = map(self.get_indices_tensor, self.data_dict[qid])
-        qid_tensors, qid_tensors_length = zip(*qid_tensors_all)
+        qid_tensors = map(self.get_indices_tensor, self.data_dict[qid])
 
-        candidate_tensors_all = [map(self.get_indices_tensor,self.data_dict[cqid]) for cqid in candidate_qids]
-        candidate_tensors = [zip(*ct)[0] for ct in candidate_tensors_all]
-        candidate_tensors_length = [zip(*ct)[1] for ct in candidate_tensors_all]
-
+        candidate_tensors = [map(self.get_indices_tensor,self.data_dict[cqid]) for cqid in candidate_qids]
         candidate_title_tensors, candidate_body_tensors = zip(*candidate_tensors)
-        candidate_title_tensors_length, candidate_body_tensors_length = zip(*candidate_tensors_length)
         candidate_title_tensors = list(candidate_title_tensors)
         candidate_body_tensors = list(candidate_body_tensors)
-        candidate_title_tensors_length = list(candidate_title_tensors_length)
-        candidate_body_tensors_length = list(candidate_body_tensors_length)
 
         labels = [1 if cqid in similar_qids else 0 for cqid in candidate_qids]
 
@@ -106,17 +88,12 @@ class AskUbuntuDataset(data.Dataset):
              'similar_qids': similar_qids,
              'candidates': candidate_qids,
              'qid_title_tensor': qid_tensors[0],
-             'qid_title_tensor_length': qid_tensors_length[0],
              'qid_body_tensor': qid_tensors[1],
-             'qid_body_tensor_length': qid_tensors_length[1],
              'candidate_title_tensors': candidate_title_tensors,
-             'candidate_title_tensors_length': candidate_title_tensors_length,
              'candidate_body_tensors': candidate_body_tensors,
-             'candidate_body_tensors_length': candidate_body_tensors_length,
              'BM25_scores': BM25_scores,
              'labels': labels
              }
-
         self.dataset.append(sample)
         return
 
@@ -131,11 +108,10 @@ class AskUbuntuDataset(data.Dataset):
         nil_indx = 0
         unk_indx = 1
         text_indx = [self.word_to_indx[x.lower()] if x.lower() in self.word_to_indx else unk_indx for x in text_arr.split()][:self.max_length]
-        l = len(text_indx)
-        if l < self.max_length:
-            text_indx.extend( [nil_indx for _ in range(self.max_length - l)])
+        if len(text_indx) < self.max_length:
+            text_indx.extend( [nil_indx for _ in range(self.max_length - len(text_indx))])
         x =  torch.LongTensor(text_indx)
-        return x, l
+        return x
 
 
 def get_embeddings_tensor():

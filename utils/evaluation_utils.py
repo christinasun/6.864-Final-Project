@@ -23,13 +23,9 @@ def evaluate_model(dev_data, model, args):
 
         q_title_tensors = autograd.Variable(batch['qid_title_tensor'])
         q_body_tensors = autograd.Variable(batch['qid_body_tensor'])
-        q_title_lengths = batch['qid_title_tensor_length']
-        q_body_lengths = batch['qid_body_tensor_length']
+
         candidate_title_tensors = autograd.Variable(torch.stack(batch['candidate_title_tensors']))
         candidate_body_tensors = autograd.Variable(torch.stack(batch['candidate_body_tensors']))
-        candidate_title_lengths = torch.stack(batch['candidate_title_tensors_length'])
-        candidate_body_lengths = torch.stack(batch['candidate_body_tensors_length'])
-
 
         labels = torch.stack(batch['labels'],dim=1)
         labels = labels.numpy()
