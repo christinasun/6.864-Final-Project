@@ -171,44 +171,35 @@ class LSTM(AbstractAskUbuntuModel):
         vocab_size, embed_dim = embeddings.shape
         self.num_layers = 1
         self.hidden = self.init_hidden()
-        self.lstm = nn.LSTM(embed_dim, self.hidden_dim)
+        self.lstm = nn.LSTM(embed_dim, self.hidden_dim//2, bidirectional=True)
+        self.pooling = 'mean'
 
     def init_hidden(self):
-        return (autograd.Variable(torch.zeros(self.num_layers, 1, self.hidden_dim)),
-                autograd.Variable(torch.zeros(self.num_layers, 1, self.hidden_dim)))
+        return (autograd.Variable(torch.zeros(2, 1, self.hidden_dim//2)),
+                autograd.Variable(torch.zeros(2, 1, self.hidden_dim//2)))
 
     def forward_helper(self, tensor):
+        mask = (tensor != 0)
+        if self.args.cuda:
+            mask = mask.type(torch.cuda.FloatTensor)
+        else:
+            mask = mask.type(torch.FloatTensor)
+
+        if self.pooling == 'mean':
+            lengths = torch.sum(mask,1)
+            lengths = torch.unsqueeze(lengths,1)
+            lengths = lengths.expand(tensor.data.shape)
+            mask = torch.div(mask,lengths)
+            mask = torch.unsqueeze(mask,2)
+
         x = self.embedding_layer(tensor)
+        self.hidden = self.init_hidden()
         lstm_out, self.hidden = self.lstm(x, self.hidden)
-        out = torch.mean(lstm_out, 1)
+
+        N, hd, co =  lstm_out.data.shape
+        expanded_mask = mask.expand(N, hd, co)
+        masked = torch.mul(expanded_mask,lstm_out)
+        out = torch.sum(masked,1)
+
         return out
-
-
-    # def __init__(self, embeddings, args):
-    #     super(LSTM, self).__init__(embeddings, args)
-    #     vocab_size, embed_dim = embeddings.shape # embed_dim = 200
-    #     self.len_query = args.len_query
-    #     self.num_layers = 1
-    #     self.lstm = nn.LSTMCell(embed_dim, self.lstm_hidden_dim)
-    #     self.W_o = nn.Linear(self.lstm_hidden_dim, self.hidden_dim)
-
-    # def forward_helper(self, tensor):
-    #     x = self.embedding_layer(tensor)
-    #     hx = autograd.Variable(torch.zeros(1, self.lstm_hidden_dim))
-    #     cx = autograd.Variable(torch.zeros(1, self.lstm_hidden_dim))
-    #     if self.args.cuda:
-    #         hx = hx.cuda()
-    #         cx = cx.cuda()
-    #     batch_output = []
-    #     for i in range(len(tensor)):
-    #         seq = x[i]
-    #         output = []
-    #         for token in range(self.len_query):
-    #             hx, cx = self.lstm(seq[token], (hx, cx))
-    #             output.append(hx)
-    #         out = torch.mean(torch.stack(output),0)
-    #         batch_output.append(out)
-    #     total = torch.stack(batch_output)
-    #     final_output = self.W_o(total).squeeze(1)
-    #     return final_output
 
