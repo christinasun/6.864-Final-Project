@@ -39,10 +39,14 @@ class AbstractAskUbuntuModel(nn.Module):
         self.hidden_dim = args.hidden_dim
         return
 
-    def forward(self, q_title_tensors, q_body_tensors, candidate_title_tensors, candidate_body_tensors):
-        q_title_embeddings = self.forward_helper(q_title_tensors,10 * np.ones(self.args.batch_size,dtype=np.long))
+    def forward(self,
+                q_title_tensors, q_title_lengths,
+                q_body_tensors, q_body_lengths,
+                candidate_title_tensors, candidate_title_lengths,
+                candidate_body_tensors, candidate_body_lengths):
+        q_title_embeddings = self.forward_helper(q_title_tensors, q_title_lengths)
         # if self.args.debug: misc_utils.print_shape_variable('q_title_embeddings', q_title_embeddings)
-        q_body_embeddings = self.forward_helper(q_body_tensors)
+        q_body_embeddings = self.forward_helper(q_body_tensors, q_body_lengths)
         # if self.args.debug: misc_utils.print_shape_variable('q_body_embeddings', q_body_embeddings)
         q_output_before_mean = torch.stack([q_title_embeddings, q_body_embeddings])
         # if self.args.debug: misc_utils.print_shape_variable('q_output_before_mean', q_output_before_mean)
@@ -51,12 +55,14 @@ class AbstractAskUbuntuModel(nn.Module):
 
         num_candidates, d2, d3 = candidate_title_tensors.size()
 
-        title_embeddings = self.forward_helper(candidate_title_tensors.view(num_candidates*d2,d3))
-        # if self.args.debug: misc_utils.print_shape_variable('title_embeddings', title_embeddings)
-        body_embeddings = self.forward_helper(candidate_body_tensors.view(num_candidates*d2,d3))
-        # if self.args.debug: misc_utils.print_shape_variable('body_embeddings', body_embeddings)
+        title_embeddings = self.forward_helper(candidate_title_tensors.view(num_candidates*d2,d3),
+                                               candidate_title_lengths.view(num_candidates*d2))
+        if self.args.debug: misc_utils.print_shape_variable('title_embeddings', title_embeddings)
+        body_embeddings = self.forward_helper(candidate_body_tensors.view(num_candidates*d2,d3),
+                                              candidate_body_lengths.view(num_candidates*d2))
+        if self.args.debug: misc_utils.print_shape_variable('body_embeddings', body_embeddings)
         candidate_outputs_before_mean = torch.stack([title_embeddings, body_embeddings])
-        # if self.args.debug: misc_utils.print_shape_variable('candidate_outputs_before_mean', candidate_outputs_before_mean)
+        if self.args.debug: misc_utils.print_shape_variable('candidate_outputs_before_mean', candidate_outputs_before_mean)
         candidate_outputs = torch.mean(candidate_outputs_before_mean, dim=0)
         # if self.args.debug: misc_utils.print_shape_variable('candidate_outputs', candidate_outputs)
 
@@ -110,7 +116,6 @@ class CNN(AbstractAskUbuntuModel):
         self.pooling = 'mean'
 
     def forward_helper(self, tensor, lengths):
-        print lengths
         if self.args.debug: misc_utils.print_shape_variable('tensor',tensor)
         x = self.embedding_layer(tensor) # (batch size, width (length of text), height (embedding dim))
         if self.args.debug: misc_utils.print_shape_variable('x',x)
@@ -122,7 +127,6 @@ class CNN(AbstractAskUbuntuModel):
         if self.args.debug: misc_utils.print_shape_variable('post_dropout', post_dropout)
         tanh_x = self.tanh(post_dropout)
         if self.args.debug: misc_utils.print_shape_variable('tanh_x', tanh_x)
-        if self.args.debug: print tanh_x
 
         N, hd, co =  tanh_x.data.shape
 

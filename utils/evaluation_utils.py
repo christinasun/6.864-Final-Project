@@ -21,8 +21,13 @@ def evaluate_model(dev_data, model, args):
 
         q_title_tensors = autograd.Variable(batch['qid_title_tensor'])
         q_body_tensors = autograd.Variable(batch['qid_body_tensor'])
+        q_title_lengths = batch['qid_title_tensor_length']
+        q_body_lengths = batch['qid_body_tensor_length']
         candidate_title_tensors = autograd.Variable(torch.stack(batch['candidate_title_tensors']))
         candidate_body_tensors = autograd.Variable(torch.stack(batch['candidate_body_tensors']))
+        candidate_title_lengths = torch.stack(batch['candidate_title_tensors_length'])
+        candidate_body_lengths = torch.stack(batch['candidate_body_tensors_length'])
+
 
         labels = torch.stack(batch['labels'],dim=1)
         labels = labels.numpy()
@@ -33,7 +38,10 @@ def evaluate_model(dev_data, model, args):
             candidate_title_tensors = candidate_title_tensors.cuda()
             candidate_body_tensors = candidate_body_tensors.cuda()
 
-        cosine_similarities = model(q_title_tensors, q_body_tensors, candidate_title_tensors, candidate_body_tensors)
+        cosine_similarities = model(q_title_tensors, q_title_lengths,
+                                    q_body_tensors, q_body_lengths,
+                                    candidate_title_tensors, candidate_title_lengths,
+                                    candidate_body_tensors, candidate_body_lengths)
         np_cosine_similarities = cosine_similarities.data.cpu().numpy()
 
 

@@ -27,7 +27,7 @@ def train_model(train_data, dev_data, model, args):
 
         loss = run_epoch(train_data, True, model, optimizer, args)
 
-        print 'Train MSE loss: {:.6f}\n'.format(loss)
+        print 'Train Multi-margin loss: {:.6f}\n'.format(loss)
 
         eval_utils.evaluate_model(dev_data, model, args)
 
@@ -59,25 +59,45 @@ def run_epoch(data, is_training, model, optimizer, args):
         q_title_tensors = autograd.Variable(batch['qid_title_tensor'])
         q_body_tensors = autograd.Variable(batch['qid_body_tensor'])
 
+        q_title_lengths = batch['qid_title_tensor_length']
+        if args.debug: print 'q_title_lengths: {}'.format(q_title_lengths)
+        q_body_lengths = batch['qid_body_tensor_length']
+        if args.debug: print 'q_body_lengths: {}'.format(q_body_lengths)
+
+
         candidate_title_tensors = torch.stack(batch['candidate_title_tensors'])
         candidate_body_tensors = torch.stack(batch['candidate_body_tensors'])
+
+        candidate_title_lengths = torch.stack(batch['candidate_title_tensors_length'])
+        if args.debug: print 'candidate_title_lengths: {}'.format(candidate_title_lengths)
+        candidate_body_lengths = torch.stack(batch['candidate_body_tensors_length'])
+        if args.debug: print 'candidate_body_lengths: {}'.format(candidate_body_lengths)
+
         if args.debug: misc_utils.print_shape_tensor('candidate_body_tensors', candidate_body_tensors)
+
 
         # Generate random sampling of negative examples
         # We do - 1 because candidate_title_tensors includes the title tensor for the query itself (at position 0)
         num_available_candidates = candidate_title_tensors.shape[0] - 1
         num_negative = min(num_available_candidates, args.num_negative)
-        inds = np.zeros((num_negative + 1, args.batch_size, args.len_query),dtype=np.long)
+        inds3d = np.zeros((num_negative + 1, args.batch_size, args.len_query),dtype=np.long)
+        inds2d = np.zeros((num_negative + 1, args.batch_size),dtype=np.long)
         for i in xrange(args.batch_size):
             # we do + 1 so we are only choosing among the negative examples (0 is reserved for the query itself)
-            random_sample = np.expand_dims(np.random.choice(num_available_candidates, num_negative) + 1,1)
-            inds[1:,i,:] = random_sample.repeat(args.len_query, 1)
-        inds = torch.LongTensor(inds)
+            random_sample = np.random.choice(num_available_candidates, num_negative) + 1
+            random_sample3d = np.expand_dims(random_sample,1)
+            inds3d[1:,i,:] = random_sample3d.repeat(args.len_query, 1)
+            inds2d[1:,i] = random_sample
+        inds3d = torch.LongTensor(inds3d)
+        inds2d = torch.LongTensor(inds2d)
 
 
-        selected_candidate_title_tensors = autograd.Variable(candidate_title_tensors.gather(0,inds))
-        selected_candidate_body_tensors = autograd.Variable(candidate_body_tensors.gather(0,inds))
+        selected_candidate_title_tensors = autograd.Variable(candidate_title_tensors.gather(0,inds3d))
+        selected_candidate_body_tensors = autograd.Variable(candidate_body_tensors.gather(0,inds3d))
+        selected_candidate_title_lengths = candidate_title_lengths.gather(0,inds2d)
+        selected_candidate_body_lengths = candidate_body_lengths.gather(0,inds2d)
         if args.debug: misc_utils.print_shape_variable('selected_candidate_body_tensors', selected_candidate_body_tensors)
+        if args.debug: misc_utils.print_shape_tensor('selected_candidate_body_lengths', selected_candidate_body_lengths)
 
 
         targets = autograd.Variable(torch.LongTensor([0]*args.batch_size))
@@ -93,7 +113,10 @@ def run_epoch(data, is_training, model, optimizer, args):
         if is_training:
             optimizer.zero_grad()
 
-        cosine_similarities = model(q_title_tensors, q_body_tensors, selected_candidate_title_tensors, selected_candidate_body_tensors)
+        cosine_similarities = model(q_title_tensors, q_title_lengths,
+                                    q_body_tensors, q_body_lengths,
+                                    selected_candidate_title_tensors, selected_candidate_title_lengths,
+                                    selected_candidate_body_tensors, selected_candidate_body_lengths)
         if args.debug: misc_utils.print_shape_variable('cosine_similarities', cosine_similarities)
         if args.debug: print "cosine_similarities: {}".format(cosine_similarities)
 
