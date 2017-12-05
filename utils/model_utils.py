@@ -135,8 +135,8 @@ class CNN(AbstractAskUbuntuModel):
 
         if self.pooling == 'mean':
             for i in xrange(N):
-                div_by = lengths[i] if lengths[i] != 0 else 1
-                mask[i,:,0:lengths[i]] = 1.0/ div_by
+                if lengths[i] > 0:
+                    mask[i,:,0:lengths[i]] = 1.0/ lengths[i]
             mask = autograd.Variable(mask,requires_grad=False)
             if self.args.cuda:
                 mask = mask.cuda()
