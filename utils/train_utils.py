@@ -52,7 +52,7 @@ def run_epoch(data, is_training, model, optimizer, args):
     else:
         model.eval()
 
-    loss_function = torch.nn.MultiMarginLoss(p=1, margin=1, weight=None, size_average=True)
+    loss_function = torch.nn.MultiMarginLoss(p=1, margin=args.margin, weight=None, size_average=True)
 
     for batch in tqdm(data_loader):
 

@@ -15,6 +15,7 @@ if __name__ == '__main__':
     # learning
     parser.add_argument('--lr', type=float, default=0.001, help='initial learning rate [default: 0.001]')
     parser.add_argument('--dropout', type=float, default=0.2, help='initial learning rate [default: 0.001]')
+    parser.add_argument('--margin', type=float, default=0.5, help='margin size [default: 0.5]')
     parser.add_argument('--epochs', type=int, default=256, help='number of epochs for train [default: 256]')
     parser.add_argument('--batch_size', type=int, default=128, help='batch size for training [default: 128]')
     parser.add_argument('--num_negative', type=int, default=20, help='# negative examples for training [default: 20]')
@@ -35,6 +36,7 @@ if __name__ == '__main__':
     # other
     parser.add_argument('--len_query', type=int, default=100, help='how much of the query body to use [default 100]')
     parser.add_argument('--debug', action='store_true', default=False, help='have print statements')
+    parser.add_argument('--seed', type=int, default=100, help='how much of the query body to use [default 100]')
     args = parser.parse_args()
     # update args and print
     print "\nParameters:"
@@ -47,6 +49,10 @@ if __name__ == '__main__':
     train_data = data_utils.AskUbuntuDataset('train', word_to_indx, max_length=args.len_query, trainning_data_size=args.training_data_size)
     print "Getting Test Data..."
     dev_data = data_utils.AskUbuntuDataset('dev', word_to_indx, max_length=args.len_query)
+
+    torch.manual_seed(args.seed)
+    if args.cuda:
+        torch.cuda.manual_seed(args.seed)
 
     # model
     if args.snapshot is None:

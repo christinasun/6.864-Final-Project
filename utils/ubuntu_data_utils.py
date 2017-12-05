@@ -82,7 +82,6 @@ class AskUbuntuDataset(data.Dataset):
 
         labels = [1 if cqid in similar_qids else 0 for cqid in candidate_qids]
 
-
         sample = \
             {'qid': qid,
              'similar_qids': similar_qids,
