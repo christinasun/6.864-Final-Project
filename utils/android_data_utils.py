@@ -63,7 +63,7 @@ class AndroidDataset(data.Dataset):
             candidates = [similar_qid] + random_qids
             similar_qid_tensors_all = map(self.get_indices_tensor, self.data_dict[similar_qid])
             similar_qid_tensors, similar_qid_tensors_length = zip(*similar_qid_tensors_all)
-            
+
             sample = {'qid': qid,
                       'candidates': candidates,
                       'qid_title_tensor': qid_tensors[0],
@@ -132,6 +132,24 @@ def get_samples(file_name):
             else:
                 samples[int(qid)].append(int(sample))
     return samples
+
+def get_embeddings_tensor():
+    with gzip.open(VECTORS_FILE) as f:
+        content = f.readlines()
+
+    embedding_tensor = []
+    word_to_indx = {}
+    for indx, line in enumerate(content):
+        word, vector_string = line.strip().split(" ", 1)
+        vector = map(float, vector_string.split(" "))
+
+        if indx == 0:
+            embedding_tensor.append(np.zeros(len(vector)))
+        embedding_tensor.append(vector)
+        word_to_indx[word] = indx+1
+
+    embedding_tensor = np.array(embedding_tensor, dtype=np.float32)
+    return embedding_tensor, word_to_indx
 
 embeddings, word_to_indx = ubuntu_data_utils.get_embeddings_tensor()
 android_dev_data = AndroidDataset('dev', word_to_indx, max_length=100)
