@@ -138,7 +138,7 @@ class CNN(AbstractAskUbuntuModel):
                 mask[i,:,0:lengths[i]] = 1.0/lengths[i]
             mask = autograd.Variable(mask,requires_grad=False)
             if self.args.cuda:
-                mask.cuda()
+                mask = mask.cuda()
             if self.args.debug: misc_utils.print_shape_variable('mask', mask)
             masked = torch.mul(mask,tanh_x)
             if self.args.debug: misc_utils.print_shape_variable('masked', masked)

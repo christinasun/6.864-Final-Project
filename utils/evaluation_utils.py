@@ -13,9 +13,11 @@ def evaluate_model(dev_data, model, args):
     N = len(dev_data)
     data_loader = torch.utils.data.DataLoader(
         dev_data,
-        batch_size=N,
+        batch_size=10,
         shuffle=False,
         drop_last=False)
+
+    all_sorted_labels = []
 
     for batch in data_loader:
 
@@ -51,12 +53,15 @@ def evaluate_model(dev_data, model, args):
 
         sorted_labels = labels[np.expand_dims(np.arange(sorted_indices.shape[0]),1), sorted_indices]
         sorted_labels = np.flip(sorted_labels,1)
-        evaluation = Evaluation(sorted_labels)
-        print "Precision@5: {}".format(evaluation.get_precision(5))
-        print "Precision@1: {}".format(evaluation.get_precision(1))
-        print "MAP: {}".format(evaluation.get_MAP())
-        print "MRR: {}".format(evaluation.get_MRR())
-        return
+        all_sorted_labels.append(sorted_labels)
+
+    all_sorted_labels = np.concatenate(all_sorted_labels)
+    evaluation = Evaluation(all_sorted_labels)
+    print "Precision@5: {}".format(evaluation.get_precision(5))
+    print "Precision@1: {}".format(evaluation.get_precision(1))
+    print "MAP: {}".format(evaluation.get_MAP())
+    print "MRR: {}".format(evaluation.get_MRR())
+    return
 
 
 # This was taken from the implementation found at https://github.com/taolei87/rcnn/tree/master/code/qa
