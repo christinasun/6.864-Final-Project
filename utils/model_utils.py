@@ -175,8 +175,12 @@ class LSTM(AbstractAskUbuntuModel):
         self.pooling = 'mean'
 
     def init_hidden(self):
-        return (autograd.Variable(torch.zeros(2, 1, self.hidden_dim//2)),
-                autograd.Variable(torch.zeros(2, 1, self.hidden_dim//2)))
+        h = autograd.Variable(torch.zeros(2, 1, self.hidden_dim//2))
+        c = autograd.Variable(torch.zeros(2, 1, self.hidden_dim//2))
+        if self.args.cuda:
+            h = h.cuda()
+            c = c.cuda()
+        return (h,c)
 
     def forward_helper(self, tensor):
         mask = (tensor != 0)
