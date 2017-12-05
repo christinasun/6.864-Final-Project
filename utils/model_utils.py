@@ -57,12 +57,12 @@ class AbstractAskUbuntuModel(nn.Module):
 
         title_embeddings = self.forward_helper(candidate_title_tensors.view(num_candidates*d2,d3),
                                                candidate_title_lengths.view(num_candidates*d2))
-        if self.args.debug: misc_utils.print_shape_variable('title_embeddings', title_embeddings)
+        # if self.args.debug: misc_utils.print_shape_variable('title_embeddings', title_embeddings)
         body_embeddings = self.forward_helper(candidate_body_tensors.view(num_candidates*d2,d3),
                                               candidate_body_lengths.view(num_candidates*d2))
-        if self.args.debug: misc_utils.print_shape_variable('body_embeddings', body_embeddings)
+        # if self.args.debug: misc_utils.print_shape_variable('body_embeddings', body_embeddings)
         candidate_outputs_before_mean = torch.stack([title_embeddings, body_embeddings])
-        if self.args.debug: misc_utils.print_shape_variable('candidate_outputs_before_mean', candidate_outputs_before_mean)
+        # if self.args.debug: misc_utils.print_shape_variable('candidate_outputs_before_mean', candidate_outputs_before_mean)
         candidate_outputs = torch.mean(candidate_outputs_before_mean, dim=0)
         # if self.args.debug: misc_utils.print_shape_variable('candidate_outputs', candidate_outputs)
 
@@ -116,34 +116,35 @@ class CNN(AbstractAskUbuntuModel):
         self.pooling = 'mean'
 
     def forward_helper(self, tensor, lengths):
-        if self.args.debug: misc_utils.print_shape_variable('tensor',tensor)
+        # if self.args.debug: misc_utils.print_shape_variable('tensor',tensor)
         x = self.embedding_layer(tensor) # (batch size, width (length of text), height (embedding dim))
-        if self.args.debug: misc_utils.print_shape_variable('x',x)
+        # if self.args.debug: misc_utils.print_shape_variable('x',x)
         x_perm = x.permute(0,2,1)
-        if self.args.debug: misc_utils.print_shape_variable('x_perm',x_perm)
+        # if self.args.debug: misc_utils.print_shape_variable('x_perm',x_perm)
         hiddens = self.conv(x_perm)
-        if self.args.debug: misc_utils.print_shape_variable('hiddens',hiddens)
+        # if self.args.debug: misc_utils.print_shape_variable('hiddens',hiddens)
         post_dropout = self.dropout(hiddens)
-        if self.args.debug: misc_utils.print_shape_variable('post_dropout', post_dropout)
+        # if self.args.debug: misc_utils.print_shape_variable('post_dropout', post_dropout)
         tanh_x = self.tanh(post_dropout)
-        if self.args.debug: misc_utils.print_shape_variable('tanh_x', tanh_x)
+        # if self.args.debug: misc_utils.print_shape_variable('tanh_x', tanh_x)
 
         N, hd, co =  tanh_x.data.shape
 
         mask = torch.zeros(N,hd,co)
-        if self.args.debug: misc_utils.print_shape_tensor('mask', mask)
+        # if self.args.debug: misc_utils.print_shape_tensor('mask', mask)
 
         if self.pooling == 'mean':
             for i in xrange(N):
-                mask[i,:,0:lengths[i]] = 1.0/lengths[i]
+                div_by = lengths[i] if lengths[i] != 0 else 1
+                mask[i,:,0:lengths[i]] = 1.0/ div_by
             mask = autograd.Variable(mask,requires_grad=False)
             if self.args.cuda:
                 mask = mask.cuda()
-            if self.args.debug: misc_utils.print_shape_variable('mask', mask)
+            # if self.args.debug: misc_utils.print_shape_variable('mask', mask)
             masked = torch.mul(mask,tanh_x)
-            if self.args.debug: misc_utils.print_shape_variable('masked', masked)
+            # if self.args.debug: misc_utils.print_shape_variable('masked', masked)
             summed = torch.sum(masked,dim=2)
-            if self.args.debug: misc_utils.print_shape_variable('summed', summed)
+            # if self.args.debug: misc_utils.print_shape_variable('summed', summed)
             output = summed
         else:
             raise Exception("Pooling method {} not implemented".format(self.pooling))
