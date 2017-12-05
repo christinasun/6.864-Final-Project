@@ -113,10 +113,10 @@ def run_epoch(data, is_training, model, optimizer, args):
         if is_training:
             optimizer.zero_grad()
 
-        cosine_similarities = model(q_title_tensors, q_title_lengths,
-                                    q_body_tensors, q_body_lengths,
-                                    selected_candidate_title_tensors, selected_candidate_title_lengths,
-                                    selected_candidate_body_tensors, selected_candidate_body_lengths)
+        cosine_similarities = model(q_title_tensors,
+                                    q_body_tensors,
+                                    selected_candidate_title_tensors,
+                                    selected_candidate_body_tensors)
         if args.debug: misc_utils.print_shape_variable('cosine_similarities', cosine_similarities)
         if args.debug: print "cosine_similarities: {}".format(cosine_similarities)
 

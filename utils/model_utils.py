@@ -40,13 +40,13 @@ class AbstractAskUbuntuModel(nn.Module):
         return
 
     def forward(self,
-                q_title_tensors, q_title_lengths,
-                q_body_tensors, q_body_lengths,
-                candidate_title_tensors, candidate_title_lengths,
-                candidate_body_tensors, candidate_body_lengths):
-        q_title_embeddings = self.forward_helper(q_title_tensors, q_title_lengths)
+                q_title_tensors,
+                q_body_tensors,
+                candidate_title_tensors,
+                candidate_body_tensors):
+        q_title_embeddings = self.forward_helper(q_title_tensors)
         # if self.args.debug: misc_utils.print_shape_variable('q_title_embeddings', q_title_embeddings)
-        q_body_embeddings = self.forward_helper(q_body_tensors, q_body_lengths)
+        q_body_embeddings = self.forward_helper(q_body_tensors)
         # if self.args.debug: misc_utils.print_shape_variable('q_body_embeddings', q_body_embeddings)
         q_output_before_mean = torch.stack([q_title_embeddings, q_body_embeddings])
         # if self.args.debug: misc_utils.print_shape_variable('q_output_before_mean', q_output_before_mean)
@@ -55,11 +55,9 @@ class AbstractAskUbuntuModel(nn.Module):
 
         num_candidates, d2, d3 = candidate_title_tensors.size()
 
-        title_embeddings = self.forward_helper(candidate_title_tensors.view(num_candidates*d2,d3),
-                                               candidate_title_lengths.view(num_candidates*d2))
+        title_embeddings = self.forward_helper(candidate_title_tensors.view(num_candidates*d2,d3))
         # if self.args.debug: misc_utils.print_shape_variable('title_embeddings', title_embeddings)
-        body_embeddings = self.forward_helper(candidate_body_tensors.view(num_candidates*d2,d3),
-                                              candidate_body_lengths.view(num_candidates*d2))
+        body_embeddings = self.forward_helper(candidate_body_tensors.view(num_candidates*d2,d3))
         # if self.args.debug: misc_utils.print_shape_variable('body_embeddings', body_embeddings)
         candidate_outputs_before_mean = torch.stack([title_embeddings, body_embeddings])
         # if self.args.debug: misc_utils.print_shape_variable('candidate_outputs_before_mean', candidate_outputs_before_mean)
@@ -115,8 +113,24 @@ class CNN(AbstractAskUbuntuModel):
         self.dropout = nn.Dropout(p=self.args.dropout)
         self.pooling = 'mean'
 
-    def forward_helper(self, tensor, lengths):
+    def forward_helper(self, tensor):
         # if self.args.debug: misc_utils.print_shape_variable('tensor',tensor)
+        mask = (tensor != 0)
+        if self.args.cuda:
+            mask = mask.type(torch.cuda.FloatTensor)
+        else:
+            mask = mask.type(torch.FloatTensor)
+
+        if self.pooling == 'mean':
+            lengths = torch.sum(mask,1)
+            # if self.args.debug: misc_utils.print_shape_variable('lengths', lengths)
+            # if self.args.debug: print lengths
+            lengths = torch.unsqueeze(lengths,1)
+            lengths = lengths.expand(tensor.data.shape)
+            # if self.args.debug: misc_utils.print_shape_variable('lengths', lengths)
+            mask = torch.div(mask,lengths)
+
+        # if self.args.debug: print "mask: {}".format(mask)
         x = self.embedding_layer(tensor) # (batch size, width (length of text), height (embedding dim))
         # if self.args.debug: misc_utils.print_shape_variable('x',x)
         x_perm = x.permute(0,2,1)
@@ -127,25 +141,24 @@ class CNN(AbstractAskUbuntuModel):
         # if self.args.debug: misc_utils.print_shape_variable('post_dropout', post_dropout)
         tanh_x = self.tanh(post_dropout)
         # if self.args.debug: misc_utils.print_shape_variable('tanh_x', tanh_x)
+        tanh_x_cropped = tanh_x[:,:,:self.args.len_query]
+        # if self.args.debug: misc_utils.print_shape_variable('tanh_x_cropped', tanh_x_cropped)
 
-        N, hd, co =  tanh_x.data.shape
+        N, hd, co =  tanh_x_cropped.data.shape
+        mask = torch.unsqueeze(mask,1)
+        # if self.args.debug: misc_utils.print_shape_variable('mask', mask)
+        expanded_mask = mask.expand(N, hd, co)
+        # if self.args.debug: misc_utils.print_shape_variable('expanded_mask', expanded_mask)
 
-        mask = torch.zeros(N,hd,co)
-        # if self.args.debug: misc_utils.print_shape_tensor('mask', mask)
+        masked = torch.mul(expanded_mask,tanh_x_cropped)
+        # if self.args.debug: misc_utils.print_shape_variable('masked', masked)
 
         if self.pooling == 'mean':
-            for i in xrange(N):
-                if lengths[i] > 0:
-                    mask[i,:,0:lengths[i]] = 1.0/ lengths[i]
-            mask = autograd.Variable(mask,requires_grad=False)
-            if self.args.cuda:
-                mask = mask.cuda()
-            # if self.args.debug: misc_utils.print_shape_variable('mask', mask)
-            masked = torch.mul(mask,tanh_x)
-            # if self.args.debug: misc_utils.print_shape_variable('masked', masked)
-            summed = torch.sum(masked,dim=2)
+            summed = torch.sum(masked, dim=2)
             # if self.args.debug: misc_utils.print_shape_variable('summed', summed)
             output = summed
+        elif self.pooling == 'max':
+            raise Exception("Pooling method {} not implemented".format(self.pooling))
         else:
             raise Exception("Pooling method {} not implemented".format(self.pooling))
         return output

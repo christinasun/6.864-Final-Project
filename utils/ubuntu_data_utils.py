@@ -42,9 +42,6 @@ class AskUbuntuDataset(data.Dataset):
         else:
             raise Exception("Data set name {} not supported!".format(name))
 
-    def createMask(self, l):
-        return torch.cat((torch.ones(1, l), torch.zeros(1,100-l)),1)
-
     ## Convert one example to {x: example, y: label (always 0)}
     def update_dataset_from_train_example(self, example):
         # adds samples to dataset for each training example
@@ -68,22 +65,20 @@ class AskUbuntuDataset(data.Dataset):
             candidates = [similar_qid] + random_qids
             similar_qid_tensors_all = map(self.get_indices_tensor, self.data_dict[similar_qid])
             similar_qid_tensors, similar_qid_tensors_length = zip(*similar_qid_tensors_all)
-   
+
             sample = {'qid': qid,
                       'candidates': candidates,
                       'qid_title_tensor': qid_tensors[0],
-                      'qid_title_tensor_length': self.createMask(qid_tensors_length[0]),
+                      'qid_title_tensor_length': qid_tensors_length[0],
                       'qid_body_tensor': qid_tensors[1],
-                      'qid_body_tensor_length': self.createMask(qid_tensors_length[1]),
+                      'qid_body_tensor_length': qid_tensors_length[1],
                       'candidate_title_tensors': [similar_qid_tensors[0]] + random_candidate_title_tensors,
-                      'candidate_title_tensors_length': [self.createMask(similar_qid_tensors_length[0])] + [self.createMask(rcttl) for rcttl in random_candidate_title_tensors_length],
+                      'candidate_title_tensors_length': [similar_qid_tensors_length[0]] + random_candidate_title_tensors_length,
                       'candidate_body_tensors': [similar_qid_tensors[1]] + random_candidate_body_tensors,
-                      'candidate_body_tensors_length': [self.createMask(similar_qid_tensors_length[1])] + [self.createMask(rcbtl) for rcbtl in random_candidate_body_tensors_length]
+                      'candidate_body_tensors_length': [similar_qid_tensors_length[1]] + random_candidate_body_tensors_length
                       }
-   
             self.dataset.append(sample)
         return
-
 
     def update_dataset_from_dev_or_test_example(self, example):
         # adds samples to dataset for each training example
@@ -105,18 +100,19 @@ class AskUbuntuDataset(data.Dataset):
 
         labels = [1 if cqid in similar_qids else 0 for cqid in candidate_qids]
 
+
         sample = \
             {'qid': qid,
              'similar_qids': similar_qids,
              'candidates': candidate_qids,
              'qid_title_tensor': qid_tensors[0],
-             'qid_title_tensor_length': self.createMask(qid_tensors_length[0]),
+             'qid_title_tensor_length': qid_tensors_length[0],
              'qid_body_tensor': qid_tensors[1],
-             'qid_body_tensor_length': self.createMask(qid_tensors_length[1]),
+             'qid_body_tensor_length': qid_tensors_length[1],
              'candidate_title_tensors': candidate_title_tensors,
-             'candidate_title_tensors_length': [self.createMask(cttl) for cttl in candidate_title_tensors_length],
+             'candidate_title_tensors_length': candidate_title_tensors_length,
              'candidate_body_tensors': candidate_body_tensors,
-             'candidate_body_tensors_length': [self.createMask(cbtl) for cbtl in candidate_body_tensors_length],
+             'candidate_body_tensors_length': candidate_body_tensors_length,
              'BM25_scores': BM25_scores,
              'labels': labels
              }
@@ -133,10 +129,11 @@ class AskUbuntuDataset(data.Dataset):
 
     def get_indices_tensor(self, text_arr):
         nil_indx = 0
-        text_indx = [self.word_to_indx[x.lower()] if x.lower() in self.word_to_indx else nil_indx for x in text_arr.split()][:self.max_length]
+        unk_indx = 1
+        text_indx = [self.word_to_indx[x.lower()] if x.lower() in self.word_to_indx else unk_indx for x in text_arr.split()][:self.max_length]
         l = len(text_indx)
-        if len(text_indx) < self.max_length:
-            text_indx.extend( [nil_indx for _ in range(self.max_length - len(text_indx))])
+        if l < self.max_length:
+            text_indx.extend( [nil_indx for _ in range(self.max_length - l)])
         x =  torch.LongTensor(text_indx)
         return x, l
 
@@ -153,8 +150,9 @@ def get_embeddings_tensor():
 
         if indx == 0:
             embedding_tensor.append(np.zeros(len(vector)))
+            embedding_tensor.append(np.zeros(len(vector)))
         embedding_tensor.append(vector)
-        word_to_indx[word] = indx+1
+        word_to_indx[word] = indx+2
 
     embedding_tensor = np.array(embedding_tensor, dtype=np.float32)
     return embedding_tensor, word_to_indx

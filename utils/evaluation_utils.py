@@ -40,10 +40,10 @@ def evaluate_model(dev_data, model, args):
             candidate_title_tensors = candidate_title_tensors.cuda()
             candidate_body_tensors = candidate_body_tensors.cuda()
 
-        cosine_similarities = model(q_title_tensors, q_title_lengths,
-                                    q_body_tensors, q_body_lengths,
-                                    candidate_title_tensors, candidate_title_lengths,
-                                    candidate_body_tensors, candidate_body_lengths)
+        cosine_similarities = model(q_title_tensors,
+                                    q_body_tensors,
+                                    candidate_title_tensors,
+                                    candidate_body_tensors)
         np_cosine_similarities = cosine_similarities.data.cpu().numpy()
 
 
