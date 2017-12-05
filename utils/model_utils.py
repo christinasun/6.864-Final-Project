@@ -139,6 +139,7 @@ class LSTM(AbstractAskUbuntuModel):
         out = torch.mean(lstm_out, 1)
         return out
 
+
     # def __init__(self, embeddings, args):
     #     super(LSTM, self).__init__(embeddings, args)
     #     vocab_size, embed_dim = embeddings.shape # embed_dim = 200
