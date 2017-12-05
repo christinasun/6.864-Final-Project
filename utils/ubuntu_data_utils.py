@@ -116,6 +116,7 @@ class AskUbuntuDataset(data.Dataset):
              'BM25_scores': BM25_scores,
              'labels': labels
              }
+
         self.dataset.append(sample)
         return
 
