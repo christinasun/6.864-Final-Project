@@ -9,6 +9,7 @@ sys.path.append(dirname(dirname(realpath(__file__))))
 import utils.misc_utils as misc_utils
 
 
+
 # Depending on arg, build dataset
 def get_model(embeddings, args):
     print("\nBuilding model...")
@@ -40,7 +41,7 @@ class AbstractAskUbuntuModel(nn.Module):
         return
 
     def forward(self, q_title_tensors, q_body_tensors, candidate_title_tensors, candidate_body_tensors):
-        q_title_embeddings = self.forward_helper(q_title_tensors)
+        q_title_embeddings = self.forward_helper(q_title_tensors,10 * np.ones(self.args.batch_size,dtype=np.long))
         # if self.args.debug: misc_utils.print_shape_variable('q_title_embeddings', q_title_embeddings)
         q_body_embeddings = self.forward_helper(q_body_tensors)
         # if self.args.debug: misc_utils.print_shape_variable('q_body_embeddings', q_body_embeddings)
@@ -104,22 +105,48 @@ class CNN(AbstractAskUbuntuModel):
     def __init__(self, embeddings, args):
         super(CNN, self).__init__(embeddings, args)
         vocab_size, embed_dim = embeddings.shape
-        self.conv = nn.Conv2d(1, self.hidden_dim, (3, embed_dim), padding= (2,0))
+        self.conv = nn.Conv1d(embed_dim, self.hidden_dim, 3, padding=2)
         self.tanh = nn.Tanh()
         self.dropout = nn.Dropout(p=self.args.dropout)
-        self.pooling = torch.nn.AvgPool2d((1,args.len_query))
+        self.pooling = 'mean'
 
-    def forward_helper(self, tensor):
+    def forward_helper(self, tensor, lengths):
+        print lengths
+        if self.args.debug: misc_utils.print_shape_variable('tensor',tensor)
         x = self.embedding_layer(tensor) # (batch size, width (length of text), height (embedding dim))
-        x = x.unsqueeze(1) # (batch size, 1, width, height)
-        hiddens = self.conv(x).squeeze(3)
+        if self.args.debug: misc_utils.print_shape_variable('x',x)
+        x_perm = x.permute(0,2,1)
+        if self.args.debug: misc_utils.print_shape_variable('x_perm',x_perm)
+        hiddens = self.conv(x_perm)
+        if self.args.debug: misc_utils.print_shape_variable('hiddens',hiddens)
         post_dropout = self.dropout(hiddens)
+        if self.args.debug: misc_utils.print_shape_variable('post_dropout', post_dropout)
         tanh_x = self.tanh(post_dropout)
-        pooled = self.pooling(tanh_x)
-        output = pooled.squeeze(2)
-        # print("output: ", output.size())
+        if self.args.debug: misc_utils.print_shape_variable('tanh_x', tanh_x)
+        if self.args.debug: print tanh_x
+
+        N, hd, co =  tanh_x.data.shape
+
+        mask = torch.zeros(N,hd,co)
+        if self.args.debug: misc_utils.print_shape_tensor('mask', mask)
+
+        if self.pooling == 'mean':
+            for i in xrange(N):
+                mask[i,:,0:lengths[i]] = 1.0/lengths[i]
+            mask = autograd.Variable(mask,requires_grad=False)
+            if self.args.cuda:
+                mask.cuda()
+            if self.args.debug: misc_utils.print_shape_variable('mask', mask)
+            masked = torch.mul(mask,tanh_x)
+            if self.args.debug: misc_utils.print_shape_variable('masked', masked)
+            summed = torch.sum(masked,dim=2)
+            if self.args.debug: misc_utils.print_shape_variable('summed', summed)
+            output = summed
+        else:
+            raise Exception("Pooling method {} not implemented".format(self.pooling))
+
         return output
-        
+
 
 class LSTM(AbstractAskUbuntuModel):
 
