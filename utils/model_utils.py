@@ -202,11 +202,25 @@ class BOW(AbstractAskUbuntuModel):
     def forward_helper(self, tensor):
         batch_size, seq_len = tensor.data.shape
         out = torch.Tensor(batch_size,self.vocab_size)
+        df = torch.Tensor(1,self.vocab_size)
         for i in range(batch_size):
             sample = tensor[i].unsqueeze(0)
             mask = (sample != 0)
             length = torch.sum(mask,1).data[0]
             indices = sample.narrow(1,0,length)
             for j in range(length):
-                out[i][indices[0][j].data[0]] += 1
+                df[0][indices[0][j].data[0]] += 1
+        # for i in range(self.vocab_size):
+        #     mask = (tensor == i)
+        #     count = torch.sum(mask,1).data[0]
+        #     df[0][i] = count
+        for i in range(batch_size):
+            sample = tensor[i].unsqueeze(0)
+            mask = (sample != 0)
+            length = torch.sum(mask,1).data[0]
+            indices = sample.narrow(1,0,length)
+            for j in range(length):
+                # out[i][indices[0][j].data[0]] += 1*(1+np.log((1+batch_size)/(1+df)))
+                index = indices[0][j].data[0]
+                out[i][index] += 1*(1+np.log((1+batch_size)/(1+df[0][index])))
         return autograd.Variable(out)
