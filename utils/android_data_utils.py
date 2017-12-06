@@ -14,6 +14,7 @@ DEV_POS_FILE = os.path.join(DATA_PATH,"dev.pos.txt")
 DEV_NEG_FILE = os.path.join(DATA_PATH,"dev.neg.txt")
 TEST_POS_FILE = os.path.join(DATA_PATH,"test.pos.txt")
 TEST_NEG_FILE = os.path.join(DATA_PATH,"test.neg.txt")
+GLOVE_FILE = os.path.join(HOME_PATH,'data/glove.6B.200d.txt')
 
 
 class AndroidDataset(data.Dataset):
@@ -122,7 +123,26 @@ def get_samples(file_name):
                 samples[int(qid)].append(int(sample))
     return samples
 
-embeddings, word_to_indx = ubuntu_data_utils.get_embeddings_tensor()
+def get_embeddings_tensor():
+    with open(GLOVE_FILE) as f:
+        content = f.readlines()
+
+    embedding_tensor = []
+    word_to_indx = {}
+    for indx, line in enumerate(content):
+        word, vector_string = line.strip().split(" ", 1)
+        vector = map(float, vector_string.split(" "))
+
+        if indx == 0:
+            embedding_tensor.append(np.zeros(len(vector)))
+            embedding_tensor.append(np.zeros(len(vector)))
+        embedding_tensor.append(vector)
+        word_to_indx[word] = indx+2
+
+    embedding_tensor = np.array(embedding_tensor, dtype=np.float32)
+    return embedding_tensor, word_to_indx
+
+embeddings, word_to_indx = get_embeddings_tensor()
 android_dev_data = AndroidDataset('dev', word_to_indx, max_length=100)
 android_test_data = AndroidDataset('test', word_to_indx, max_length=100)
 print "len android_dev_data {}".format(len(android_dev_data))
