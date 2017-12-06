@@ -10,10 +10,16 @@ def evaluate_model(dev_data, model, args):
 
     model.eval()
 
+    # TODO: change model name to baseline/tf-idf
+    if args.model_name == 'bow':
+        batch_size = len(dev_data) #reason: tfidf needs to be computer over the whole corpus
+    else:
+        batch_size = 10
+
     N = len(dev_data)
     data_loader = torch.utils.data.DataLoader(
         dev_data,
-        batch_size=10,
+        batch_size=batch_size,
         shuffle=False,
         drop_last=False)
 

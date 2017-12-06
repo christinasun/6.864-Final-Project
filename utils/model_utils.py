@@ -31,6 +31,7 @@ class AbstractAskUbuntuModel(nn.Module):
 
         self.args = args
 
+
         vocab_size, embed_dim = embeddings.shape
 
         self.embedding_layer = nn.Embedding(vocab_size, embed_dim)
@@ -38,6 +39,7 @@ class AbstractAskUbuntuModel(nn.Module):
         self.embedding_layer.requires_grad = False
 
         self.hidden_dim = args.hidden_dim
+        self.name = None
         return
 
     def forward(self,
@@ -95,6 +97,7 @@ class DAN(AbstractAskUbuntuModel):
         vocab_size, embed_dim = embeddings.shape
         self.W_hidden = nn.Linear(embed_dim, embed_dim)
         self.W_out = nn.Linear(embed_dim, self.hidden_dim)
+        self.name = 'dan'
 
     def forward_helper(self, tensor):
         all_x = self.embedding_layer(tensor)
@@ -113,6 +116,7 @@ class CNN(AbstractAskUbuntuModel):
         self.tanh = nn.Tanh()
         self.dropout = nn.Dropout(p=self.args.dropout)
         self.pooling = 'mean'
+        self.name = 'cnn'
 
     def forward_helper(self, tensor):
         mask = (tensor != 0)
@@ -156,13 +160,14 @@ class LSTM(AbstractAskUbuntuModel):
         super(LSTM, self).__init__(embeddings, args)
         vocab_size, embed_dim = embeddings.shape
         self.num_layers = 1
-        self.hidden = self.init_hidden()
+        self.hidden = self.init_hidden(self.args.batch_size)
         self.lstm = nn.LSTM(embed_dim, self.hidden_dim//2, bidirectional=True)
         self.pooling = 'mean'
+        self.name = 'lstm'
 
-    def init_hidden(self):
-        h = autograd.Variable(torch.zeros(2, 1, self.hidden_dim//2))
-        c = autograd.Variable(torch.zeros(2, 1, self.hidden_dim//2))
+    def init_hidden(self, batch):
+        h = autograd.Variable(torch.zeros(2, batch, self.hidden_dim//2))
+        c = autograd.Variable(torch.zeros(2, batch, self.hidden_dim//2))
         if self.args.cuda:
             h = h.cuda()
             c = c.cuda()
@@ -183,13 +188,16 @@ class LSTM(AbstractAskUbuntuModel):
             mask = torch.unsqueeze(mask,2)
 
         x = self.embedding_layer(tensor)
-        self.hidden = self.init_hidden()
-        lstm_out, self.hidden = self.lstm(x, self.hidden)
+        batch_size = x.data.shape[0]
+        x_perm = x.permute(1,0,2)
+        mask = mask.permute(1,0,2)
+        self.hidden = self.init_hidden(batch_size)
+        lstm_out, self.hidden = self.lstm(x_perm, self.hidden)
 
         N, hd, co =  lstm_out.data.shape
         expanded_mask = mask.expand(N, hd, co)
         masked = torch.mul(expanded_mask,lstm_out)
-        out = torch.sum(masked,1)
+        out = torch.sum(masked,0)
 
         return out
 
@@ -198,6 +206,8 @@ class BOW(AbstractAskUbuntuModel):
     def __init__(self, embeddings, args):
         super(BOW, self).__init__(embeddings, args)
         self.vocab_size, embed_dim = embeddings.shape
+        self.hidden_dim = self.vocab_size
+        self.name = 'bow'
 
     def forward_helper(self, tensor):
         batch_size, seq_len = tensor.data.shape
