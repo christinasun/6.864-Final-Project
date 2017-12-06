@@ -9,7 +9,6 @@ sys.path.append(dirname(dirname(realpath(__file__))))
 import utils.misc_utils as misc_utils
 
 
-
 # Depending on arg, build dataset
 def get_model(embeddings, args):
     print("\nBuilding model...")
@@ -19,6 +18,8 @@ def get_model(embeddings, args):
         return LSTM(embeddings, args)
     elif args.model_name == 'dan':
         return DAN(embeddings, args)
+    elif args.model_name == 'bow':
+        return BOW(embeddings, args)
     else:
         raise Exception("Model name {} not supported!".format(args.model_name))
 
@@ -192,3 +193,20 @@ class LSTM(AbstractAskUbuntuModel):
 
         return out
 
+class BOW(AbstractAskUbuntuModel):
+
+    def __init__(self, embeddings, args):
+        super(BOW, self).__init__(embeddings, args)
+        self.vocab_size, embed_dim = embeddings.shape
+
+    def forward_helper(self, tensor):
+        batch_size, seq_len = tensor.data.shape
+        out = torch.Tensor(batch_size,self.vocab_size)
+        for i in range(batch_size):
+            sample = tensor[i].unsqueeze(0)
+            mask = (sample != 0)
+            length = torch.sum(mask,1).data[0]
+            indices = sample.narrow(1,0,length)
+            for j in range(length):
+                out[i][indices[0][j].data[0]] += 1
+        return autograd.Variable(out)

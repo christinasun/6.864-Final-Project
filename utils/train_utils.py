@@ -25,7 +25,10 @@ def train_model(train_data, dev_data, model, args):
 
         print "-------------\nEpoch {}:\n".format(epoch)
 
-        loss = run_epoch(train_data, True, model, optimizer, args)
+        if args.model_name == "bow":
+            loss = run_epoch(train_data, False, model, optimizer, args)
+        else:
+            loss = run_epoch(train_data, True, model, optimizer, args)
 
         print 'Train Multi-margin loss: {:.6f}\n'.format(loss)
 
@@ -95,7 +98,6 @@ def run_epoch(data, is_training, model, optimizer, args):
 
         if is_training:
             optimizer.zero_grad()
-
         cosine_similarities = model(q_title_tensors, q_body_tensors,
                                     selected_candidate_title_tensors, selected_candidate_body_tensors)
         if args.debug: misc_utils.print_shape_variable('cosine_similarities', cosine_similarities)
