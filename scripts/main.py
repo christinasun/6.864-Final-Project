@@ -27,7 +27,6 @@ if __name__ == '__main__':
     # model
     parser.add_argument('--model_name', nargs="?", type=str, default='cnn', help="Form of model, i.e dan, rnn, etc.")
     parser.add_argument('--hidden_dim', type=int, default=20, help='dimension of the hidden layer [default: 20]')
-    parser.add_argument('--lstm_hidden_dim', type=int, default=240, help='dimension of the lstm hidden layer [default: 240]')
     # device
     parser.add_argument('--cuda', action='store_true', default=False, help='enable the gpu')
     parser.add_argument('--train', action='store_true', default=False, help='enable train')
@@ -47,10 +46,13 @@ if __name__ == '__main__':
 
     print "Getting Embeddings..."
     embeddings, word_to_indx = data_utils.get_embeddings_tensor()
-    print "Getting Train Data..."
-    train_data = data_utils.AskUbuntuDataset('train', word_to_indx, max_length=args.len_query, trainning_data_size=args.training_data_size)
-    print "Getting Test Data..."
+    if args.train:
+        print "Getting Train Data..."
+        train_data = data_utils.AskUbuntuDataset('train', word_to_indx, max_length=args.len_query, trainning_data_size=args.training_data_size)
+    print "Getting Dev Data..."
     dev_data = data_utils.AskUbuntuDataset('dev', word_to_indx, max_length=args.len_query)
+    print "Getting Test Data..."
+    test_data = data_utils.AskUbuntuDataset('test', word_to_indx, max_length=args.len_query)
 
     torch.manual_seed(args.seed)
     if args.cuda:
@@ -76,12 +78,16 @@ if __name__ == '__main__':
     print "Total number of parameters: {}".format(paramter_num)
     print "Number of trainable parameters: {}".format(paramter_num - embedding_paramter_num)
 
-    print "\nTraining..."
+
     # train
     if args.train:
+        print "\nTraining..."
         if not os.path.exists(args.save_path):
             os.makedirs(args.save_path)
         train_utils.train_model(train_data, dev_data, model, args)
 
     if args.eval:
+        print "Evaluating on dev data:"
         evaluation_utils.evaluate_model(dev_data, model, args)
+        print "Evaluating on test data:"
+        evaluation_utils.evaluate_model(test_data, model, args)
