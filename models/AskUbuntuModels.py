@@ -33,7 +33,13 @@ class AbstractAskUbuntuModel(nn.Module):
         q_encoding_before_mean = torch.stack([q_title_encodings, q_body_encodings])
         q_encoding = torch.mean(q_encoding_before_mean, dim=0)
 
-        print candidate_title_tensors.size()
+        candidate_title_tensors = torch.squeeze(candidate_title_tensors, 2)
+        candidate_body_tensors = torch.squeeze(candidate_body_tensors, 2)
+        print("q_title_tensors: ", q_title_tensors.size())
+        print("q_body_tensors: ", q_body_tensors.size())
+        print("candidate_title_tensors: ", candidate_title_tensors.size())
+        print("candidate_body_tensors: ", candidate_body_tensors.size())
+
         num_candidates, batch_size, embedding_dim = candidate_title_tensors.size()
 
         # get the encodings for the flattened out candidate tensors
@@ -144,6 +150,7 @@ class LSTM(AbstractAskUbuntuModel):
         return (h,c)
 
     def forward_helper(self, tensor):
+        # print("tensor: ", tensor.size())
         mask = (tensor != 0)
         if self.args.cuda:
             mask = mask.type(torch.cuda.FloatTensor)
@@ -178,6 +185,7 @@ class BOW(AbstractAskUbuntuModel):
         self.name = 'identity'
 
     def forward_helper(self, tensor):
+        print("tensor: ", tensor.size())
         if self.hidden_dim == None:
             print tensor.data.shape
             self.hidden_dim = tensor.data.shape[1]

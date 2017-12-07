@@ -18,6 +18,7 @@ def evaluate_model(dev_data, model, args):
 
     # TODO: change model name to baseline/tf-idf
     if args.model_name == 'bow':
+        print("batch_size: ", len(dev_data))
         batch_size = len(dev_data) #reason: tfidf needs to be computer over the whole corpus
     else:
         batch_size = 10
