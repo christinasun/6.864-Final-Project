@@ -25,12 +25,10 @@ class AskUbuntuDataset(data.Dataset):
         self.word_to_indx  = word_to_indx
         self.max_length = max_length
         self.data_dict = get_data_dict()
-        dataset_type
-        if dataset_type = 'embedding':
+        if dataset_type == 'embedding':
             self.transformer = self.get_indices_tensor
-        elif dataset_type = 'tf-idf':
+        elif dataset_type == 'tf-idf':
             self.transformer = self.get_tfidf_tensor
-
 
         if name == 'train':
             train_examples = get_train_examples()[:trainning_data_size]
@@ -112,6 +110,7 @@ class AskUbuntuDataset(data.Dataset):
         nil_indx = 0
         unk_indx = 1
         text_indx = [self.word_to_indx[x.lower()] if x.lower() in self.word_to_indx else unk_indx for x in text_arr.split()][:self.max_length]
+
         if len(text_indx) < self.max_length:
             text_indx.extend( [nil_indx for _ in range(self.max_length - len(text_indx))])
         x =  torch.LongTensor(text_indx)

@@ -201,10 +201,6 @@ class BOW(AbstractAskUbuntuModel):
             indices = sample.narrow(1,0,length)
             for j in range(length):
                 df[0][indices[0][j].data[0]] += 1
-        # for i in range(self.vocab_size):
-        #     mask = (tensor == i)
-        #     count = torch.sum(mask,1).data[0]
-        #     df[0][i] = count
         for i in range(batch_size):
             sample = tensor[i].unsqueeze(0)
             mask = (sample != 0)
