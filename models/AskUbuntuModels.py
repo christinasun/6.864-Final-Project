@@ -12,11 +12,11 @@ class AbstractAskUbuntuModel(nn.Module):
 
         self.args = args
 
-        vocab_size, embed_dim = embeddings.shape
-
-        self.embedding_layer = nn.Embedding(vocab_size, embed_dim)
-        self.embedding_layer.weight.data = torch.from_numpy( embeddings )
-        self.embedding_layer.requires_grad = False
+        if embeddings != None:
+            vocab_size, embed_dim = embeddings.shape
+            self.embedding_layer = nn.Embedding(vocab_size, embed_dim)
+            self.embedding_layer.weight.data = torch.from_numpy( embeddings )
+            self.embedding_layer.requires_grad = False
 
         self.hidden_dim = args.hidden_dim
         self.name = None
@@ -33,6 +33,7 @@ class AbstractAskUbuntuModel(nn.Module):
         q_encoding_before_mean = torch.stack([q_title_encodings, q_body_encodings])
         q_encoding = torch.mean(q_encoding_before_mean, dim=0)
 
+        print candidate_title_tensors.size()
         num_candidates, batch_size, embedding_dim = candidate_title_tensors.size()
 
         # get the encodings for the flattened out candidate tensors
@@ -174,9 +175,10 @@ class BOW(AbstractAskUbuntuModel):
 
     def __init__(self, embeddings, args):
         super(BOW, self).__init__(embeddings, args)
-        self.vocab_size, embed_dim = embeddings.shape
-        self.hidden_dim = self.vocab_size
         self.name = 'identity'
 
     def forward_helper(self, tensor):
+        if self.hidden_dim == None:
+            print tensor.data.shape
+            self.hidden_dim = tensor.data.shape[1]
         return tensor

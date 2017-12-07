@@ -46,11 +46,12 @@ if __name__ == '__main__':
 
     if args.model_name == 'bow':
         dataset_type = 'tf-idf'
+        embeddings, word_to_indx = None, None
     else:
         dataset_type = 'embedding'
+        print "Getting Embeddings..."
+        embeddings, word_to_indx = data_utils.get_embeddings_tensor()
 
-    print "Getting Embeddings..."
-    embeddings, word_to_indx = data_utils.get_embeddings_tensor()
     if args.train:
         print "Getting Train Data..."
         train_data = data_utils.AskUbuntuDataset('train', word_to_indx, max_length=args.len_query, training_data_size=args.training_data_size, dataset_type=dataset_type)

@@ -32,7 +32,7 @@ class AskUbuntuDataset(data.Dataset):
         for title, body in self.data_dict.values():
             title_and_body = ' '.join([title, body])
         corpus.append(title_and_body)
-        X = vectorizer.fit_transform(corpus)
+        X = self.vectorizer.fit_transform(corpus)
 
         if dataset_type == 'embedding':
             self.transformer = self.get_indices_tensor
@@ -126,7 +126,7 @@ class AskUbuntuDataset(data.Dataset):
         return x
 
     def get_tfidf_tensor(self, text_arr):
-        return self.vectorizer.transform(text_arr)
+        return torch.FloatTensor(self.vectorizer.transform([text_arr]).toarray())
 
 
 def get_embeddings_tensor():
