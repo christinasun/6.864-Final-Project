@@ -1,10 +1,12 @@
 import argparse
 import sys
+
 from os.path import dirname, realpath
+
 sys.path.append(dirname(dirname(realpath(__file__))))
 import utils.ubuntu_data_utils as data_utils
 import utils.train_utils as train_utils
-import utils.model_utils as model_utils
+import models.UbuntuModels as model_utils
 import utils.evaluation_utils as evaluation_utils
 import torch
 import numpy as np

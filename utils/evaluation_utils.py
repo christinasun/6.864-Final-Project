@@ -2,6 +2,10 @@ import torch
 import torch.autograd as autograd
 import torch.utils.data as data
 import numpy as np
+import sys
+from os.path import dirname, realpath
+sys.path.append(dirname(dirname(realpath(__file__))))
+import utils.meter as meter
 
 def evaluate_model(dev_data, model, args):
 
@@ -24,6 +28,8 @@ def evaluate_model(dev_data, model, args):
         drop_last=False)
 
     all_sorted_labels = []
+
+    auc = meter.AUCMeter()
 
     for batch in data_loader:
 
@@ -48,6 +54,8 @@ def evaluate_model(dev_data, model, args):
                                     candidate_body_tensors)
         np_cosine_similarities = cosine_similarities.data.cpu().numpy()
 
+        for i in xrange(labels.shape[0]):
+            auc.add(np_cosine_similarities[i,:],labels[i,:])
 
         sorted_indices = np_cosine_similarities.argsort(axis=1)
         # print "labels shape: {}".format(labels.shape)
@@ -59,10 +67,13 @@ def evaluate_model(dev_data, model, args):
 
     all_sorted_labels = np.concatenate(all_sorted_labels)
     evaluation = Evaluation(all_sorted_labels)
-    print "Precision@5: {}".format(evaluation.get_precision(5))
-    print "Precision@1: {}".format(evaluation.get_precision(1))
+
     print "MAP: {}".format(evaluation.get_MAP())
     print "MRR: {}".format(evaluation.get_MRR())
+    print "Precision@1: {}".format(evaluation.get_precision(1))
+    print "Precision@5: {}".format(evaluation.get_precision(5))
+    print "AUC(): {}".format(auc.value())
+
     return
 
 
