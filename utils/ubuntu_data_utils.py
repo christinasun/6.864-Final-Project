@@ -5,7 +5,6 @@ import gzip
 import torch
 import torch.utils.data as data
 
-
 HOME_PATH = dirname(dirname(realpath(__file__)))
 DATA_PATH = os.path.join(HOME_PATH,'data','ubuntu')
 VECTORS_FILE = os.path.join(DATA_PATH,"vector","vectors_pruned.200.txt.gz")
@@ -20,12 +19,18 @@ TEST_SET_FILE = os.path.join(DATA_PATH,"test.txt")
 class AskUbuntuDataset(data.Dataset):
 
     # TODO: modify the max_length based on the specifications in the paper
-    def __init__(self, name, word_to_indx, max_length=100, trainning_data_size=200):
+    def __init__(self, name, word_to_indx, max_length=100, trainning_data_size=200, dataset_type='embedding'):
         self.name = name
         self.dataset = []
         self.word_to_indx  = word_to_indx
         self.max_length = max_length
         self.data_dict = get_data_dict()
+        dataset_type
+        if dataset_type = 'embedding':
+            self.transformer = self.get_indices_tensor
+        elif dataset_type = 'tf-idf':
+            self.transformer = self.get_tfidf_tensor
+
 
         if name == 'train':
             train_examples = get_train_examples()[:trainning_data_size]
@@ -47,9 +52,9 @@ class AskUbuntuDataset(data.Dataset):
         # adds samples to dataset for each training example
         # each training example generates multiple samples
         qid, similar_qids, random_qids = example
-        qid_tensors = map(self.get_indices_tensor, self.data_dict[qid])
+        qid_tensors = map(self.transformer, self.data_dict[qid])
 
-        random_candidate_tensors = [map(self.get_indices_tensor,self.data_dict[cqid]) for cqid in random_qids]
+        random_candidate_tensors = [map(self.transformer,self.data_dict[cqid]) for cqid in random_qids]
         random_candidate_title_tensors, random_candidate_body_tensors = zip(*random_candidate_tensors)
         random_candidate_title_tensors = list(random_candidate_title_tensors)
         random_candidate_body_tensors = list(random_candidate_body_tensors)
@@ -57,7 +62,7 @@ class AskUbuntuDataset(data.Dataset):
 
         for similar_qid in similar_qids:
             candidates = [similar_qid] + random_qids
-            similar_qid_tensors = map(self.get_indices_tensor, self.data_dict[similar_qid])
+            similar_qid_tensors = map(self.transformer, self.data_dict[similar_qid])
 
             sample = {'qid': qid,
                       'candidates': candidates,
@@ -73,9 +78,9 @@ class AskUbuntuDataset(data.Dataset):
         # adds samples to dataset for each training example
         # each training example generates multiple samples
         qid, similar_qids, candidate_qids, BM25_scores  = example
-        qid_tensors = map(self.get_indices_tensor, self.data_dict[qid])
+        qid_tensors = map(self.transformer, self.data_dict[qid])
 
-        candidate_tensors = [map(self.get_indices_tensor,self.data_dict[cqid]) for cqid in candidate_qids]
+        candidate_tensors = [map(self.transformer,self.data_dict[cqid]) for cqid in candidate_qids]
         candidate_title_tensors, candidate_body_tensors = zip(*candidate_tensors)
         candidate_title_tensors = list(candidate_title_tensors)
         candidate_body_tensors = list(candidate_body_tensors)
@@ -111,6 +116,9 @@ class AskUbuntuDataset(data.Dataset):
             text_indx.extend( [nil_indx for _ in range(self.max_length - len(text_indx))])
         x =  torch.LongTensor(text_indx)
         return x
+
+    def get_tfidf_tensor(self, text_arr):
+        pass
 
 
 def get_embeddings_tensor():
