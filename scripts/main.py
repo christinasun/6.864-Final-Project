@@ -44,15 +44,20 @@ if __name__ == '__main__':
     for attr, value in sorted(args.__dict__.items()):
         print "\t{}={}".format(attr.upper(), value)
 
+    if args.model_name == 'bow':
+        dataset_type = 'tf-idf'
+    else:
+        dataset_type = 'embedding'
+
     print "Getting Embeddings..."
     embeddings, word_to_indx = data_utils.get_embeddings_tensor()
     if args.train:
         print "Getting Train Data..."
-        train_data = data_utils.AskUbuntuDataset('train', word_to_indx, max_length=args.len_query, trainning_data_size=args.training_data_size)
+        train_data = data_utils.AskUbuntuDataset('train', word_to_indx, max_length=args.len_query, training_data_size=args.training_data_size, dataset_type=dataset_type)
     print "Getting Dev Data..."
-    dev_data = data_utils.AskUbuntuDataset('dev', word_to_indx, max_length=args.len_query)
+    dev_data = data_utils.AskUbuntuDataset('dev', word_to_indx, max_length=args.len_query, dataset_type=dataset_type)
     print "Getting Test Data..."
-    test_data = data_utils.AskUbuntuDataset('test', word_to_indx, max_length=args.len_query)
+    test_data = data_utils.AskUbuntuDataset('test', word_to_indx, max_length=args.len_query, dataset_type=dataset_type)
 
     torch.manual_seed(args.seed)
     if args.cuda:
