@@ -21,13 +21,16 @@ class AbstractAskUbuntuModel(nn.Module):
 
         self.hidden_dim = args.hidden_dim
         self.name = None
+        self.indx2count = None
         return
 
     def forward(self,
                 q_title_tensors,
                 q_body_tensors,
                 candidate_title_tensors,
-                candidate_body_tensors):
+                candidate_body_tensors,
+                indx2count):
+        self.indx2count = indx2count
         q_title_embeddings = self.forward_helper(q_title_tensors)
         # if self.args.debug: misc_utils.print_shape_variable('q_title_embeddings', q_title_embeddings)
         q_body_embeddings = self.forward_helper(q_body_tensors)
@@ -194,17 +197,13 @@ class BOW(AbstractAskUbuntuModel):
         batch_size, seq_len = tensor.data.shape
         out = torch.Tensor(batch_size,self.vocab_size)
         df = torch.Tensor(1,self.vocab_size)
-        for i in range(batch_size):
-            sample = tensor[i].unsqueeze(0)
-            mask = (sample != 0)
-            length = torch.sum(mask,1).data[0]
-            indices = sample.narrow(1,0,length)
-            for j in range(length):
-                df[0][indices[0][j].data[0]] += 1
-        # for i in range(self.vocab_size):
-        #     mask = (tensor == i)
-        #     count = torch.sum(mask,1).data[0]
-        #     df[0][i] = count
+        # for i in range(batch_size):
+        #     sample = tensor[i].unsqueeze(0)
+        #     mask = (sample != 0)
+        #     length = torch.sum(mask,1).data[0]
+        #     indices = sample.narrow(1,0,length)
+        #     for j in range(length):
+        #         df[0][indices[0][j].data[0]] += 1
         for i in range(batch_size):
             sample = tensor[i].unsqueeze(0)
             mask = (sample != 0)
@@ -213,5 +212,5 @@ class BOW(AbstractAskUbuntuModel):
             for j in range(length):
                 # out[i][indices[0][j].data[0]] += 1*(1+np.log((1+batch_size)/(1+df)))
                 index = indices[0][j].data[0]
-                out[i][index] += 1*(1+np.log((1+batch_size)/(1+df[0][index])))
+                out[i][index] += 1*(1+np.log((1+batch_size)/(1+self.indx2count[index])))
         return autograd.Variable(out)
