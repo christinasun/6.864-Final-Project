@@ -4,7 +4,7 @@ import torch.utils.data as data
 from tqdm import tqdm
 import numpy as np
 import sys
-from os.path import dirname, realpath
+from os.path import dirname, realpath, join
 sys.path.append(dirname(dirname(realpath(__file__))))
 import utils.evaluation_utils as eval_utils
 import utils.misc_utils as misc_utils
@@ -35,7 +35,8 @@ def train_model(train_data, dev_data, model, args):
         eval_utils.evaluate_model(dev_data, model, args)
 
         # Save model
-        torch.save(model, args.save_path)
+
+        torch.save(model, join(args.save_path,'epoch_{}.pt'.format(epoch)))
 
 
 def run_epoch(data, is_training, model, optimizer, args):

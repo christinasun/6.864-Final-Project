@@ -5,4 +5,4 @@ data/ubuntu/text_tokenized.txt
 data/ubuntu/vector/vectors_pruned.200.txt
 utils/__init__.pyc
 data/glove.6B.200d.txt
-
+saved_models/*

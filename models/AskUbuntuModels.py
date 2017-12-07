@@ -2,26 +2,7 @@ import torch
 import torch.autograd as autograd
 import torch.nn.functional as F
 import torch.nn as nn
-import sys
 import numpy as np
-from os.path import dirname, realpath
-sys.path.append(dirname(dirname(realpath(__file__))))
-import utils.misc_utils as misc_utils
-
-
-# Depending on arg, build dataset
-def get_model(embeddings, args):
-    print("\nBuilding model...")
-    if args.model_name == 'cnn':
-        return CNN(embeddings, args)
-    elif args.model_name == 'lstm':
-        return LSTM(embeddings, args)
-    elif args.model_name == 'dan':
-        return DAN(embeddings, args)
-    elif args.model_name == 'bow':
-        return BOW(embeddings, args)
-    else:
-        raise Exception("Model name {} not supported!".format(args.model_name))
 
 
 class AbstractAskUbuntuModel(nn.Module):

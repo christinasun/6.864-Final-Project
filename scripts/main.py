@@ -1,12 +1,12 @@
 import argparse
 import sys
-
+import os
 from os.path import dirname, realpath
 
 sys.path.append(dirname(dirname(realpath(__file__))))
 import utils.ubuntu_data_utils as data_utils
 import utils.train_utils as train_utils
-import models.UbuntuModels as model_utils
+import utils.model_utils as model_utils
 import utils.evaluation_utils as evaluation_utils
 import torch
 import numpy as np
@@ -34,7 +34,7 @@ if __name__ == '__main__':
     parser.add_argument('--eval', action='store_true', default=False, help='enable eval')
     # task
     parser.add_argument('--snapshot', type=str, default=None, help='filename of model snapshot to load[default: None]')
-    parser.add_argument('--save_path', type=str, default="model.pt", help='Path where to dump model')
+    parser.add_argument('--save_path', type=str, default="saved_models/default", help='Path where to dump model')
     # other
     parser.add_argument('--len_query', type=int, default=100, help='how much of the query body to use [default 100]')
     parser.add_argument('--debug', action='store_true', default=False, help='have print statements')
@@ -78,7 +78,9 @@ if __name__ == '__main__':
 
     print "\nTraining..."
     # train
-    if args.train :
+    if args.train:
+        if not os.path.exists(args.save_path):
+            os.makedirs(args.save_path)
         train_utils.train_model(train_data, dev_data, model, args)
 
     if args.eval:
