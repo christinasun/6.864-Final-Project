@@ -4,6 +4,7 @@ from os.path import dirname, realpath
 import gzip
 import torch
 import torch.utils.data as data
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 HOME_PATH = dirname(dirname(realpath(__file__)))
 DATA_PATH = os.path.join(HOME_PATH,'data','ubuntu')
@@ -19,19 +20,27 @@ TEST_SET_FILE = os.path.join(DATA_PATH,"test.txt")
 class AskUbuntuDataset(data.Dataset):
 
     # TODO: modify the max_length based on the specifications in the paper
-    def __init__(self, name, word_to_indx, max_length=100, trainning_data_size=200, dataset_type='embedding'):
+    def __init__(self, name, word_to_indx, max_length=100, training_data_size=200, dataset_type='embedding'):
         self.name = name
         self.dataset = []
         self.word_to_indx  = word_to_indx
         self.max_length = max_length
         self.data_dict = get_data_dict()
+        self.vectorizer = TfidfVectorizer()
+        
+        corpus = []
+        for title, body in self.data_dict.values():
+            title_and_body = ' '.join([title, body])
+        corpus.append(title_and_body)
+        X = vectorizer.fit_transform(corpus)
+
         if dataset_type == 'embedding':
             self.transformer = self.get_indices_tensor
         elif dataset_type == 'tf-idf':
             self.transformer = self.get_tfidf_tensor
 
         if name == 'train':
-            train_examples = get_train_examples()[:trainning_data_size]
+            train_examples = get_train_examples()[:training_data_size]
             for example in train_examples:
                 self.update_dataset_from_train_example(example)
         elif name == 'dev':
@@ -44,7 +53,7 @@ class AskUbuntuDataset(data.Dataset):
                 self.update_dataset_from_dev_or_test_example(example)
         else:
             raise Exception("Data set name {} not supported!".format(name))
-
+            
     ## Convert one example to {x: example, y: label (always 0)}
     def update_dataset_from_train_example(self, example):
         # adds samples to dataset for each training example
@@ -117,7 +126,7 @@ class AskUbuntuDataset(data.Dataset):
         return x
 
     def get_tfidf_tensor(self, text_arr):
-        pass
+        return self.vectorizer.transform(text_arr)
 
 
 def get_embeddings_tensor():
