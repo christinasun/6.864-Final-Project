@@ -12,11 +12,10 @@ class AbstractAskUbuntuModel(nn.Module):
 
         self.args = args
 
-        if embeddings != None:
-            vocab_size, embed_dim = embeddings.shape
-            self.embedding_layer = nn.Embedding(vocab_size, embed_dim)
-            self.embedding_layer.weight.data = torch.from_numpy( embeddings )
-            self.embedding_layer.requires_grad = False
+        vocab_size, embed_dim = embeddings.shape
+        self.embedding_layer = nn.Embedding(vocab_size, embed_dim)
+        self.embedding_layer.weight.data = torch.from_numpy( embeddings )
+        self.embedding_layer.requires_grad = False
 
         self.hidden_dim = args.hidden_dim
         self.name = None
@@ -170,15 +169,3 @@ class LSTM(AbstractAskUbuntuModel):
         out = torch.sum(masked,0)
 
         return out
-
-class BOW(AbstractAskUbuntuModel):
-
-    def __init__(self, embeddings, args):
-        super(BOW, self).__init__(embeddings, args)
-        self.name = 'identity'
-
-    def forward_helper(self, tensor):
-        if self.hidden_dim == None:
-            print tensor.data.shape
-            self.hidden_dim = tensor.data.shape[1]
-        return tensor

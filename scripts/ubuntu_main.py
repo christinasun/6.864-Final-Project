@@ -4,10 +4,11 @@ import os
 from os.path import dirname, realpath
 
 sys.path.append(dirname(dirname(realpath(__file__))))
-import utils.ubuntu_data_utils as data_utils
+import utils.ubuntu_data_utils as ubuntu_data_utils
 import utils.train_utils as train_utils
 import utils.model_utils as model_utils
 import utils.evaluation_utils as evaluation_utils
+from datasets import AskUbuntuDataset
 import torch
 import numpy as np
 
@@ -44,21 +45,16 @@ if __name__ == '__main__':
     for attr, value in sorted(args.__dict__.items()):
         print "\t{}={}".format(attr.upper(), value)
 
-    if args.model_name == 'bow':
-        dataset_type = 'tf-idf'
-        embeddings, word_to_indx = None, None
-    else:
-        dataset_type = 'embedding'
-        print "Getting Embeddings..."
-        embeddings, word_to_indx = data_utils.get_embeddings_tensor()
+    print "Getting Embeddings..."
+    embeddings, word_to_indx = ubuntu_data_utils.get_embeddings_tensor()
 
     if args.train:
         print "Getting Train Data..."
-        train_data = data_utils.AskUbuntuDataset('train', word_to_indx, max_length=args.len_query, training_data_size=args.training_data_size, dataset_type=dataset_type)
+        train_data = AskUbuntuDataset('train', word_to_indx, max_length=args.len_query, training_data_size=args.training_data_size)
     print "Getting Dev Data..."
-    dev_data = data_utils.AskUbuntuDataset('dev', word_to_indx, max_length=args.len_query, dataset_type=dataset_type)
+    dev_data = AskUbuntuDataset('dev', word_to_indx, max_length=args.len_query)
     print "Getting Test Data..."
-    test_data = data_utils.AskUbuntuDataset('test', word_to_indx, max_length=args.len_query, dataset_type=dataset_type)
+    test_data = AskUbuntuDataset('test', word_to_indx, max_length=args.len_query)
 
     torch.manual_seed(args.seed)
     if args.cuda:
