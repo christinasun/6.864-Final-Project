@@ -65,14 +65,26 @@ class AskUbuntuDataset(data.Dataset):
 
         labels = [1 if cqid in similar_qids else 0 for cqid in candidate_qids]
 
+        positive_qids = similar_qids
+        positive_tensors = [map(self.get_indices_tensor, self.data_dict[qid]) for qid in positive_qids]
+        positive_title_tensors, positive_body_tensors = zip(*candidate_tensors)
+
+        negative_qids = [cpid for cpid in candidate_qids if cpid not in similar_qids]
+        negative_tensors = [map(self.get_indices_tensor, self.data_dict[qid]) for qid in negative_qids]
+        negative_title_tensors, negative_body_tensors = zip(*candidate_tensors)
+
         sample = \
             {'qid': qid,
              'similar_qids': similar_qids,
              'candidates': candidate_qids,
              'qid_title_tensor': qid_tensors[0],
              'qid_body_tensor': qid_tensors[1],
-             'candidate_title_tensors': candidate_title_tensors,
-             'candidate_body_tensors': candidate_body_tensors,
+             # 'candidate_title_tensors': candidate_title_tensors,
+             # 'candidate_body_tensors': candidate_body_tensors,
+             'positive_title_tensors': positive_title_tensors,
+             'positive_body_tensors': positive_body_tensors,
+             'negative_title_tensors': negative_title_tensors,
+             'negative_body_tensors': negative_body_tensors,
              'BM25_scores': BM25_scores,
              'labels': labels
              }
