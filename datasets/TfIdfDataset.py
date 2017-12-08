@@ -30,8 +30,6 @@ class TfIdfDataset(data.Dataset):
             corpus.append(title_and_body)
         self.vectorizer.fit_transform(corpus)
 
-
-        # TODO: decide if we need to implement this for train data (I don't think we do)
         if name == 'dev':
             dev_examples = self.get_dev_examples()
             for example in dev_examples:
@@ -44,63 +42,28 @@ class TfIdfDataset(data.Dataset):
     def update_dataset_from_dev_or_test_example(self, example):
         if self.source == 'ubuntu':
             qid, similar_qids, candidate_qids, BM25_scores = example
+            negative_qids = [cpid for cpid in candidate_qids if cpid not in similar_qids]
+
         elif self.source == 'android':
             qid, similar_qids, candidate_qids = example
+            negative_qids = candidate_qids
 
+        positive_qids = similar_qids
         qid_tfidf_tensor = self.get_tfidf_tensor(' '.join(self.data_dict[qid]))
-        candidate_tfidf_tensors = [self.get_tfidf_tensor(' '.join(self.data_dict[cqid])) for cqid in candidate_qids]
+        positive_tfidf_tensors = [self.get_tfidf_tensor(' '.join(self.data_dict[cqid])) for cqid in positive_qids]
+        negative_tfidf_tensors = [self.get_tfidf_tensor(' '.join(self.data_dict[cqid])) for cqid in negative_qids]
 
-        if self.source == 'ubuntu':
-            labels = [1 if cqid in similar_qids else 0 for cqid in candidate_qids]
-            sample = \
-                {'qid': qid,
-                 'similar_qids': similar_qids,
-                 'candidates': candidates,
-                 'qid_tfidf_tensor': qid_tfidf_tensor,
-                 'candidate_tfidf_tensors': candidate_tfidf_tensors,
-                 'labels': labels
-                 }
-            self.dataset.append(sample)
+        sample = \
+            {'qid': qid,
+             'similar_qids': similar_qids,
+             'candidates': candidate_qids,
+             'qid_tfidf_tensor': qid_tfidf_tensor,
+             'negative_tfidf_tensors': negative_tfidf_tensors,
+             'positive_tfidf_tensors': positive_tfidf_tensors
+             }
+        self.dataset.append(sample)
 
-        elif self.source == 'android':
-            for similar_qid in similar_qids:
-                similar_tfidf_tensor = self.get_tfidf_tensor(' '.join(self.data_dict[similar_qid]))
-                candidates = [similar_qid] + candidate_qids
-                labels = [1 if cqid in similar_qids else 0 for cqid in candidates]
-                sample = \
-                    {'qid': qid,
-                     'similar_qids': similar_qids,
-                     'candidates': candidates,
-                     'qid_tfidf_tensor': qid_tfidf_tensor,
-                     'candidate_tfidf_tensors': [similar_tfidf_tensor] + candidate_tfidf_tensors,
-                     'labels': labels
-                     }
-                self.dataset.append(sample)
         return
-
-    def update_dataset_from_train_example(self, example):
-        # adds samples to dataset for each training example
-        # each training example generates multiple samples
-        qid, similar_qids, random_qids = example
-        qid_tensors = map(self.get_indices_tensor, self.data_dict[qid])
-
-        random_candidate_tensors = [map(self.get_indices_tensor, self.data_dict[cqid]) for cqid in random_qids]
-        random_candidate_title_tensors, random_candidate_body_tensors = zip(*random_candidate_tensors)
-        random_candidate_title_tensors = list(random_candidate_title_tensors)
-        random_candidate_body_tensors = list(random_candidate_body_tensors)
-
-        for similar_qid in similar_qids:
-            candidates = [similar_qid] + random_qids
-            similar_qid_tensors = map(self.get_indices_tensor, self.data_dict[similar_qid])
-
-            sample = {'qid': qid,
-                      'candidates': candidates,
-                      'qid_title_tensor': qid_tensors[0],
-                      'qid_body_tensor': qid_tensors[1],
-                      'candidate_title_tensors': [similar_qid_tensors[0]] + random_candidate_title_tensors,
-                      'candidate_body_tensors': [similar_qid_tensors[1]] + random_candidate_body_tensors
-                      }
-            self.dataset.append(sample)
 
     def __len__(self):
         return len(self.dataset)
@@ -110,7 +73,4 @@ class TfIdfDataset(data.Dataset):
         return sample
 
     def get_tfidf_tensor(self, text_arr):
-        o = self.vectorizer.transform([text_arr])
-        # print "new"
-        # print o
-        return o
+        return self.vectorizer.transform([text_arr])

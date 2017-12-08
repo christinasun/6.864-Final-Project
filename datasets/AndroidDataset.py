@@ -43,19 +43,20 @@ class AndroidDataset(data.Dataset):
         similar_candidate_title_tensors = list(similar_candidate_title_tensors)
         similar_candidate_body_tensors = list(similar_candidate_body_tensors)
 
-        candidates = similar_qids + random_qids
-        labels = [1 if cqid in similar_qids else 0 for cqid in candidates]
+        neg_labels = [0 for cqid in random_candidate_tensors]
+        labels = [1] + neg_labels
 
-        sample = {'qid': qid,
-                  'similar_qids': similar_qids,
-                  'candidates': candidates,
-                  'qid_title_tensor': qid_tensors[0],
-                  'qid_body_tensor': qid_tensors[1],
-                  'candidate_title_tensors': similar_candidate_title_tensors + random_candidate_title_tensors,
-                  'candidate_body_tensors': similar_candidate_body_tensors + random_candidate_body_tensors,
-                  'labels': labels
-                  }
-        self.dataset.append(sample)
+        for i in xrange(len(similar_qids)):
+            sample = {'qid': qid,
+                      'similar_qids': similar_qids[i],
+                      'candidates': [similar_qids[i]]+random_qids,
+                      'qid_title_tensor': qid_tensors[0],
+                      'qid_body_tensor': qid_tensors[1],
+                      'candidate_title_tensors': [similar_candidate_title_tensors[i]] + random_candidate_title_tensors,
+                      'candidate_body_tensors': [similar_candidate_body_tensors[i]] + random_candidate_body_tensors,
+                      'labels': labels
+                      }
+            self.dataset.append(sample)
         return
 
     def __len__(self):
