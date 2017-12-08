@@ -10,12 +10,17 @@ from evaluation.Evaluation import Evaluation
 import utils.model_utils as model_utils
 import torch
 import numpy as np
+from scipy.sparse import coo_matrix, vstack, hstack
+from sklearn.metrics.pairwise import cosine_similarity
+
 
 
 def evaluate_model(dev_data, model, args):
 
+    dev_dataset = dev_data.dataset
     batch_size = len(dev_data)
     print batch_size
+
 
     data_loader = torch.utils.data.DataLoader(
         dev_data,
@@ -26,28 +31,48 @@ def evaluate_model(dev_data, model, args):
     all_sorted_labels = []
     auc = AUCMeter()
 
-    for batch in data_loader:
+    sample0 = dev_dataset[0]
+    num_candidates = 101
+    print "sample 0"
+    print sample0['qid_tfidf_tensor']
+    print sample0['qid_tfidf_tensor'].shape
+    print vstack(sample0['candidate_tfidf_tensors']).shape
 
-        q_tfidf_tensors = batch['qid_tfidf_tensor']
-        candidate_tfidf_tensors = torch.stack(batch['candidate_tfidf_tensors'])
+    q_tfidf_tensors = vstack([vstack([sample['qid_tfidf_tensor']]*num_candidates) for sample in dev_dataset])
+    q_tfidf_tensors = vstack(q_tfidf_tensors)
+    print "q_tfidf_tensors shape"
+    print q_tfidf_tensors.shape
 
-        labels = torch.stack(batch['labels'],dim=1)
-        labels = labels.numpy()
+    a = vstack(sample['candidate_tfidf_tensors'])
+    print a.shape
+    candidate_tfidf_tensors = vstack([vstack(sample['candidate_tfidf_tensors'][0:num_candidates]) for sample in dev_dataset])
+    print "candidate_tfidf_tensors"
+    print candidate_tfidf_tensors.shape
 
-        print labels
+    labels = [sample['labels'] for sample in dev_dataset]
+    labels = np.array(labels)
+    print "labels"
+    print labels
 
-        cosine_similarities = model.compute(q_tfidf_tensors,
-                                            candidate_tfidf_tensors)
+    # cosine_similarities = model.compute(q_tfidf_tensors,
+    #                                     candidate_tfidf_tensors)
+    expanded_cosine_similarities = cosine_similarity(q_tfidf_tensors, candidate_tfidf_tensors)
+    print "expanded"
+    print expanded_cosine_similarities.shape
 
-        np_cosine_similarities = cosine_similarities.data.cpu().numpy()
+    # un-flatten cosine similarities so that we get output of size batch_size * num_candidates (t() is transpose)
+    output = expanded_cosine_similarities.view(num_candidates, batch_size, 1).view(num_candidates, batch_size).t()
 
-        for i in xrange(labels.shape[0]):
-            auc.add(np_cosine_similarities[i,:],labels[i,:])
 
-        sorted_indices = np_cosine_similarities.argsort(axis=1)
-        sorted_labels = labels[np.expand_dims(np.arange(sorted_indices.shape[0]),1), sorted_indices]
-        sorted_labels = np.flip(sorted_labels,1)
-        all_sorted_labels.append(sorted_labels)
+    np_cosine_similarities = cosine_similarities.data.cpu().numpy()
+
+    for i in xrange(labels.shape[0]):
+        auc.add(np_cosine_similarities[i,:],labels[i,:])
+
+    sorted_indices = np_cosine_similarities.argsort(axis=1)
+    sorted_labels = labels[np.expand_dims(np.arange(sorted_indices.shape[0]),1), sorted_indices]
+    sorted_labels = np.flip(sorted_labels,1)
+    all_sorted_labels.append(sorted_labels)
 
     all_sorted_labels = np.concatenate(all_sorted_labels)
     evaluation = Evaluation(all_sorted_labels)

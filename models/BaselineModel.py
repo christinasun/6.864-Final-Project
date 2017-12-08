@@ -1,7 +1,4 @@
-import torch
-import torch.nn.functional as F
-import torch.nn as nn
-import torch.autograd as autograd
+from sklearn.metrics.pairwise import cosine_similarity
 
 class BaselineModel():
 
@@ -20,7 +17,7 @@ class BaselineModel():
         expanded_q_tensor = expanded_q_tensor.contiguous().view(num_candidates*batch_size,embedding_dim)
 
         # compute cosine similarities
-        expanded_cosine_similarities = F.cosine_similarity(autograd.Variable(expanded_q_tensor), autograd.Variable(flattened_candidate_tensors), dim=1)
+        expanded_cosine_similarities = cosine_similarity(expanded_q_tensor, flattened_candidate_tensors)
 
         # un-flatten cosine similarities so that we get output of size batch_size * num_candidates (t() is transpose)
         output = expanded_cosine_similarities.view(num_candidates,batch_size,1).view(num_candidates,batch_size).t()

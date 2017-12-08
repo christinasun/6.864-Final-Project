@@ -7,6 +7,7 @@ import utils.ubuntu_data_utils as ubuntu_data_utils
 import utils.android_data_utils as android_data_utils
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+
 class TfIdfDataset(data.Dataset):
 
     def __init__(self, name, source):
@@ -24,7 +25,7 @@ class TfIdfDataset(data.Dataset):
             self.data_dict = android_data_utils.get_data_dict()
 
         corpus = []
-        for title, body in self.data_dict.values():
+        for title, body in self.data_dict.values()[:10]:
             title_and_body = ' '.join([title, body])
             corpus.append(title_and_body)
         self.vectorizer.fit_transform(corpus)
@@ -33,11 +34,11 @@ class TfIdfDataset(data.Dataset):
         # TODO: decide if we need to implement this for train data (I don't think we do)
         if name == 'dev':
             dev_examples = self.get_dev_examples()
-            for example in dev_examples:
+            for example in dev_examples[:10]:
                 self.update_dataset_from_dev_or_test_example(example)
         elif name == 'test':
             test_examples = self.get_test_examples()
-            for example in test_examples:
+            for example in test_examples[:10]:
                 self.update_dataset_from_dev_or_test_example(example)
 
     def update_dataset_from_dev_or_test_example(self, example):
@@ -72,4 +73,7 @@ class TfIdfDataset(data.Dataset):
         return sample
 
     def get_tfidf_tensor(self, text_arr):
-        return torch.FloatTensor(self.vectorizer.transform([text_arr]).toarray()).squeeze(0)
+        o = self.vectorizer.transform([text_arr])
+        # print "new"
+        # print o
+        return o
