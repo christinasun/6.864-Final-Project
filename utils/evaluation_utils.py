@@ -15,57 +15,80 @@ def evaluate_model(dev_data, model, args):
         model = model.cuda()
     model.eval()
 
-    batch_size = 10
-    data_loader = torch.utils.data.DataLoader(
-        dev_data,
-        batch_size=batch_size,
-        shuffle=False,
-        drop_last=False)
+    dev_dataset = dev_data.dataset
 
-    all_sorted_labels = []
+    data_for_evaluation = []
     auc = AUCMeter()
 
-    for batch in data_loader:
+    q_title_tensors = [sample['q_title_tensor'] for sample in dev_dataset]
+    q_body_tensors = [sample['q_body_tensor'] for sample in dev_dataset]
 
-        q_title_tensors = autograd.Variable(batch['qid_title_tensor'])
-        q_body_tensors = autograd.Variable(batch['qid_body_tensor'])
+    positive_title_tensors = [
+        torch.stack(sample['positive_title_tensors']) if len(sample['positive_title_tensors']) > 0 else np.array([]) for
+        sample in dev_dataset]
+    positive_body_tensors = [
+        torch.stack(sample['positive_body_tensors']) if len(sample['positive_body_tensors']) > 0 else np.array([]) for
+        sample in dev_dataset]
+    negative_title_tensors = [
+        torch.stack(sample['negative_title_tensors']) if len(sample['negative_title_tensors']) > 0 else np.array([]) for
+        sample in dev_dataset]
+    negative_body_tensors = [
+        torch.stack(sample['negative_body_tensors']) if len(sample['negative_body_tensors']) > 0 else np.array([]) for
+        sample in dev_dataset]
 
-        candidate_title_tensors = autograd.Variable(torch.stack(batch['candidate_title_tensors']))
-        candidate_body_tensors = autograd.Variable(torch.stack(batch['candidate_body_tensors']))
+    for i in xrange(len(q_title_tensors)):
+        q_title_tensor_i = autograd.Variable(q_title_tensors[i])
+        q_body_tensor_i = autograd.Variable(q_body_tensors[i])
+        if positive_title_tensors[i].shape[0]:
+            positive_title_tensors_i = autograd.Variable(positive_title_tensors[i])
+            positive_body_tensors_i = autograd.Variable(positive_body_tensors[i])
+        if negative_title_tensors[i].shape[0]:
+            negative_title_tensors_i = autograd.Variable(negative_title_tensors[i])
+            negative_body_tensors_i = autograd.Variable(negative_body_tensors[i])
 
-        labels = torch.stack(batch['labels'],dim=1)
-        labels = labels.numpy()
+        labels = np.array([1]*positive_title_tensors[i].shape[0] + [0]*negative_title_tensors[i].shape[0])
 
         if args.cuda:
-            q_title_tensors = q_title_tensors.cuda()
-            q_body_tensors = q_body_tensors.cuda()
-            candidate_title_tensors = candidate_title_tensors.cuda()
-            candidate_body_tensors = candidate_body_tensors.cuda()
+            q_title_tensor_i = q_title_tensor_i.cuda()
+            q_body_tensor_i = q_body_tensor_i.cuda()
+            if positive_title_tensors[i].shape[0]:
+                positive_title_tensors_i = positive_title_tensors_i.cuda()
+                positive_body_tensors_i = positive_body_tensors_i.cuda()
+            if negative_title_tensors[i].shape[0]:
+                negative_title_tensors_i = negative_title_tensors_i.cuda()
+                negative_body_tensors_i = negative_body_tensors_i.cuda()
 
-        cosine_similarities = model(q_title_tensors,
-                                    q_body_tensors,
-                                    candidate_title_tensors,
-                                    candidate_body_tensors)
-        np_cosine_similarities = cosine_similarities.data.cpu().numpy()
+        if positive_title_tensors[i].shape[0]:
+            pos_cosine_sims = model(q_title_tensor_i,
+                                    q_body_tensor_i,
+                                    positive_title_tensors_i,
+                                    positive_body_tensors_i)
+            pos_cosine_sims_np = pos_cosine_sims.data.cpu().numpy()
+        else:
+            pos_cosine_sims_np = np.array([])
 
-        for i in xrange(labels.shape[0]):
-            auc.add(np_cosine_similarities[i,:],labels[i,:])
+        if negative_title_tensors[i].shape[0]:
+            neg_cosine_sims = model(q_title_tensor_i,
+                                    q_body_tensor_i,
+                                    negative_title_tensors_i,
+                                    negative_body_tensors_i)
+            neg_cosine_sims_np = neg_cosine_sims.data.cpu().numpy()
+        else:
+            pos_cosine_sims_np = np.array([])
 
-        sorted_indices = np_cosine_similarities.argsort(axis=1)
+        cosine_similarities = np.concatenate((pos_cosine_sims_np,neg_cosine_sims_np))
+        sorted_indices = cosine_similarities.argsort()
+        sorted_labels = labels[sorted_indices]
 
-        sorted_labels = labels[np.expand_dims(np.arange(sorted_indices.shape[0]),1), sorted_indices]
-        sorted_labels = np.flip(sorted_labels,1)
-        all_sorted_labels.append(sorted_labels)
+        data_for_evaluation.append(np.flip(sorted_labels,0))
+        auc.add(cosine_similarities, labels)
 
-    all_sorted_labels = np.concatenate(all_sorted_labels)
-    evaluation = Evaluation(all_sorted_labels)
+    evaluation = Evaluation(data_for_evaluation)
 
     print "MAP: {}".format(evaluation.get_MAP())
     print "MRR: {}".format(evaluation.get_MRR())
     print "Precision@1: {}".format(evaluation.get_precision(1))
     print "Precision@5: {}".format(evaluation.get_precision(5))
-    print "AUC(): {}".format(auc.value())
+    print "AUC(): {}".format(auc.value(max_fpr=0.05))
 
     return
-
-

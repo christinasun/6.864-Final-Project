@@ -14,7 +14,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 def compute_baseline(dev_data):
     dev_dataset = dev_data.dataset
-    N = len(dev_data)
 
     data_for_evaluation = []
 
