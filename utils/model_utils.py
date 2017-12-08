@@ -14,7 +14,7 @@ def get_model(embeddings, args):
         return AskUbuntuModels.LSTM(embeddings, args)
     elif args.model_name == 'dan':
         return AskUbuntuModels.DAN(embeddings, args)
-    elif args.model_name == 'bow':
+    elif args.model_name == 'baseline':
         return BaselineModel()
     else:
         raise Exception("Model name {} not supported!".format(args.model_name))

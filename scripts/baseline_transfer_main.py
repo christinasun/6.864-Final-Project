@@ -5,7 +5,7 @@ from os.path import dirname, realpath
 
 sys.path.append(dirname(dirname(realpath(__file__))))
 import utils.android_data_utils as android_data_utils
-import utils.train_utils as train_utils
+import utils.ubuntu_train_utils as train_utils
 import utils.model_utils as model_utils
 import utils.evaluation_utils as evaluation_utils
 from datasets import AskUbuntuDataset

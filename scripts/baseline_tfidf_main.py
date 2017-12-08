@@ -14,8 +14,8 @@ import numpy as np
 
 def evaluate_model(dev_data, model, args):
 
-    # TODO: change model name to baseline/tf-idf
     batch_size = len(dev_data)
+    print batch_size
 
     data_loader = torch.utils.data.DataLoader(
         dev_data,
@@ -33,6 +33,8 @@ def evaluate_model(dev_data, model, args):
 
         labels = torch.stack(batch['labels'],dim=1)
         labels = labels.numpy()
+
+        print labels
 
         cosine_similarities = model.compute(q_tfidf_tensors,
                                             candidate_tfidf_tensors)
@@ -54,7 +56,7 @@ def evaluate_model(dev_data, model, args):
     print "MRR: {}".format(evaluation.get_MRR())
     print "Precision@1: {}".format(evaluation.get_precision(1))
     print "Precision@5: {}".format(evaluation.get_precision(5))
-    print "AUC(): {}".format(auc.value())
+    print "AUC(): {}".format(auc.value(max_fpr=0.05))
 
     return
 
@@ -62,7 +64,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch AskUbuntu Question Retrieval Network')
     # data loading
     parser.add_argument('--num_workers', nargs='?', type=int, default=4, help='num workers for data loader')
-    parser.add_argument('--model_name', nargs="?", type=str, default='bow', help="should be baseline")
+    parser.add_argument('--model_name', nargs="?", type=str, default='baseline', help="should be baseline")
     parser.add_argument('--source', nargs="?", type=str, default='android', help="should be baseline")
     # other
     parser.add_argument('--debug', action='store_true', default=False, help='have print statements')

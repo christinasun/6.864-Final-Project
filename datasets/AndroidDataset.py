@@ -17,17 +17,16 @@ class AndroidDataset(data.Dataset):
             dev_examples = android_data_utils.get_dev_examples()[:max_dataset_size]
             print("dev_examples: ", len(dev_examples))
             for example in dev_examples:
-                self.update_dataset_from_example(example)
+                self.update_dataset_from_dev_or_train_example(example)
         elif name == 'test':
             test_examples = android_data_utils.get_test_examples()[:max_dataset_size]
             print("test_examples: ", len(test_examples))
             for example in test_examples:
-                self.update_dataset_from_example(example)
+                self.update_dataset_from_dev_or_train_example(example)
         else:
             raise Exception("Data set name {} not supported!".format(name))
 
-    ## Convert one example to {x: example, y: label (always 0)}
-    def update_dataset_from_example(self, example):
+    def update_dataset_from_dev_or_train_example(self, example):
         # adds samples to dataset for each training example
         # each training example generates multiple samples
         qid, similar_qids, random_qids = example
@@ -38,18 +37,52 @@ class AndroidDataset(data.Dataset):
         random_candidate_title_tensors = list(random_candidate_title_tensors)
         random_candidate_body_tensors = list(random_candidate_body_tensors)
 
-        for similar_qid in similar_qids:
-            candidates = [similar_qid] + random_qids
-            similar_qid_tensors = map(self.get_indices_tensor, self.data_dict[similar_qid])
+        similar_qid_tensors = [map(self.get_indices_tensor,self.data_dict[cqid]) for cqid in similar_qids]
+        similar_candidate_title_tensors, similar_candidate_body_tensors = zip(*similar_qid_tensors)
+        similar_candidate_title_tensors = list(similar_candidate_title_tensors)
+        similar_candidate_body_tensors = list(similar_candidate_body_tensors)
 
-            sample = {'qid': qid,
-                      'candidates': candidates,
-                      'qid_title_tensor': qid_tensors[0],
-                      'qid_body_tensor': qid_tensors[1],
-                      'candidate_title_tensors': [similar_qid_tensors[0]] + random_candidate_title_tensors,
-                      'candidate_body_tensors': [similar_qid_tensors[1]] + random_candidate_body_tensors
-                      }
-            self.dataset.append(sample)
+        candidates = similar_qids + random_qids
+        labels = [1 if cqid in similar_qids else 0 for cqid in candidates]
+
+        sample = {'qid': qid,
+                  'similar_qids': similar_qids,
+                  'candidates': candidates,
+                  'qid_title_tensor': qid_tensors[0],
+                  'qid_body_tensor': qid_tensors[1],
+                  'candidate_title_tensors': similar_candidate_title_tensors + random_candidate_title_tensors,
+                  'candidate_body_tensors': similar_candidate_body_tensors + random_candidate_body_tensors,
+                  'labels': labels
+                  }
+        self.dataset.append(sample)
+
+        return
+
+    def update_dataset_from_dev_or_test_example(self, example):
+        # adds samples to dataset for each training example
+        # each training example generates multiple samples
+        qid, similar_qids, candidate_qids, BM25_scores = example
+        qid_tensors = map(self.get_indices_tensor, self.data_dict[qid])
+
+        candidate_tensors = [map(self.get_indices_tensor, self.data_dict[cqid]) for cqid in candidate_qids]
+        candidate_title_tensors, candidate_body_tensors = zip(*candidate_tensors)
+        candidate_title_tensors = list(candidate_title_tensors)
+        candidate_body_tensors = list(candidate_body_tensors)
+
+        labels = [1 if cqid in similar_qids else 0 for cqid in candidate_qids]
+
+        sample = \
+            {'qid': qid,
+             'similar_qids': similar_qids,
+             'candidates': candidate_qids,
+             'qid_title_tensor': qid_tensors[0],
+             'qid_body_tensor': qid_tensors[1],
+             'candidate_title_tensors': candidate_title_tensors,
+             'candidate_body_tensors': candidate_body_tensors,
+             'BM25_scores': BM25_scores,
+             'labels': labels
+             }
+        self.dataset.append(sample)
         return
 
     def __len__(self):

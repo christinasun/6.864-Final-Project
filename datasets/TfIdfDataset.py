@@ -50,24 +50,27 @@ class TfIdfDataset(data.Dataset):
 
         if self.source == 'ubuntu':
             qid, similar_qids, candidate_qids, BM25_scores = example
+            candidates = candidate_qids
         elif self.source == 'android':
             qid, similar_qids, candidate_qids = example
+            candidates = similar_qids + candidate_qids
 
         qid_tfidf_tensor = self.get_tfidf_tensor(' '.join(self.data_dict[qid]))
-        candidate_tfidf_tensors = [self.get_tfidf_tensor(' '.join(self.data_dict[cqid])) for cqid in candidate_qids]
+        candidate_tfidf_tensors = [self.get_tfidf_tensor(' '.join(self.data_dict[cqid])) for cqid in candidates]
 
-        labels = [1 if cqid in similar_qids else 0 for cqid in candidate_qids]
+        labels = [1 if cqid in similar_qids else 0 for cqid in candidates]
 
         sample = \
             {'qid': qid,
              'similar_qids': similar_qids,
-             'candidates': candidate_qids,
+             'candidates': candidates,
              'qid_tfidf_tensor': qid_tfidf_tensor,
              'candidate_tfidf_tensors': candidate_tfidf_tensors,
              'labels': labels
              }
         self.dataset.append(sample)
         return
+
 
     def __len__(self):
         return len(self.dataset)
