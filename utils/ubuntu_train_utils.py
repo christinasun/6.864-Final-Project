@@ -11,7 +11,6 @@ import utils.debug_utils as misc_utils
 
 NUM_NEGATIVE_EXCEPTION_MESSAGE = "The number of negative examples desired ({}) is larger than that available ({})."
 
-# TODO: add dropout
 def train_model(train_data, dev_data, model, args):
 
     if args.cuda:

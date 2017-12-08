@@ -29,12 +29,8 @@ class TfIdfDataset(data.Dataset):
             corpus.append(title_and_body)
         self.vectorizer.fit_transform(corpus)
 
-        # if name == 'train':
-        #     train_examples = get_train_examples()[:training_data_size]
-        #     for example in train_examples:
-        #         pass
-        #         #self.update_dataset_from_train_example(example)
 
+        # TODO: decide if we need to implement this for train data (I don't think we do)
         if name == 'dev':
             dev_examples = self.get_dev_examples()
             for example in dev_examples:
@@ -45,9 +41,6 @@ class TfIdfDataset(data.Dataset):
                 self.update_dataset_from_dev_or_test_example(example)
 
     def update_dataset_from_dev_or_test_example(self, example):
-        # adds samples to dataset for each training example
-        # each training example generates multiple samples
-
         if self.source == 'ubuntu':
             qid, similar_qids, candidate_qids, BM25_scores = example
             candidates = candidate_qids
@@ -70,7 +63,6 @@ class TfIdfDataset(data.Dataset):
              }
         self.dataset.append(sample)
         return
-
 
     def __len__(self):
         return len(self.dataset)

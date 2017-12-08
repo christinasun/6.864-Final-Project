@@ -6,12 +6,11 @@ sys.path.append(dirname(dirname(realpath(__file__))))
 import utils.ubuntu_data_utils as ubuntu_data_utils
 
 class AskUbuntuDataset(data.Dataset):
-    # TODO: modify the max_length based on the specifications in the paper
-    def __init__(self, name, word_to_indx, max_length=100, training_data_size=200):
+    def __init__(self, name, word_to_indx, max_seq_length=100, training_data_size=200):
         self.name = name
         self.dataset = []
         self.word_to_indx = word_to_indx
-        self.max_length = max_length
+        self.max_seq_length = max_seq_length
         self.data_dict = ubuntu_data_utils.get_data_dict()
 
         if name == 'train':
@@ -56,8 +55,6 @@ class AskUbuntuDataset(data.Dataset):
         return
 
     def update_dataset_from_dev_or_test_example(self, example):
-        # adds samples to dataset for each training example
-        # each training example generates multiple samples
         qid, similar_qids, candidate_qids, BM25_scores = example
         qid_tensors = map(self.get_indices_tensor, self.data_dict[qid])
 
@@ -93,9 +90,9 @@ class AskUbuntuDataset(data.Dataset):
         nil_indx = 0
         unk_indx = 1
         text_indx = [self.word_to_indx[x.lower()] if x.lower() in self.word_to_indx else unk_indx for x in
-                     text_arr.split()][:self.max_length]
+                     text_arr.split()][:self.max_seq_length]
 
-        if len(text_indx) < self.max_length:
-            text_indx.extend([nil_indx for _ in range(self.max_length - len(text_indx))])
+        if len(text_indx) < self.max_seq_length:
+            text_indx.extend([nil_indx for _ in range(self.max_seq_length - len(text_indx))])
         x = torch.LongTensor(text_indx)
         return x

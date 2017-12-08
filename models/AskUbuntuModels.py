@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import torch.nn as nn
 import numpy as np
 
-
+# TODO: Do we want to add dropout to the lstm?
 class AbstractAskUbuntuModel(nn.Module):
 
     def __init__(self, embeddings, args):
@@ -77,11 +77,10 @@ class DAN(AbstractAskUbuntuModel):
 
 class CNN(AbstractAskUbuntuModel):
 
-    def __init__(self, embeddings, args):
+    def __init__(self, embeddings, args, kernel_size=3):
         super(CNN, self).__init__(embeddings, args)
         vocab_size, embed_dim = embeddings.shape
-        # TODO: make kernel size a parameter
-        self.conv = nn.Conv1d(embed_dim, self.hidden_dim, 3, padding=(2,0))
+        self.conv = nn.Conv1d(embed_dim, self.hidden_dim, kernel_size, padding=(kernel_size - 1, 0))
         self.tanh = nn.Tanh()
         self.dropout = nn.Dropout(p=self.args.dropout)
         self.pooling = 'mean'
@@ -116,7 +115,8 @@ class CNN(AbstractAskUbuntuModel):
             summed = torch.sum(masked, dim=2)
             output = summed
         elif self.pooling == 'max':
-            raise Exception("Pooling method {} not implemented".format(self.pooling))
+            themax = torch.max(masked, dim=2)
+            output = themax
         else:
             raise Exception("Pooling method {} not implemented".format(self.pooling))
         return output
@@ -165,6 +165,13 @@ class LSTM(AbstractAskUbuntuModel):
         N, hd, co =  lstm_out.data.shape
         expanded_mask = mask.expand(N, hd, co)
         masked = torch.mul(expanded_mask,lstm_out)
-        out = torch.sum(masked,0)
 
-        return out
+        if self.pooling == 'mean':
+            summed = torch.sum(masked,0)
+            output = summed
+        elif self.pooling == 'max':
+            themax = torch.max(masked,dim=0)
+            output = themax
+        else:
+            raise Exception("Pooling method {} not implemented".format(self.pooling))
+        return output

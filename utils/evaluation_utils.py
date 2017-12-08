@@ -13,17 +13,9 @@ def evaluate_model(dev_data, model, args):
 
     if args.cuda:
         model = model.cuda()
-
     model.eval()
 
-    # TODO: change model name to baseline/tf-idf
-    if args.model_name == 'bow':
-        print("batch_size: ", len(dev_data))
-        batch_size = len(dev_data) #reason: tfidf needs to be computer over the whole corpus
-    else:
-        batch_size = 10
-
-    N = len(dev_data)
+    batch_size = 10
     data_loader = torch.utils.data.DataLoader(
         dev_data,
         batch_size=batch_size,
@@ -31,7 +23,6 @@ def evaluate_model(dev_data, model, args):
         drop_last=False)
 
     all_sorted_labels = []
-
     auc = AUCMeter()
 
     for batch in data_loader:
@@ -61,8 +52,6 @@ def evaluate_model(dev_data, model, args):
             auc.add(np_cosine_similarities[i,:],labels[i,:])
 
         sorted_indices = np_cosine_similarities.argsort(axis=1)
-        # print "labels shape: {}".format(labels.shape)
-        # print "sorted_indices_shape: {}".format(sorted_indices.shape)
 
         sorted_labels = labels[np.expand_dims(np.arange(sorted_indices.shape[0]),1), sorted_indices]
         sorted_labels = np.flip(sorted_labels,1)
