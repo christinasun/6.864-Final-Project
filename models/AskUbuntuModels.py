@@ -32,7 +32,6 @@ class AbstractAskUbuntuModel(nn.Module):
         q_encoding_before_mean = torch.stack([q_title_encodings, q_body_encodings])
         q_encoding = torch.mean(q_encoding_before_mean, dim=0)
 
-        print candidate_title_tensors.size()
         num_candidates, batch_size, embedding_dim = candidate_title_tensors.size()
 
         # get the encodings for the flattened out candidate tensors
