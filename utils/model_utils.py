@@ -2,7 +2,7 @@ import sys
 from os.path import dirname, realpath
 sys.path.append(dirname(dirname(realpath(__file__))))
 import models.AskUbuntuModels as AskUbuntuModels
-from models.TransferModels import TransferModel
+from models.Adversary import TransferModel
 
 
 # Depending on arg, build dataset

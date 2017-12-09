@@ -9,19 +9,11 @@ class TransferModel(nn.Module):
     def __init__(self, embeddings, args, encoder, domain_classifier):
         super(TransferModel, self).__init__()
 
-        self.name = None
         self.args = args
 
         self.encoder = encoder
         self.domain_classifier = domain_classifier
-
-        vocab_size, embed_dim = embeddings.shape
-
-        self.embedding_layer = nn.Embedding(vocab_size, embed_dim)
-        self.embedding_layer.weight.data = torch.from_numpy(embeddings)
-        self.embedding_layer.requires_grad = False
-
-        self.encoder_hidden_dim = args.hidden_dim
+        self.hidden_dim = args.hidden_dim
 
         return
 
