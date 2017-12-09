@@ -96,6 +96,19 @@ class AskUbuntuDataset(data.Dataset):
         self.dataset.append(sample)
         return
 
+    def get_random_samples_from_from_corpus(self, num_samples):
+        samples = []
+        for i in range(num_samples):
+            id = random.choice(self.data_dict.keys())
+            tensors = map(self.get_indices_tensor,self.data_dict[id])
+            title_tensor, body_tensor = zip(*tensors)
+            sample = {'id': id,
+                      'title_tensor': title_tensor
+                      'body_tensor': body_tensor
+                      }
+            samples.append(sample)
+        return samples
+
     def __len__(self):
         return len(self.dataset)
 
