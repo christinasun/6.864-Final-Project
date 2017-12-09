@@ -24,10 +24,7 @@ def train_model(train_data, dev_data, model, args):
 
         print "-------------\nEpoch {}:\n".format(epoch)
 
-        if args.model_name == "bow":
-            loss = run_epoch(train_data, False, model, optimizer, args)
-        else:
-            loss = run_epoch(train_data, True, model, optimizer, args)
+        loss = run_epoch(train_data, True, model, optimizer, args)
 
         print 'Train Multi-margin loss: {:.6f}\n'.format(loss)
 
