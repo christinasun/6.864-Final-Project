@@ -73,13 +73,8 @@ class AndroidDataset(data.Dataset):
         unk_indx = 1
         text_indx = [self.word_to_indx[x.lower()] if x.lower() in self.word_to_indx else unk_indx for x in text_arr.split()][:self.max_length]
 
-        for indx in text_indx:
-            if indx in self.indx_to_count.keys():
-                self.indx_to_count[indx] += 1
-            else:
-                self.indx_to_count[indx] = 0
-
         if len(text_indx) < self.max_length:
             text_indx.extend( [nil_indx for _ in range(self.max_length - len(text_indx))])
         x =  torch.LongTensor(text_indx)
         return x
+
