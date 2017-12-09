@@ -67,11 +67,11 @@ class AskUbuntuDataset(data.Dataset):
 
         positive_qids = similar_qids
         positive_tensors = [map(self.get_indices_tensor, self.data_dict[qid]) for qid in positive_qids]
-        positive_title_tensors, positive_body_tensors = zip(*candidate_tensors)
+        positive_title_tensors, positive_body_tensors = zip(*positive_tensors)
 
         negative_qids = [cpid for cpid in candidate_qids if cpid not in similar_qids]
         negative_tensors = [map(self.get_indices_tensor, self.data_dict[qid]) for qid in negative_qids]
-        negative_title_tensors, negative_body_tensors = zip(*candidate_tensors)
+        negative_title_tensors, negative_body_tensors = zip(*negative_tensors)
 
         sample = \
             {'qid': qid,
