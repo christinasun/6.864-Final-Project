@@ -58,20 +58,31 @@ class AskUbuntuDataset(data.Dataset):
         qid, similar_qids, candidate_qids, BM25_scores = example
         qid_tensors = map(self.get_indices_tensor, self.data_dict[qid])
 
-        candidate_tensors = [map(self.get_indices_tensor, self.data_dict[cqid]) for cqid in candidate_qids]
-        candidate_title_tensors, candidate_body_tensors = zip(*candidate_tensors)
-        candidate_title_tensors = list(candidate_title_tensors)
-        candidate_body_tensors = list(candidate_body_tensors)
+        # candidate_tensors = [map(self.get_indices_tensor, self.data_dict[cqid]) for cqid in candidate_qids]
+        # candidate_title_tensors, candidate_body_tensors = zip(*candidate_tensors)
+        # candidate_title_tensors = list(candidate_title_tensors)
+        # candidate_body_tensors = list(candidate_body_tensors)
 
         labels = [1 if cqid in similar_qids else 0 for cqid in candidate_qids]
 
         positive_qids = similar_qids
         positive_tensors = [map(self.get_indices_tensor, self.data_dict[qid]) for qid in positive_qids]
-        positive_title_tensors, positive_body_tensors = zip(*candidate_tensors)
+        if len(positive_tensors) > 0:
+            positive_title_tensors, positive_body_tensors = zip(*positive_tensors)
+            positive_title_tensors = list(positive_title_tensors)
+            positive_body_tensors = list(positive_body_tensors)
+        else:
+            positive_title_tensors, positive_body_tensors = [], []
 
         negative_qids = [cpid for cpid in candidate_qids if cpid not in similar_qids]
         negative_tensors = [map(self.get_indices_tensor, self.data_dict[qid]) for qid in negative_qids]
-        negative_title_tensors, negative_body_tensors = zip(*candidate_tensors)
+        if len(negative_tensors) > 0:
+            negative_title_tensors, negative_body_tensors = zip(*negative_tensors)
+            negative_title_tensors= list(negative_title_tensors)
+            negative_body_tensors= list(negative_body_tensors)
+        else:
+            negative_title_tensors, negative_body_tensors = [], []
+
 
         sample = \
             {'qid': qid,

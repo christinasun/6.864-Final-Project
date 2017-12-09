@@ -37,14 +37,15 @@ def evaluate_model(dev_data, model, args):
         sample in dev_dataset]
 
     for i in xrange(len(q_title_tensors)):
-        q_title_tensor_i = autograd.Variable(q_title_tensors[i])
-        q_body_tensor_i = autograd.Variable(q_body_tensors[i])
+        q_title_tensor_i = autograd.Variable(q_title_tensors[i]).unsqueeze(0)
+        q_body_tensor_i = autograd.Variable(q_body_tensors[i]).unsqueeze(0)
         if positive_title_tensors[i].shape[0]:
-            positive_title_tensors_i = autograd.Variable(positive_title_tensors[i])
-            positive_body_tensors_i = autograd.Variable(positive_body_tensors[i])
+            # unsqueeze to make "batch size" of 1
+            positive_title_tensors_i = autograd.Variable(positive_title_tensors[i]).unsqueeze(1)
+            positive_body_tensors_i = autograd.Variable(positive_body_tensors[i]).unsqueeze(1)
         if negative_title_tensors[i].shape[0]:
-            negative_title_tensors_i = autograd.Variable(negative_title_tensors[i])
-            negative_body_tensors_i = autograd.Variable(negative_body_tensors[i])
+            negative_title_tensors_i = autograd.Variable(negative_title_tensors[i]).unsqueeze(1)
+            negative_body_tensors_i = autograd.Variable(negative_body_tensors[i]).unsqueeze(1)
 
         labels = np.array([1]*positive_title_tensors[i].shape[0] + [0]*negative_title_tensors[i].shape[0])
 
@@ -65,7 +66,7 @@ def evaluate_model(dev_data, model, args):
                                     positive_body_tensors_i)
             pos_cosine_sims_np = pos_cosine_sims.data.cpu().numpy()
         else:
-            pos_cosine_sims_np = np.array([])
+            pos_cosine_sims_np = np.array([[]])
 
         if negative_title_tensors[i].shape[0]:
             neg_cosine_sims = model(q_title_tensor_i,
@@ -74,9 +75,9 @@ def evaluate_model(dev_data, model, args):
                                     negative_body_tensors_i)
             neg_cosine_sims_np = neg_cosine_sims.data.cpu().numpy()
         else:
-            pos_cosine_sims_np = np.array([])
+            neg_cosine_sims_np = np.array([[]])
 
-        cosine_similarities = np.concatenate((pos_cosine_sims_np,neg_cosine_sims_np))
+        cosine_similarities = np.concatenate((pos_cosine_sims_np[0],neg_cosine_sims_np[0]))
         sorted_indices = cosine_similarities.argsort()
         sorted_labels = labels[sorted_indices]
 
