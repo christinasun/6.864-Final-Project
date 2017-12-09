@@ -80,7 +80,7 @@ class CNN(AbstractAskUbuntuModel):
     def __init__(self, embeddings, args, kernel_size=3):
         super(CNN, self).__init__(embeddings, args)
         vocab_size, embed_dim = embeddings.shape
-        self.conv = nn.Conv1d(embed_dim, self.hidden_dim, kernel_size, padding=(kernel_size - 1, 0))
+        self.conv = nn.Conv1d(embed_dim, self.hidden_dim, kernel_size, padding=kernel_size-1)
         self.tanh = nn.Tanh()
         self.dropout = nn.Dropout(p=self.args.dropout)
         self.pooling = 'mean'
@@ -104,12 +104,13 @@ class CNN(AbstractAskUbuntuModel):
         hiddens = self.conv(x_perm)
         post_dropout = self.dropout(hiddens)
         tanh_x = self.tanh(post_dropout)
+        tanh_x_cropped = tanh_x[:,:,:self.args.len_query]
 
-        N, hd, co =  tanh_x.data.shape
+        N, hd, co =  tanh_x_cropped.data.shape
         mask = torch.unsqueeze(mask,1)
         expanded_mask = mask.expand(N, hd, co)
 
-        masked = torch.mul(expanded_mask,tanh_x)
+        masked = torch.mul(expanded_mask,tanh_x_cropped)
 
         if self.pooling == 'mean':
             summed = torch.sum(masked, dim=2)
