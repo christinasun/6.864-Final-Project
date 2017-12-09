@@ -51,16 +51,16 @@ if __name__ == '__main__':
 
     if args.train:
         print "Getting Train Data..."
-        train_data = AskUbuntuDataset('train', word_to_indx, max_length=args.len_query, training_data_size=args.training_data_size)
+        train_data = AskUbuntuDataset('train', word_to_indx, max_seq_length=args.len_query, training_data_size=args.training_data_size)
     print "Getting Ubuntu Dev Data..."
-    ubuntu_dev_data = AskUbuntuDataset('dev', word_to_indx, max_length=args.len_query)
+    ubuntu_dev_data = AskUbuntuDataset('dev', word_to_indx, max_seq_length=args.len_query)
     print "Getting Ubuntu Test Data..."
-    ubuntu_test_data = AskUbuntuDataset('test', word_to_indx, max_length=args.len_query)
+    ubuntu_test_data = AskUbuntuDataset('test', word_to_indx, max_seq_length=args.len_query)
 
     print "Getting Android Dev Data..."
-    android_dev_data = AndroidDataset('dev', word_to_indx, max_length=args.len_query)
+    android_dev_data = AndroidDataset('dev', word_to_indx, max_seq_length=args.len_query)
     print "Getting Android Test Data..."
-    android_test_data = AndroidDataset('test', word_to_indx, max_length=args.len_query)
+    android_test_data = AndroidDataset('test', word_to_indx, max_seq_length=args.len_query)
 
     torch.manual_seed(args.seed)
     if args.cuda:
