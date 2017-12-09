@@ -14,7 +14,7 @@ DEV_POS_FILE = os.path.join(DATA_PATH,"dev.pos.txt")
 DEV_NEG_FILE = os.path.join(DATA_PATH,"dev.neg.txt")
 TEST_POS_FILE = os.path.join(DATA_PATH,"test.pos.txt")
 TEST_NEG_FILE = os.path.join(DATA_PATH,"test.neg.txt")
-GLOVE_FILE = os.path.join(HOME_PATH,'data/glove.840B.300d.txt')
+GLOVE_FILE = os.path.join(HOME_PATH,'data/pruned_glove.840B.300d.txt')
 
 
 def get_data_dict():

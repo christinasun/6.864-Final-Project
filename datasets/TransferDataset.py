@@ -19,8 +19,8 @@ class TransferDataset(data.Dataset):
         self.android_data_dict = android_data_utils.get_data_dict()
         self.ubuntu_data_dict = ubuntu_data_utils.get_data_dict()
 
-    for i in range(self.dataset_size):
-        self.update_dataset_from_train_example()
+        for i in xrange(self.dataset_size):
+            self.update_dataset_from_train_example()
 
     def update_dataset_from_train_example(self, num_samples):
 
@@ -38,9 +38,9 @@ class TransferDataset(data.Dataset):
         indexes = range(2*num_samples)
         random.shuffle(indexes)
 
-        sample = {'id': ids[indexes]
-                  'title_tensors': title_tensors[indexes]
-                  'body_tensors': body_tensors[indexes]
+        sample = {'id': ids[indexes],
+                  'title_tensors': title_tensors[indexes],
+                  'body_tensors': body_tensors[indexes],
                   'labels': labels[indexes]
                   }
         self.dataset.append(sample)

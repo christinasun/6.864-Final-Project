@@ -103,7 +103,7 @@ class AskUbuntuDataset(data.Dataset):
             tensors = map(self.get_indices_tensor,self.data_dict[id])
             title_tensor, body_tensor = zip(*tensors)
             sample = {'id': id,
-                      'title_tensor': title_tensor
+                      'title_tensor': title_tensor,
                       'body_tensor': body_tensor
                       }
             samples.append(sample)
