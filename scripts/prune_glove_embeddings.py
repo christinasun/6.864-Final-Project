@@ -65,7 +65,7 @@ if __name__ == "__main__":
                 word, vector_string = line.strip().split(" ", 1)
                 if word in word_set:
                     saved_counter += 1
-                    # pruned_glove_file.write(line)
+                    pruned_glove_file.write(line)
                 else:
                     pass
                     # print word
