@@ -83,7 +83,6 @@ class AskUbuntuDataset(data.Dataset):
         else:
             negative_title_tensors, negative_body_tensors = [], []
 
-
         sample = \
             {'qid': qid,
              'similar_qids': similar_qids,
