@@ -8,8 +8,8 @@ import utils.android_data_utils as android_data_utils
 import utils.ubuntu_train_utils as train_utils
 import utils.model_utils as model_utils
 import utils.evaluation_utils as evaluation_utils
-from datasets import AskUbuntuDataset
-from datasets import AndroidDataset
+from datasets.AndroidDataset import AndroidDataset
+from datasets.AskUbuntuDataset import AskUbuntuDataset
 import torch
 import numpy as np
 
