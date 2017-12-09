@@ -6,11 +6,11 @@ sys.path.append(dirname(dirname(realpath(__file__))))
 import utils.android_data_utils as android_data_utils
 
 class AndroidDataset(data.Dataset):
-    def __init__(self, name, word_to_indx, max_length=100, max_dataset_size=800):
+    def __init__(self, name, word_to_indx, max_seq_length=100, max_dataset_size=800):
         self.name = name
         self.dataset = []
         self.word_to_indx  = word_to_indx
-        self.max_length = max_length
+        self.max_length = max_seq_length
         self.data_dict = android_data_utils.get_data_dict()
 
         # TODO: add support for train example
