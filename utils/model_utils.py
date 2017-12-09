@@ -2,7 +2,7 @@ import sys
 from os.path import dirname, realpath
 sys.path.append(dirname(dirname(realpath(__file__))))
 import models.AskUbuntuModels as AskUbuntuModels
-from models.TransferModels import AbstractTransferModel
+from models.TransferModels import TransferModel
 
 
 # Depending on arg, build dataset
@@ -15,7 +15,7 @@ def get_model(embeddings, args):
     elif args.model_name == 'dan':
         return AskUbuntuModels.DAN(embeddings, args)
     elif args.model_name == 'adt':
-        return AbstractTransferModel()
+        return TransferModel()
     else:
         raise Exception("Model name {} not supported!".format(args.model_name))
 

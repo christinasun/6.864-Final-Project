@@ -4,13 +4,17 @@ import torch.nn.functional as F
 import torch.nn as nn
 import numpy as np
 
-class AbstractTransferModel(nn.Module):
+class TransferModel(nn.Module):
 
-    def __init__(self, embeddings, args):
-        super(AbstractTransferModel, self).__init__()
+    def __init__(self, embeddings, args, encoder, domain_classifier):
+        super(TransferModel, self).__init__()
 
         self.name = None
         self.args = args
+
+        self.encoder = encoder
+        self.domain_classifier = domain_classifier
+
         vocab_size, embed_dim = embeddings.shape
 
         self.embedding_layer = nn.Embedding(vocab_size, embed_dim)
@@ -31,15 +35,15 @@ class AbstractTransferModel(nn.Module):
 
 
         ### LABEL PREDICTION (lp) ###
-        q_title_encodings = self.forward_helper(q_title_tensors)
-        q_body_encodings = self.forward_helper(q_body_tensors)
+        q_title_encodings = self.encoder(q_title_tensors)
+        q_body_encodings = self.encoder(q_body_tensors)
         q_encoding_before_mean = torch.stack([q_title_encodings, q_body_encodings])
         q_encoding = torch.mean(q_encoding_before_mean, dim=0)
 
         # get the encodings for the flattened out candidate tensors
         num_candidates, batch_size, embedding_dim = candidate_title_tensors.size()
-        candidate_title_encodings = self.encode(candidate_title_tensors.view(num_candidates*batch_size,embedding_dim))
-        candidate_body_encodings = self.encode(candidate_body_tensors.view(num_candidates*batch_size,embedding_dim))
+        candidate_title_encodings = self.encoder(candidate_title_tensors.view(num_candidates*batch_size,embedding_dim))
+        candidate_body_encodings = self.encoder(candidate_body_tensors.view(num_candidates*batch_size,embedding_dim))
         candidate_encodings_before_mean = torch.stack([candidate_title_encodings, candidate_body_encodings])
         candidate_encodings = torch.mean(candidate_encodings_before_mean, dim=0)
 
@@ -59,39 +63,13 @@ class AbstractTransferModel(nn.Module):
 
         # get the encodings for the flattened out domain classifier tensors
         num_for_dc, batch_size, embedding_dim = for_dc_title_tensors.size()
-        for_dc_title_encodings = self.encode(for_dc_title_tensors.view(num_for_dc * batch_size, embedding_dim))
-        for_dc_body_encodings = self.encode(for_dc_title_tensors.view(num_for_dc * batch_size, embedding_dim))
+        for_dc_title_encodings = self.encoder(for_dc_title_tensors.view(num_for_dc * batch_size, embedding_dim))
+        for_dc_body_encodings = self.encoder(for_dc_title_tensors.view(num_for_dc * batch_size, embedding_dim))
         for_dc_encodings_before_mean = torch.stack([for_dc_title_encodings, for_dc_body_encodings])
         for_dc_encodings = torch.mean(for_dc_encodings_before_mean, dim=0)
 
-        expanded_labels = self.classify_domain(for_dc_encodings)
+        expanded_labels = self.domain_classifier(for_dc_encodings)
 
         dc_output = expanded_labels.view(num_candidates,batch_size,1).view(num_candidates,batch_size).t()
 
         return lp_output, dc_output
-
-    def encode(self, tensor):
-        pass
-
-    def classify_domain(self, tensor):
-        pass
-
-
-class DAN(AbstractTransferModel):
-
-    def __init__(self, embeddings, args):
-        super(DAN, self).__init__(embeddings, args)
-        vocab_size, embed_dim = embeddings.shape
-        self.W_hidden = nn.Linear(embed_dim, embed_dim)
-        self.W_out = nn.Linear(embed_dim, self.hidden_dim)
-        self.name = 'dan'
-
-    def encode(self, tensor):
-        all_x = self.embedding_layer(tensor)
-        avg_x = torch.mean(all_x, dim=1)
-        hidden = F.relu( self.W_hidden(avg_x) )
-        out = self.W_out(hidden)
-        return out
-
-    def classify_domain(self, tensor):
-        return 1
