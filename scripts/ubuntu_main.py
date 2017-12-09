@@ -50,11 +50,11 @@ if __name__ == '__main__':
 
     if args.train:
         print "Getting Train Data..."
-        train_data = AskUbuntuDataset('train', word_to_indx, max_length=args.len_query, training_data_size=args.training_data_size)
+        train_data = AskUbuntuDataset.AskUbuntuDataset('train', word_to_indx, max_seq_length=args.len_query, training_data_size=args.training_data_size)
     print "Getting Dev Data..."
-    dev_data = AskUbuntuDataset('dev', word_to_indx, max_length=args.len_query)
+    dev_data = AskUbuntuDataset.AskUbuntuDataset('dev', word_to_indx, max_seq_length=args.len_query)
     print "Getting Test Data..."
-    test_data = AskUbuntuDataset('test', word_to_indx, max_length=args.len_query)
+    test_data = AskUbuntuDataset.AskUbuntuDataset('test', word_to_indx, max_seq_length=args.len_query)
 
     torch.manual_seed(args.seed)
     if args.cuda:
