@@ -52,8 +52,6 @@ class AndroidDataset(data.Dataset):
                       'candidates': [similar_qids[i]]+random_qids,
                       'q_title_tensor': qid_tensors[0],
                       'q_body_tensor': qid_tensors[1],
-                      # 'candidate_title_tensors': [similar_candidate_title_tensors[i]] + random_candidate_title_tensors,
-                      # 'candidate_body_tensors': [similar_candidate_body_tensors[i]] + random_candidate_body_tensors,
                       'positive_title_tensors': similar_candidate_title_tensors,
                       'positive_body_tensors': similar_candidate_body_tensors,
                       'negative_title_tensors': random_candidate_title_tensors,

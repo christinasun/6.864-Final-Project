@@ -58,11 +58,6 @@ class AskUbuntuDataset(data.Dataset):
         qid, similar_qids, candidate_qids, BM25_scores = example
         qid_tensors = map(self.get_indices_tensor, self.data_dict[qid])
 
-        # candidate_tensors = [map(self.get_indices_tensor, self.data_dict[cqid]) for cqid in candidate_qids]
-        # candidate_title_tensors, candidate_body_tensors = zip(*candidate_tensors)
-        # candidate_title_tensors = list(candidate_title_tensors)
-        # candidate_body_tensors = list(candidate_body_tensors)
-
         labels = [1 if cqid in similar_qids else 0 for cqid in candidate_qids]
 
         positive_qids = similar_qids
