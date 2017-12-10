@@ -8,6 +8,9 @@ from os.path import dirname, realpath, join
 sys.path.append(dirname(dirname(realpath(__file__))))
 import utils.evaluation_utils as eval_utils
 import utils.debug_utils as misc_utils
+from models.Adversary import Adversary
+from models.LabelPredictor import LabelPredictor
+from itertools import izip
 
 NUM_NEGATIVE_EXCEPTION_MESSAGE = "The number of negative examples desired ({}) is larger than that available ({})."
 
@@ -18,18 +21,22 @@ def train_model(train_data_label_predictor, train_data_adversary, dev_data, enco
         domain_classifier_model = domain_classifier_model.cuda()
 
     encoder_optimizer = torch.optim.Adam(encoder_model.parameters() , lr=args.encoder_lr)
-    domain_classifier_optimizer = torch.optim.Adam(domain_classifier_model.parameters(), lr=args.domain_classifier_lr)
+    domain_classifier_lr = -args.domain_classifier_lr # we set the learning rate to negative to train the adversary
+    domain_classifier_optimizer = torch.optim.Adam(domain_classifier_model.parameters(), lr=domain_classifier_lr)
 
-    encoder_model.train()
-    domain_classifier_model.train()
+    label_predictor = LabelPredictor(args, encoder_model)
+    adversary = Adversary(args, encoder_model, domain_classifier_model)
+
+    label_predictor.train()
+    adversary.train()
 
     for epoch in range(1, args.epochs+1):
 
         print "-------------\nEpoch {}:\n".format(epoch)
         
-        encoder_loss, domain_classifier_loss = run_epoch(train_data_label_predictor, train_data_adversary, True, encoder_model, domain_classifier_model, encoder_optimizer, domain_classifier_optimizer, args)
+        loss = run_epoch(train_data_label_predictor, train_data_adversary, True, label_predictor, adversary, encoder_optimizer, domain_classifier_optimizer, args)
 
-        print 'Train Multi-margin loss: {:.6f}\n'.format(loss)
+        print 'Train loss: {:.6f}\n'.format(loss)
 
         eval_utils.evaluate_model(dev_data, encoder_model, args)
 
@@ -39,7 +46,8 @@ def train_model(train_data_label_predictor, train_data_adversary, dev_data, enco
         torch.save(domain_classifier_model, join(args.save_path,'domain_classifier_epoch_{}.pt'.format(epoch)))
 
 
-def run_epoch(train_data_label_predictor, train_data_adversary, is_training, encoder_model, domain_classifier_model, encoder_optimizer, domain_classifier_optimizer, args):
+def run_epoch(train_data_label_predictor, train_data_adversary, is_training, label_predictor, adversary,
+              encoder_optimizer, domain_classifier_optimizer, args):
     '''
     Train model for one pass of train data, and return loss, acccuracy
     '''
@@ -58,12 +66,14 @@ def run_epoch(train_data_label_predictor, train_data_adversary, is_training, enc
     losses = []
 
     if is_training:
-        model.train()
+        label_predictor.train()
+        adversary.train()
     else:
-        model.eval()
+        label_predictor.eval()
+        adversary.eval()
 
     encoder_loss_function = torch.nn.MultiMarginLoss(p=1, margin=args.margin, weight=None, size_average=True)
-    domain_classifier_loss_function = torch.nn.CrossEntropyLoss(p=1, margin=args.margin, weight=None, size_average=True)
+    domain_classifier_loss_function = torch.nn.BCELoss(weight=None, size_average=True)
 
     for label_predictor_batch, adversary_batch in tqdm(izip(data_loader_label_predictor, data_loader_train_adversary)):
         print("label_predictor_batch: ", label_predictor_batch)
@@ -77,6 +87,7 @@ def run_epoch(train_data_label_predictor, train_data_adversary, is_training, enc
 
         if args.debug: misc_utils.print_shape_tensor('candidate_body_tensors', candidate_body_tensors)
 
+        # For the adversary:
         title_tensors = autograd.Variable(adversary_batch['title_tensors'])
         body_tensors = autograd.Variable(adversary_batch['body_tensors'])
 
@@ -97,30 +108,30 @@ def run_epoch(train_data_label_predictor, train_data_adversary, is_training, enc
         selected_candidate_body_tensors = autograd.Variable(candidate_body_tensors.gather(0,inds3d))
         if args.debug: misc_utils.print_shape_variable('selected_candidate_body_tensors', selected_candidate_body_tensors)
 
-        targets = autograd.Variable(torch.LongTensor([0]*args.batch_size))
-        if args.debug: misc_utils.print_shape_variable('targets', targets)
+        MML_targets = autograd.Variable(torch.LongTensor([0]*args.batch_size))
+        if args.debug: misc_utils.print_shape_variable('targets', MML_targets)
 
-        target_labels = autograd.Variable(adversary_batch['labels'])
-        if args.debug: misc_utils.print_shape_variable('target_labels', target_labels)
+        BCE_targets = autograd.Variable(adversary_batch['labels'])
+        if args.debug: misc_utils.print_shape_variable('target_labels', BCE_targets)
 
         if args.cuda:
             q_title_tensors = q_title_tensors.cuda()
             q_body_tensors = q_body_tensors.cuda()
             selected_candidate_title_tensors = selected_candidate_title_tensors.cuda()
             selected_candidate_body_tensors = selected_candidate_body_tensors.cuda()
-            targets = targets.cuda()
-            target_labels = target_labels.cuda()
             title_tensors = title_tensors.cuda()
             body_tensors = body_tensors.cuda()
+            MML_targets = MML_targets.cuda()
+            BCE_targets = BCE_targets.cuda()
 
         if is_training:
             encoder_optimizer.zero_grad()
             domain_classifier_optimizer.zero_grad()
 
-        cosine_similarities = encoder_model(q_title_tensors, q_body_tensors,
+        cosine_similarities = label_predictor(q_title_tensors, q_body_tensors,
                                     selected_candidate_title_tensors, selected_candidate_body_tensors)
 
-        domain_labels = domain_classifier_model(title_tensors, body_tensors)
+        domain_labels = adversary(title_tensors, body_tensors)
 
         if args.debug: misc_utils.print_shape_variable('cosine_similarities', cosine_similarities)
         if args.debug: print "cosine_similarities: {}".format(cosine_similarities)
@@ -128,9 +139,8 @@ def run_epoch(train_data_label_predictor, train_data_adversary, is_training, enc
         if args.debug: misc_utils.print_shape_variable('domain_labels', domain_labels)
         if args.debug: print "domain_labels: {}".format(domain_labels)
 
-        encoder_loss = encoder_loss_function(cosine_similarities, targets)
-        domain_classifier_loss = domain_classifier_loss_function(domain_labels, target_labels)
-
+        encoder_loss = encoder_loss_function(cosine_similarities, MML_targets)
+        domain_classifier_loss = domain_classifier_loss_function(domain_labels, BCE_targets)
         loss = encoder_loss - args.lam*domain_classifier_loss
 
         if is_training:

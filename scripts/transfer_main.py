@@ -2,15 +2,16 @@ import argparse
 import sys
 import os
 from os.path import dirname, realpath
+import torch
 
 sys.path.append(dirname(dirname(realpath(__file__))))
 import utils.android_data_utils as android_data_utils
 import utils.transfer_train_utils as train_utils
 import utils.model_utils as model_utils
 import utils.evaluation_utils as evaluation_utils
-from datasets import AskUbuntuDataset
-from datasets import AndroidDataset
-from datasets import TransferDataset
+from datasets.AskUbuntuDataset import AskUbuntuDataset
+from datasets.AndroidDataset import AndroidDataset
+from datasets.TransferDataset import TransferDataset
 import numpy as np
 
 
@@ -29,7 +30,8 @@ if __name__ == '__main__':
     # data loading
     parser.add_argument('--num_workers', nargs='?', type=int, default=4, help='num workers for data loader')
     # model
-    parser.add_argument('--model_name', nargs="?", type=str, default='cnn', help="Form of model, i.e dan, rnn, etc.")
+    parser.add_argument('--enc_model_name', nargs="?", type=str, default='enc-lstm', help="Form of model, i.e dan, rnn, etc.")
+    parser.add_argument('--dom_model_name', nargs="?", type=str, default='dom', help="Form of model, i.e dan, rnn, etc.")
     parser.add_argument('--hidden_dim', type=int, default=20, help='dimension of the hidden layer [default: 20]')
     # device
     parser.add_argument('--cuda', action='store_true', default=False, help='enable the gpu')
@@ -55,7 +57,7 @@ if __name__ == '__main__':
     if args.train:
         print "Getting Train Data..."
         train_data_label_predictor = AskUbuntuDataset('train', word_to_indx, max_seq_length=args.len_query, training_data_size=args.training_data_size)
-        train_data_adversary = TransferDataset(name, word_to_indx, max_seq_length=args.len_query, dataset_size=args.training_data_size):
+        train_data_adversary = TransferDataset('train', word_to_indx, max_seq_length=args.len_query, max_dataset_size=args.training_data_size)
     
     print "Getting Ubuntu Dev Data..."
     ubuntu_dev_data = AskUbuntuDataset('dev', word_to_indx, max_seq_length=args.len_query)
@@ -82,11 +84,10 @@ if __name__ == '__main__':
         except :
             print "Sorry, This snapshot doesn't exist."
             exit()
+
     print encoder_model
-    print domain_classifier_model
     parameter_num = 0
     embedding_parameter_num = 0
-
     for param in encoder_model.parameters():
         if parameter_num == 0:
             embedding_parameter_num = np.prod(param.data.shape)
@@ -94,12 +95,10 @@ if __name__ == '__main__':
     print "Total number of encoder parameters: {}".format(parameter_num)
     print "Number of trainable encoder parameters: {}".format(parameter_num - embedding_parameter_num)
 
+    print domain_classifier_model
     for param in domain_classifier_model.parameters():
-        if parameter_num == 0:
-            embedding_parameter_num = np.prod(param.data.shape)
         parameter_num += np.prod(param.data.shape)
     print "Total number of domain classifier parameters: {}".format(parameter_num)
-    print "Number of trainable domain classifier parameters: {}".format(parameter_num - embedding_parameter_num)
 
     # train
     if args.train:

@@ -9,7 +9,7 @@ import numpy as np
 sys.path.append(dirname(dirname(realpath(__file__))))
 
 class TransferDataset(data.Dataset):
-    def __init__(self, name, word_to_indx, max_length=100, max_dataset_size=800):
+    def __init__(self, name, word_to_indx, max_seq_length=100, max_dataset_size=800):
         self.name = name
         self.dataset = []
         self.word_to_indx  = word_to_indx
