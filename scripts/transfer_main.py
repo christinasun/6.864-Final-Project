@@ -1,6 +1,7 @@
 import argparse
 import sys
 import os
+import torch
 from os.path import dirname, realpath
 
 sys.path.append(dirname(dirname(realpath(__file__))))
@@ -10,14 +11,16 @@ import utils.model_utils as model_utils
 import utils.evaluation_utils as evaluation_utils
 from datasets import AskUbuntuDataset
 from datasets import AndroidDataset
-import torch
+from datasets import TransferDataset
 import numpy as np
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch AskUbuntu Question Retrieval Network')
     # learning
-    parser.add_argument('--lr', type=float, default=0.001, help='initial learning rate [default: 0.001]')
+    parser.add_argument('--encoder_lr', type=float, default=0.001, help='initial learning rate [default: 0.001]')
+    parser.add_argument('--domain_classifier_lr', type=float, default=0.001, help='initial learning rate [default: 0.001]')
+    parser.add_argument('--lam', type=float, default=0.001, help='lambda [default: 0.001]')
     parser.add_argument('--dropout', type=float, default=0.2, help='initial learning rate [default: 0.001]')
     parser.add_argument('--margin', type=float, default=0.5, help='margin size [default: 0.5]')
     parser.add_argument('--epochs', type=int, default=6, help='number of epochs for train [default: 256]')
@@ -34,7 +37,8 @@ if __name__ == '__main__':
     parser.add_argument('--train', action='store_true', default=False, help='enable train')
     parser.add_argument('--eval', action='store_true', default=False, help='enable eval')
     # task
-    parser.add_argument('--snapshot', type=str, default=None, help='filename of model snapshot to load[default: None]')
+    parser.add_argument('--encoder_snapshot', type=str, default=None, help='filename of model snapshot to load[default: None]')
+    parser.add_argument('--domain_classifier_snapshot', type=str, default=None, help='filename of model snapshot to load[default: None]')
     parser.add_argument('--save_path', type=str, default="saved_models/default", help='Path where to dump model')
     # other
     parser.add_argument('--len_query', type=int, default=100, help='how much of the query body to use [default 100]')
@@ -51,16 +55,18 @@ if __name__ == '__main__':
 
     if args.train:
         print "Getting Train Data..."
-        train_data = AskUbuntuDataset('train', word_to_indx, max_length=args.len_query, training_data_size=args.training_data_size)
+        train_data_label_predictor = AskUbuntuDataset('train', word_to_indx, max_seq_length=args.len_query, training_data_size=args.training_data_size)
+        train_data_adversary = TransferDataset('train', word_to_indx, max_seq_length=args.len_query, dataset_size=args.training_data_size)
+    
     print "Getting Ubuntu Dev Data..."
-    ubuntu_dev_data = AskUbuntuDataset('dev', word_to_indx, max_length=args.len_query)
+    ubuntu_dev_data = AskUbuntuDataset('dev', word_to_indx, max_seq_length=args.len_query)
     print "Getting Ubuntu Test Data..."
-    ubuntu_test_data = AskUbuntuDataset('test', word_to_indx, max_length=args.len_query)
-
+    ubuntu_test_data = AskUbuntuDataset('test', word_to_indx, max_seq_length=args.len_query)
+    
     print "Getting Android Dev Data..."
-    android_dev_data = AndroidDataset('dev', word_to_indx, max_length=args.len_query)
+    android_dev_data = AndroidDataset('dev', word_to_indx, max_seq_length=args.len_query)
     print "Getting Android Test Data..."
-    android_test_data = AndroidDataset('test', word_to_indx, max_length=args.len_query)
+    android_test_data = AndroidDataset('test', word_to_indx, max_seq_length=args.len_query)
 
     torch.manual_seed(args.seed)
     if args.cuda:
@@ -68,34 +74,43 @@ if __name__ == '__main__':
 
     # model
     if args.snapshot is None:
-        model = model_utils.get_model(embeddings, args)
+        encoder_model, domain_classifier_model = model_utils.get_model(embeddings, args)
     else :
         print '\nLoading model from [%s]...' % args.snapshot
         try:
-            model = torch.load(args.snapshot)
+            encoder_model = torch.load(args.encoder_snapshot)
+            domain_classifier_model = torch.load(args.domain_classifier_snapshot)
         except :
             print "Sorry, This snapshot doesn't exist."
             exit()
-    print model
-    paramter_num = 0
-    embedding_paramter_num = 0
-    for param in model.parameters():
-        if paramter_num == 0:
-            embedding_paramter_num = np.prod(param.data.shape)
-        paramter_num += np.prod(param.data.shape)
-    print "Total number of parameters: {}".format(paramter_num)
-    print "Number of trainable parameters: {}".format(paramter_num - embedding_paramter_num)
+    print encoder_model
+    print domain_classifier_model
+    parameter_num = 0
+    embedding_parameter_num = 0
 
+    for param in encoder_model.parameters():
+        if parameter_num == 0:
+            embedding_parameter_num = np.prod(param.data.shape)
+        parameter_num += np.prod(param.data.shape)
+    print "Total number of encoder parameters: {}".format(parameter_num)
+    print "Number of trainable encoder parameters: {}".format(parameter_num - embedding_parameter_num)
+
+    for param in domain_classifier_model.parameters():
+        if parameter_num == 0:
+            embedding_parameter_num = np.prod(param.data.shape)
+        parameter_num += np.prod(param.data.shape)
+    print "Total number of domain classifier parameters: {}".format(parameter_num)
+    print "Number of trainable domain classifier parameters: {}".format(parameter_num - embedding_parameter_num)
 
     # train
     if args.train:
         print "\nTraining..."
         if not os.path.exists(args.save_path):
             os.makedirs(args.save_path)
-        train_utils.train_model(train_data, android_dev_data, model, args)
+        train_utils.train_model(train_data_label_predictor, train_data_adversary, android_dev_data, encoder_model, domain_classifier_model, args)
 
     if args.eval:
         print "\nEvaluating on dev data:"
-        evaluation_utils.evaluate_model(ubuntu_dev_data, model, args)
+        evaluation_utils.evaluate_model(android_dev_data, encoder_model, args)
         print "\nEvaluating on test data:"
-        evaluation_utils.evaluate_model(ubuntu_test_data, model, args)
+        evaluation_utils.evaluate_model(android_test_data, encoder_model, args)

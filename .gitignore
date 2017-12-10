@@ -13,3 +13,5 @@ data/pruned_glove*
 saved_models/*
 data/pruned_glove.840B.300d.txt
 data/word_set.p
+venv1/*
+venv/*
