@@ -10,15 +10,10 @@ import utils.android_data_utils as android_data_utils
 import utils.transfer_train_utils as train_utils
 import utils.model_utils as model_utils
 import utils.evaluation_utils as evaluation_utils
-<<<<<<< HEAD
-from datasets import AskUbuntuDataset
-from datasets import AndroidDataset
-from datasets import TransferDataset
-=======
+
 from datasets.AskUbuntuDataset import AskUbuntuDataset
 from datasets.AndroidDataset import AndroidDataset
 from datasets.TransferDataset import TransferDataset
->>>>>>> 06e2c32335979fc1ed220dee98178460ee760d11
 import numpy as np
 
 
@@ -64,12 +59,8 @@ if __name__ == '__main__':
     if args.train:
         print "Getting Train Data..."
         train_data_label_predictor = AskUbuntuDataset('train', word_to_indx, max_seq_length=args.len_query, training_data_size=args.training_data_size)
-<<<<<<< HEAD
-        train_data_adversary = TransferDataset('train', word_to_indx, max_seq_length=args.len_query, dataset_size=args.training_data_size)
-=======
         train_data_adversary = TransferDataset('train', word_to_indx, max_seq_length=args.len_query, max_dataset_size=args.training_data_size)
->>>>>>> 06e2c32335979fc1ed220dee98178460ee760d11
-    
+
     print "Getting Ubuntu Dev Data..."
     ubuntu_dev_data = AskUbuntuDataset('dev', word_to_indx, max_seq_length=args.len_query)
     print "Getting Ubuntu Test Data..."
@@ -95,26 +86,6 @@ if __name__ == '__main__':
         except :
             print "Sorry, This snapshot doesn't exist."
             exit()
-<<<<<<< HEAD
-    print encoder_model
-    print domain_classifier_model
-    parameter_num = 0
-    embedding_parameter_num = 0
-
-    for param in encoder_model.parameters():
-        if parameter_num == 0:
-            embedding_parameter_num = np.prod(param.data.shape)
-        parameter_num += np.prod(param.data.shape)
-    print "Total number of encoder parameters: {}".format(parameter_num)
-    print "Number of trainable encoder parameters: {}".format(parameter_num - embedding_parameter_num)
-
-    for param in domain_classifier_model.parameters():
-        if parameter_num == 0:
-            embedding_parameter_num = np.prod(param.data.shape)
-        parameter_num += np.prod(param.data.shape)
-    print "Total number of domain classifier parameters: {}".format(parameter_num)
-    print "Number of trainable domain classifier parameters: {}".format(parameter_num - embedding_parameter_num)
-=======
 
     print encoder_model
     parameter_num = 0
@@ -127,10 +98,10 @@ if __name__ == '__main__':
     print "Number of trainable encoder parameters: {}".format(parameter_num - embedding_parameter_num)
 
     print domain_classifier_model
+    parameter_num = 0
     for param in domain_classifier_model.parameters():
         parameter_num += np.prod(param.data.shape)
     print "Total number of domain classifier parameters: {}".format(parameter_num)
->>>>>>> 06e2c32335979fc1ed220dee98178460ee760d11
 
     # train
     if args.train:
