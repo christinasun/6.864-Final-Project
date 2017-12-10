@@ -27,9 +27,14 @@ class TransferDataset(data.Dataset):
         android_ids = random.sample(self.android_data_dict.keys(), num_samples)
         android_tensors = [map(self.get_indices_tensor,self.android_data_dict[android_id]) for android_id in android_ids]
         android_title_tensors, android_body_tensors = zip(*android_tensors)
+        android_title_tensors = list(android_title_tensors)
+        android_body_tensors = list(android_body_tensors)
+
         ubuntu_ids = random.sample(self.ubuntu_data_dict.keys(), num_samples)
         ubuntu_tensors = [map(self.get_indices_tensor,self.android_data_dict[android_id]) for android_id in android_ids]
         ubuntu_title_tensors, ubuntu_body_tensors = zip(*android_tensors)
+        ubuntu_title_tensors = list(ubuntu_title_tensors)
+        ubuntu_body_tensors = list(ubuntu_body_tensors)
 
         ids = android_ids + ubuntu_ids
         title_tensors = android_title_tensors + ubuntu_title_tensors
