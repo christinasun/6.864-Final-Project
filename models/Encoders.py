@@ -28,7 +28,7 @@ class LSTM(nn.Module):
             c = c.cuda()
         return (h,c)
 
-    def forward_helper(self, tensor):
+    def forward(self, tensor):
         mask = (tensor != 0)
         if self.args.cuda:
             mask = mask.type(torch.cuda.FloatTensor)

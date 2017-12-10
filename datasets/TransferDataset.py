@@ -39,14 +39,14 @@ class TransferDataset(data.Dataset):
         ids = android_ids + ubuntu_ids
         title_tensors = android_title_tensors + ubuntu_title_tensors
         body_tensors = android_body_tensors + ubuntu_body_tensors
-        labels = np.concatenate((np.zeros((num_samples,), dtype=np.int),np.ones((num_samples,), dtype=np.int)),0) 
+        labels = np.concatenate((np.zeros((num_samples,), dtype=np.int),np.ones((num_samples,), dtype=np.float)),0)
         indexes = range(2*num_samples)
         random.shuffle(indexes)
 
         sample = {'id': [id for _, id in sorted(zip(indexes, ids))],
                   'title_tensors': [title_tensor for _,title_tensor in sorted(zip(indexes, title_tensors))],
                   'body_tensors': [body_tensor for _,body_tensor in sorted(zip(indexes, body_tensors))],
-                  'labels': [label for _,label in sorted(zip(indexes, labels))]
+                  'labels': torch.FloatTensor([label for _,label in sorted(zip(indexes, labels))])
                   }
         self.dataset.append(sample)
         return
