@@ -11,40 +11,46 @@ import utils.debug_utils as misc_utils
 
 NUM_NEGATIVE_EXCEPTION_MESSAGE = "The number of negative examples desired ({}) is larger than that available ({})."
 
-# TODO: add dropout
-def train_model(train_data, dev_data, model, args):
+def train_model(train_data_label_predictor, train_data_adversary, dev_data, encoder_model, domain_classifier_model, args):
 
     if args.cuda:
-        model = model.cuda()
+        encoder_model = encoder_model.cuda()
+        domain_classifier_model = domain_classifier_model.cuda()
 
-    optimizer = torch.optim.Adam(model.parameters() , lr=args.lr)
+    encoder_optimizer = torch.optim.Adam(encoder_model.parameters() , lr=args.encoder_lr)
+    domain_classifier_optimizer = torch.optim.Adam(domain_classifier_model.parameters(), lr=args.domain_classifier_lr)
 
-    model.train()
+    encoder_model.train()
+    domain_classifier_model.train()
 
     for epoch in range(1, args.epochs+1):
 
         print "-------------\nEpoch {}:\n".format(epoch)
-
-        if args.model_name == "bow":
-            loss = run_epoch(train_data, False, model, optimizer, args)
-        else:
-            loss = run_epoch(train_data, True, model, optimizer, args)
+        
+        encoder_loss, domain_classifier_loss = run_epoch(train_data_label_predictor, train_data_adversary, True, encoder_model, domain_classifier_model, encoder_optimizer, domain_classifier_optimizer, args)
 
         print 'Train Multi-margin loss: {:.6f}\n'.format(loss)
 
-        eval_utils.evaluate_model(dev_data, model, args)
+        eval_utils.evaluate_model(dev_data, encoder_model, args)
 
         # Save model
 
-        torch.save(model, join(args.save_path,'epoch_{}.pt'.format(epoch)))
+        torch.save(encoder_model, join(args.save_path,'encoder_epoch_{}.pt'.format(epoch)))
+        torch.save(domain_classifier_model, join(args.save_path,'domain_classifier_epoch_{}.pt'.format(epoch)))
 
 
-def run_epoch(data, is_training, model, optimizer, args):
+def run_epoch(train_data_label_predictor, train_data_adversary, is_training, encoder_model, domain_classifier_model, encoder_optimizer, domain_classifier_optimizer, args):
     '''
     Train model for one pass of train data, and return loss, acccuracy
     '''
-    data_loader = torch.utils.data.DataLoader(
-        data,
+    data_loader_label_predictor = torch.utils.data.DataLoader(
+        train_data_label_predictor,
+        batch_size=args.batch_size,
+        shuffle=True,
+        drop_last=True)
+
+    data_loader_train_adversary = torch.utils.data.DataLoader(
+        train_data_adversary,
         batch_size=args.batch_size,
         shuffle=True,
         drop_last=True)
@@ -56,19 +62,23 @@ def run_epoch(data, is_training, model, optimizer, args):
     else:
         model.eval()
 
-    loss_function = torch.nn.MultiMarginLoss(p=1, margin=args.margin, weight=None, size_average=True)
+    encoder_loss_function = torch.nn.MultiMarginLoss(p=1, margin=args.margin, weight=None, size_average=True)
+    domain_classifier_loss_function = torch.nn.CrossEntropyLoss(p=1, margin=args.margin, weight=None, size_average=True)
 
-    for batch in tqdm(data_loader):
+    for label_predictor_batch, adversary_batch in tqdm(izip(data_loader_label_predictor, data_loader_train_adversary)):
+        print("label_predictor_batch: ", label_predictor_batch)
+        print("adversary_batch: ", adversary_batch)
 
-        q_title_tensors = autograd.Variable(batch['qid_title_tensor'])
-        q_body_tensors = autograd.Variable(batch['qid_body_tensor'])
+        q_title_tensors = autograd.Variable(label_predictor_batch['qid_title_tensor'])
+        q_body_tensors = autograd.Variable(label_predictor_batch['qid_body_tensor'])
 
-
-        candidate_title_tensors = torch.stack(batch['candidate_title_tensors'])
-        candidate_body_tensors = torch.stack(batch['candidate_body_tensors'])
-
+        candidate_title_tensors = torch.stack(label_predictor_batch['candidate_title_tensors'])
+        candidate_body_tensors = torch.stack(label_predictor_batch['candidate_body_tensors'])
 
         if args.debug: misc_utils.print_shape_tensor('candidate_body_tensors', candidate_body_tensors)
+
+        title_tensors = autograd.Variable(adversary_batch['title_tensors'])
+        body_tensors = autograd.Variable(adversary_batch['body_tensors'])
 
         # Generate random sampling of negative examples
         # We do - 1 because candidate_title_tensors includes the title tensor for the query itself (at position 0)
@@ -90,25 +100,43 @@ def run_epoch(data, is_training, model, optimizer, args):
         targets = autograd.Variable(torch.LongTensor([0]*args.batch_size))
         if args.debug: misc_utils.print_shape_variable('targets', targets)
 
+        target_labels = autograd.Variable(adversary_batch['labels'])
+        if args.debug: misc_utils.print_shape_variable('target_labels', target_labels)
+
         if args.cuda:
             q_title_tensors = q_title_tensors.cuda()
             q_body_tensors = q_body_tensors.cuda()
             selected_candidate_title_tensors = selected_candidate_title_tensors.cuda()
             selected_candidate_body_tensors = selected_candidate_body_tensors.cuda()
             targets = targets.cuda()
+            target_labels = target_labels.cuda()
+            title_tensors = title_tensors.cuda()
+            body_tensors = body_tensors.cuda()
 
         if is_training:
-            optimizer.zero_grad()
-        cosine_similarities = model(q_title_tensors, q_body_tensors,
+            encoder_optimizer.zero_grad()
+            domain_classifier_optimizer.zero_grad()
+
+        cosine_similarities = encoder_model(q_title_tensors, q_body_tensors,
                                     selected_candidate_title_tensors, selected_candidate_body_tensors)
+
+        domain_labels = domain_classifier_model(title_tensors, body_tensors)
+
         if args.debug: misc_utils.print_shape_variable('cosine_similarities', cosine_similarities)
         if args.debug: print "cosine_similarities: {}".format(cosine_similarities)
 
-        loss = loss_function(cosine_similarities, targets)
+        if args.debug: misc_utils.print_shape_variable('domain_labels', domain_labels)
+        if args.debug: print "domain_labels: {}".format(domain_labels)
+
+        encoder_loss = encoder_loss_function(cosine_similarities, targets)
+        domain_classifier_loss = domain_classifier_loss_function(domain_labels, target_labels)
+
+        loss = encoder_loss - args.lam*domain_classifier_loss
 
         if is_training:
             loss.backward()
-            optimizer.step()
+            encoder_optimizer.step()
+            domain_classifier_optimizer.step()
 
         losses.append(loss.cpu().data[0])
 
