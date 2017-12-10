@@ -16,7 +16,7 @@ def get_model(embeddings, args):
     elif args.model_name == 'dan':
         return AskUbuntuModels.DAN(embeddings, args)
     elif args.model_name == 'adt':
-        return LSTM(embeddings, args), DomainClassifier(embeddings, args)
+        return LSTM(embeddings, args), DomainClassifier(args)
     else:
         raise Exception("Model name {} not supported!".format(args.model_name))
 

@@ -16,11 +16,13 @@ class DomainClassifier(nn.Module):
 
         self.hidden_1 = nn.Linear(self.input_dim, self.hidden_1_dim)
         self.hidden_2 = nn.Linear(self.hidden_1_dim, self.hidden_2_dim)
-        self.softmax = nn.Softmax(self.hidden_2_dim,2)
+        self.hidden_3 = nn.Linear(self.hidden_2_dim, 2)
+        self.softmax = nn.Softmax()
 
 
     def forward(self, encoding):
         h1 = self.hidden_1(encoding)
         h2 = self.hidden_2(h1)
-        out = self.softmax(h2)
+        h3 = self.hidden_3(h2)
+        out = self.softmax(h3)
         return out

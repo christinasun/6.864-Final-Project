@@ -6,7 +6,7 @@ import torch.nn as nn
 class LSTM(nn.Module):
 
     def __init__(self, embeddings, args):
-        super(LSTM, self).__init__(embeddings, args)
+        super(LSTM, self).__init__()
         self.args = args
         vocab_size, embed_dim = embeddings.shape
         self.embedding_layer = nn.Embedding(vocab_size, embed_dim)
