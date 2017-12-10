@@ -32,8 +32,7 @@ if __name__ == '__main__':
     # data loading
     parser.add_argument('--num_workers', nargs='?', type=int, default=4, help='num workers for data loader')
     # model
-    parser.add_argument('--enc_model_name', nargs="?", type=str, default='enc-lstm', help="Form of model, i.e dan, rnn, etc.")
-    parser.add_argument('--dom_model_name', nargs="?", type=str, default='dom', help="Form of model, i.e dan, rnn, etc.")
+    parser.add_argument('--model_name', nargs="?", type=str, default='adt', help="Form of model, i.e dan, rnn, etc.")
     parser.add_argument('--hidden_dim', type=int, default=20, help='dimension of the hidden layer [default: 20]')
     # device
     parser.add_argument('--cuda', action='store_true', default=False, help='enable the gpu')
@@ -76,10 +75,10 @@ if __name__ == '__main__':
         torch.cuda.manual_seed(args.seed)
 
     # model
-    if args.snapshot is None:
+    if args.encoder_snapshot is None or args.domain_classifier_snapshot is None:
         encoder_model, domain_classifier_model = model_utils.get_model(embeddings, args)
     else :
-        print '\nLoading model from [%s]...' % args.snapshot
+        print 'Loading models from {} and {} ...'.format(args.encoder_snapshot, args.domain_classifier_snapshot)
         try:
             encoder_model = torch.load(args.encoder_snapshot)
             domain_classifier_model = torch.load(args.domain_classifier_snapshot)
