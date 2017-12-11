@@ -16,6 +16,7 @@ class LSTM(nn.Module):
         self.hidden_dim = args.hidden_dim
         self.hidden = self.init_hidden(self.args.batch_size)
         self.lstm = nn.LSTM(embed_dim, self.hidden_dim//2, bidirectional=True)
+        self.dropout = nn.Dropout(p=self.args.dropout)
         self.pooling = 'mean'
         self.name = 'lstm'
         return
@@ -45,6 +46,7 @@ class LSTM(nn.Module):
         x = self.embedding_layer(tensor)
         batch_size = x.data.shape[0]
         x_perm = x.permute(1,0,2)
+        x_perm = self.dropout(x_perm)
         mask = mask.permute(1,0,2)
         self.hidden = self.init_hidden(batch_size)
         lstm_out, self.hidden = self.lstm(x_perm, self.hidden)
