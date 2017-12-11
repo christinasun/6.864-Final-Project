@@ -11,7 +11,7 @@ sys.path.append(dirname(dirname(realpath(__file__))))
 class TransferDataset(data.Dataset):
     def __init__(self, name, word_to_indx, max_seq_length=100, max_dataset_size=800):
         self.name = name
-        self.dataset = []
+        # self.dataset = []
         self.word_to_indx  = word_to_indx
         self.max_length = max_seq_length
         self.dataset_size = max_dataset_size
@@ -19,18 +19,37 @@ class TransferDataset(data.Dataset):
         self.android_data_dict = android_data_utils.get_data_dict()
         self.ubuntu_data_dict = ubuntu_data_utils.get_data_dict()
 
-        for i in xrange(self.dataset_size):
-            self.update_dataset_from_train_example(self.num_samples)
+        self.android_permutation = self.android_data_dict.keys()
+        random.shuffle(self.android_permutation)
+        self.android_pointer = 0
+        self.ubuntu_permutation = self.ubuntu_data_dict.keys()
+        random.shuffle(self.ubuntu_permutation)
+        self.ubuntu_pointer = 0
 
-    def update_dataset_from_train_example(self, num_samples):
+    def reset_android_permutation(self):
+        self.android_permutation = self.android_data_dict.keys()
+        random.shuffle(self.android_permutation)
 
-        android_ids = random.sample(self.android_data_dict.keys(), num_samples)
+    def reset_ubuntu_permutation(self):
+        self.ubuntu_permutation = self.ubuntu_data_dict.keys()
+        random.shuffle(self.ubuntu_permutation)
+
+    def get_new_dataset(self, dataset_size):
+        return [get_train_example() for sample in xrange(dataset_size)]
+
+    def get_train_example(self):
+        if self.android_pointer > len(self.android_permutation)-self.num_samples:
+            self.reset_android_permutation()
+
+        android_ids = self.android_data_dict[self.android_pointer:self.android_pointer+20]
         android_tensors = [map(self.get_indices_tensor,self.android_data_dict[android_id]) for android_id in android_ids]
         android_title_tensors, android_body_tensors = zip(*android_tensors)
         android_title_tensors = list(android_title_tensors)
         android_body_tensors = list(android_body_tensors)
 
-        ubuntu_ids = random.sample(self.ubuntu_data_dict.keys(), num_samples)
+        if self.ubuntu_pointer > len(self.ubuntu_permutation)-self.num_samples:
+            self.reset_ubuntu_permutation()
+        ubuntu_ids = self.ubuntu_data_dict[self.ubuntu_pointer:self.ubuntu_pointer+20]
         ubuntu_tensors = [map(self.get_indices_tensor,self.android_data_dict[android_id]) for android_id in android_ids]
         ubuntu_title_tensors, ubuntu_body_tensors = zip(*android_tensors)
         ubuntu_title_tensors = list(ubuntu_title_tensors)
@@ -48,8 +67,7 @@ class TransferDataset(data.Dataset):
                   'body_tensors': [body_tensor for _,body_tensor in sorted(zip(indexes, body_tensors))],
                   'labels': torch.FloatTensor([label for _,label in sorted(zip(indexes, labels))])
                   }
-        self.dataset.append(sample)
-        return
+        return sample
 
     def __len__(self):
         return len(self.dataset)
