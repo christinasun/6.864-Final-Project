@@ -32,9 +32,6 @@ class Adversary(nn.Module):
 
         expanded_labels = self.domain_classifier(for_dc_encodings)
 
-        print "expanded_labels shape"
-        print expanded_labels.data.shape
-
         dc_output = expanded_labels.view(num_for_dc,batch_size,1).view(num_for_dc,batch_size).t()
 
         return dc_output
