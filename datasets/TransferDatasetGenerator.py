@@ -8,10 +8,9 @@ import random
 import numpy as np
 sys.path.append(dirname(dirname(realpath(__file__))))
 
-class TransferDataset(data.Dataset):
+class TransferDatasetGenerator(data.Dataset):
     def __init__(self, name, word_to_indx, max_seq_length=100, max_dataset_size=800):
         self.name = name
-        # self.dataset = []
         self.word_to_indx  = word_to_indx
         self.max_length = max_seq_length
         self.dataset_size = max_dataset_size
@@ -35,31 +34,35 @@ class TransferDataset(data.Dataset):
         random.shuffle(self.ubuntu_permutation)
 
     def get_new_dataset(self, dataset_size):
-        return [get_train_example() for sample in xrange(dataset_size)]
+        return [self.get_train_example() for sample in xrange(dataset_size)]
 
     def get_train_example(self):
         if self.android_pointer > len(self.android_permutation)-self.num_samples:
+            self.android_pointer = 0
             self.reset_android_permutation()
 
-        android_ids = self.android_data_dict[self.android_pointer:self.android_pointer+20]
+        android_ids = self.android_permutation[self.android_pointer:self.android_pointer+self.num_samples]
+        self.android_pointer += self.num_samples
         android_tensors = [map(self.get_indices_tensor,self.android_data_dict[android_id]) for android_id in android_ids]
         android_title_tensors, android_body_tensors = zip(*android_tensors)
         android_title_tensors = list(android_title_tensors)
         android_body_tensors = list(android_body_tensors)
 
         if self.ubuntu_pointer > len(self.ubuntu_permutation)-self.num_samples:
+            self.ubuntu_pointer = 0
             self.reset_ubuntu_permutation()
-        ubuntu_ids = self.ubuntu_data_dict[self.ubuntu_pointer:self.ubuntu_pointer+20]
+        ubuntu_ids = self.ubuntu_permutation[self.ubuntu_pointer:self.ubuntu_pointer+self.num_samples]
+        self.ubuntu_pointer += self.num_samples
         ubuntu_tensors = [map(self.get_indices_tensor,self.android_data_dict[android_id]) for android_id in android_ids]
-        ubuntu_title_tensors, ubuntu_body_tensors = zip(*android_tensors)
+        ubuntu_title_tensors, ubuntu_body_tensors = zip(*ubuntu_tensors)
         ubuntu_title_tensors = list(ubuntu_title_tensors)
         ubuntu_body_tensors = list(ubuntu_body_tensors)
 
         ids = android_ids + ubuntu_ids
         title_tensors = android_title_tensors + ubuntu_title_tensors
         body_tensors = android_body_tensors + ubuntu_body_tensors
-        labels = np.concatenate((np.zeros((num_samples,), dtype=np.int),np.ones((num_samples,), dtype=np.float)),0)
-        indexes = range(2*num_samples)
+        labels = np.concatenate((np.zeros((self.num_samples,), dtype=np.int),np.ones((self.num_samples,), dtype=np.float)),0)
+        indexes = range(2*self.num_samples)
         random.shuffle(indexes)
 
         sample = {'id': [id for _, id in sorted(zip(indexes, ids))],

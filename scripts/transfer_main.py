@@ -13,7 +13,7 @@ import utils.evaluation_utils as evaluation_utils
 
 from datasets.AskUbuntuDataset import AskUbuntuDataset
 from datasets.AndroidDataset import AndroidDataset
-from datasets.TransferDataset import TransferDataset
+from datasets.TransferDatasetGenerator import TransferDatasetGenerator
 import numpy as np
 
 
@@ -57,8 +57,8 @@ if __name__ == '__main__':
 
     if args.train:
         print "Getting Train Data..."
-        train_data_label_predictor = AskUbuntuDataset('train', word_to_indx, max_seq_length=args.len_query, training_data_size=args.training_data_size)
-        # train_data_adversary = TransferDataset('train', word_to_indx, max_seq_length=args.len_query, max_dataset_size=args.training_data_size)
+        label_predictor_train_data = AskUbuntuDataset('train', word_to_indx, max_seq_length=args.len_query, training_data_size=args.training_data_size)
+        adversary_train_data_generator = TransferDatasetGenerator('train', word_to_indx, max_seq_length=args.len_query, max_dataset_size=args.training_data_size)
 
     print "Getting Ubuntu Dev Data..."
     ubuntu_dev_data = AskUbuntuDataset('dev', word_to_indx, max_seq_length=args.len_query)
@@ -107,7 +107,7 @@ if __name__ == '__main__':
         print "\nTraining..."
         if not os.path.exists(args.save_path):
             os.makedirs(args.save_path)
-        train_utils.train_model(train_data_label_predictor, android_dev_data, encoder_model, domain_classifier_model, args)
+        train_utils.train_model(label_predictor_train_data, adversary_train_data_generator, android_dev_data, encoder_model, domain_classifier_model, args)
 
     if args.eval:
         print "\nEvaluating on dev data:"
