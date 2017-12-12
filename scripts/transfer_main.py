@@ -32,8 +32,10 @@ if __name__ == '__main__':
     # data loading
     parser.add_argument('--num_workers', nargs='?', type=int, default=4, help='num workers for data loader')
     # model
-    parser.add_argument('--model_name', nargs="?", type=str, default='adt', help="Form of model, i.e dan, rnn, etc.")
+    parser.add_argument('--model_name', nargs="?", type=str, default='adt-lstm', help="Form of model, i.e dan, rnn, etc.")
     parser.add_argument('--hidden_dim', type=int, default=20, help='dimension of the hidden layer [default: 20]')
+    parser.add_argument('--dom_hidden_dim1', type=int, default=300, help='dimension of the hidden layer [default: 300]')
+    parser.add_argument('--dom_hidden_dim2', type=int, default=150, help='dimension of the hidden layer [default: 150]')
     # device
     parser.add_argument('--cuda', action='store_true', default=False, help='enable the gpu')
     parser.add_argument('--train', action='store_true', default=False, help='enable train')

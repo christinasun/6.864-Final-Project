@@ -11,9 +11,6 @@ import utils.debug_utils as misc_utils
 from models.Adversary import Adversary
 from models.LabelPredictor import LabelPredictor
 from itertools import izip
-from datasets.TransferDatasetGenerator import TransferDatasetGenerator
-
-NUM_NEGATIVE_EXCEPTION_MESSAGE = "The number of negative examples desired ({}) is larger than that available ({})."
 
 def train_model(label_predictor_train_data, adversary_train_data_generator, dev_data, encoder_model, domain_classifier_model, args):
 

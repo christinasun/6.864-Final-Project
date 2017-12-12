@@ -11,8 +11,8 @@ class DomainClassifier(nn.Module):
 
         self.args = args
         self.input_dim = args.hidden_dim
-        self.hidden_1_dim = 300
-        self.hidden_2_dim = 150
+        self.hidden_1_dim = args.dom_hidden_dim1
+        self.hidden_2_dim = args.dom_hidden_dim2
 
         self.hidden_1 = nn.Linear(self.input_dim, self.hidden_1_dim)
         self.relu_1 = nn.ReLU()
