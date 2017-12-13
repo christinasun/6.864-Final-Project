@@ -94,15 +94,29 @@ def run_epoch(label_predictor_train_data, adversary_train_data_generator, is_tra
         # Generate random sampling of negative examples
         # We do - 1 because candidate_title_tensors includes the title tensor for the query itself (at position 0)
         num_available_candidates = candidate_title_tensors.shape[0] - 1
+        print "num_available_candidates"
+        print num_available_candidates
         num_negative = min(num_available_candidates, args.num_negative)
+        print "num_negative"
+        print num_negative
         inds3d = np.zeros((num_negative + 1, args.batch_size, args.len_query),dtype=np.long)
+        print "inds3d"
+        print inds3d
         for i in xrange(args.batch_size):
             # we do + 1 so we are only choosing among the negative examples (0 is reserved for the query itself)
             random_sample = np.random.choice(num_available_candidates, num_negative) + 1
             random_sample3d = np.expand_dims(random_sample,1)
             inds3d[1:,i,:] = random_sample3d.repeat(args.len_query, 1)
+            if i == 0:
+                print "random_sample"
+                print random_sample
+                print random_sample3d
         inds3d = torch.LongTensor(inds3d)
 
+        print "inds3d"
+        print inds3d
+        print "candidate_title_tensors"
+        print candidate_title_tensors
 
         selected_candidate_title_tensors = autograd.Variable(candidate_title_tensors.gather(0,inds3d))
         selected_candidate_body_tensors = autograd.Variable(candidate_body_tensors.gather(0,inds3d))
