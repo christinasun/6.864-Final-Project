@@ -12,7 +12,7 @@ def get_model(embeddings, args):
     if args.model_name == 'cnn':
         return AskUbuntuModels.CNN(embeddings, args)
     elif args.model_name == 'lstm':
-        return AskUbuntuModels.LSTM(embeddings, args)
+        return LSTM(embeddings, args)
     elif args.model_name == 'dan':
         return AskUbuntuModels.DAN(embeddings, args)
     elif args.model_name == 'adt-lstm':

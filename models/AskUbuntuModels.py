@@ -130,8 +130,7 @@ class LSTM(AbstractAskUbuntuModel):
         vocab_size, embed_dim = embeddings.shape
         self.num_layers = 1
         self.hidden = self.init_hidden(self.args.batch_size)
-        self.lstm = nn.LSTM(embed_dim, self.hidden_dim//2, bidirectional=True)
-        self.dropout = nn.Dropout(p=self.args.dropout)
+        self.lstm = nn.LSTM(embed_dim, self.hidden_dim//2, bidirectional=True, dropout=self.args.dropout)
         self.pooling = 'mean'
         self.name = 'lstm'
 
@@ -160,7 +159,6 @@ class LSTM(AbstractAskUbuntuModel):
         x = self.embedding_layer(tensor)
         batch_size = x.data.shape[0]
         x_perm = x.permute(1,0,2)
-        x_perm = self.dropout(x_perm)
         mask = mask.permute(1,0,2)
         self.hidden = self.init_hidden(batch_size)
         lstm_out, self.hidden = self.lstm(x_perm, self.hidden)

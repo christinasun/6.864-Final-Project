@@ -5,7 +5,7 @@ from os.path import dirname, realpath
 
 sys.path.append(dirname(dirname(realpath(__file__))))
 import utils.android_data_utils as android_data_utils
-import utils.ubuntu_train_utils as train_utils
+import utils.baseline_transfer_train_utils as train_utils
 import utils.model_utils as model_utils
 import utils.evaluation_utils as evaluation_utils
 from datasets.AndroidDataset import AndroidDataset
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     # data loading
     parser.add_argument('--num_workers', nargs='?', type=int, default=4, help='num workers for data loader')
     # model
-    parser.add_argument('--model_name', nargs="?", type=str, default='cnn', help="Form of model, i.e dan, rnn, etc.")
+    parser.add_argument('--model_name', nargs="?", type=str, default='lstm', help="Form of model, i.e dan, rnn, etc.")
     parser.add_argument('--hidden_dim', type=int, default=20, help='dimension of the hidden layer [default: 20]')
     # device
     parser.add_argument('--cuda', action='store_true', default=False, help='enable the gpu')
