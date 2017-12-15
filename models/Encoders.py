@@ -12,14 +12,14 @@ class CNN(nn.Module):
         self.embedding_layer = nn.Embedding(vocab_size, embed_dim)
         self.embedding_layer.weight.data = torch.from_numpy( embeddings )
         self.embedding_layer.requires_grad = False
-
+        self.hidden_dim = args.hidden_dim
         self.conv = nn.Conv1d(embed_dim, self.hidden_dim, kernel_size, padding=kernel_size-1)
         self.tanh = nn.Tanh()
         self.dropout = nn.Dropout(p=self.args.dropout)
         self.pooling = 'mean'
         self.name = 'cnn'
 
-    def forward_helper(self, tensor):
+    def forward(self, tensor):
         mask = (tensor != 0)
         if self.args.cuda:
             mask = mask.type(torch.cuda.FloatTensor)
