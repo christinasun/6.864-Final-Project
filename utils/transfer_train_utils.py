@@ -76,8 +76,6 @@ def run_epoch(label_predictor_train_data, adversary_train_data_generator, is_tra
     domain_classifier_loss_function = torch.nn.BCELoss(weight=None, size_average=True)
 
     for label_predictor_batch, adversary_batch in tqdm(izip(data_loader_label_predictor, data_loader_train_adversary)):
-        # print("label_predictor_batch: ", label_predictor_batch)
-        # print("adversary_batch: ", adversary_batch)
 
         q_title_tensors = autograd.Variable(label_predictor_batch['qid_title_tensor'])
         q_body_tensors = autograd.Variable(label_predictor_batch['qid_body_tensor'])
@@ -136,7 +134,6 @@ def run_epoch(label_predictor_train_data, adversary_train_data_generator, is_tra
 
         # if args.debug: misc_utils.print_shape_variable('cosine_similarities', cosine_similarities)
         # if args.debug: print "cosine_similarities: {}".format(cosine_similarities)
-        #
         # if args.debug: misc_utils.print_shape_variable('domain_labels', domain_labels)
         # if args.debug: print "domain_labels: {}".format(domain_labels)
 
@@ -147,11 +144,11 @@ def run_epoch(label_predictor_train_data, adversary_train_data_generator, is_tra
         # if args.debug: print 'BCE_targets', BCE_targets.t()
         # if args.debug: print 'domain labels', domain_labels
 
-        if args.debug: misc_utils.print_shape_variable('BCE_targets', BCE_targets)
-        if args.debug: misc_utils.print_shape_variable('domain_labels', domain_labels)
+        # if args.debug: misc_utils.print_shape_variable('BCE_targets', BCE_targets)
+        # if args.debug: misc_utils.print_shape_variable('domain_labels', domain_labels)
         domain_classifier_loss = domain_classifier_loss_function(domain_labels, BCE_targets)
 
-        loss = encoder_loss - args.lam*domain_classifier_loss
+        loss = encoder_loss-(args.lam*domain_classifier_loss)
 
         if is_training:
             loss.backward()

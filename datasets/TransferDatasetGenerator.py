@@ -13,7 +13,6 @@ class TransferDatasetGenerator(data.Dataset):
         self.name = name
         self.word_to_indx  = word_to_indx
         self.max_length = max_seq_length
-        self.dataset_size = max_dataset_size
         self.num_samples = 20
         self.android_data_dict = android_data_utils.get_data_dict()
         self.ubuntu_data_dict = ubuntu_data_utils.get_data_dict()
@@ -53,7 +52,7 @@ class TransferDatasetGenerator(data.Dataset):
             self.reset_ubuntu_permutation()
         ubuntu_ids = self.ubuntu_permutation[self.ubuntu_pointer:self.ubuntu_pointer+self.num_samples]
         self.ubuntu_pointer += self.num_samples
-        ubuntu_tensors = [map(self.get_indices_tensor,self.android_data_dict[android_id]) for android_id in android_ids]
+        ubuntu_tensors = [map(self.get_indices_tensor,self.ubuntu_data_dict[ubuntu_id]) for ubuntu_id in ubuntu_ids]
         ubuntu_title_tensors, ubuntu_body_tensors = zip(*ubuntu_tensors)
         ubuntu_title_tensors = list(ubuntu_title_tensors)
         ubuntu_body_tensors = list(ubuntu_body_tensors)
