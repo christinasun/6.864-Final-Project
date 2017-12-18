@@ -18,7 +18,7 @@ if __name__ == '__main__':
     parser.add_argument('--lr', type=float, default=0.001, help='initial learning rate [default: 0.001]')
     parser.add_argument('--dropout', type=float, default=0.2, help='initial learning rate [default: 0.2]')
     parser.add_argument('--margin', type=float, default=0.5, help='margin size [default: 0.5]')
-    parser.add_argument('--epochs', type=int, default=6, help='number of epochs for train [default: 6]')
+    parser.add_argument('--epochs', type=int, default=10, help='number of epochs for train [default: 10]')
     parser.add_argument('--batch_size', type=int, default=20, help='batch size for training [default: 20]')
     parser.add_argument('--num_negative', type=int, default=20, help='# negative examples for training [default: 20]')
     parser.add_argument('--training_data_size', type=int, default = 1000000, help='Number of training queries [default: 1000000]')
