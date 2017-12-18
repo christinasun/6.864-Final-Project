@@ -14,7 +14,6 @@ class AndroidDataset(data.Dataset):
         self.max_length = max_seq_length
         self.data_dict = android_data_utils.get_data_dict()
 
-        # TODO: add support for train example
         if name == 'dev':
             dev_examples = android_data_utils.get_dev_examples()
             print("dev_examples: ", len(dev_examples))
@@ -81,7 +80,6 @@ class AndroidDataset(data.Dataset):
     def __getitem__(self,index):
         sample = self.dataset[index]
         return sample
-
 
     def get_indices_tensor(self, text_arr):
         nil_indx = 0

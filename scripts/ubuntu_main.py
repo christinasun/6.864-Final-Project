@@ -12,7 +12,6 @@ from datasets import AskUbuntuDataset
 import torch
 import numpy as np
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch AskUbuntu Question Retrieval Network')
     # learning
@@ -79,7 +78,6 @@ if __name__ == '__main__':
         paramter_num += np.prod(param.data.shape)
     print "Total number of parameters: {}".format(paramter_num)
     print "Number of trainable parameters: {}".format(paramter_num - embedding_paramter_num)
-
 
     # train
     if args.train:

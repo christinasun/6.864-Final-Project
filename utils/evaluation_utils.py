@@ -1,5 +1,4 @@
 import sys
-
 import numpy as np
 import torch
 import torch.autograd as autograd
@@ -91,5 +90,4 @@ def evaluate_model(dev_data, model, args):
     print "Precision@1: {}".format(evaluation.get_precision(1))
     print "Precision@5: {}".format(evaluation.get_precision(5))
     print "AUC(): {}".format(auc.value(max_fpr=0.05))
-
     return

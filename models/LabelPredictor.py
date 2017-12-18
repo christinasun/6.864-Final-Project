@@ -16,7 +16,6 @@ class LabelPredictor(nn.Module):
         self.args = args
         self.encoder = encoder
         self.hidden_dim = args.hidden_dim
-
         return
 
     def forward(self,
@@ -48,5 +47,4 @@ class LabelPredictor(nn.Module):
 
         # un-flatten cosine similarities so that we get output of size batch_size * num_candidates (t() is transpose)
         lp_output = expanded_cosine_similarities.view(num_candidates,batch_size,1).view(num_candidates,batch_size).t()
-
         return lp_output

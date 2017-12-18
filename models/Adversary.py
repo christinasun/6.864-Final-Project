@@ -16,7 +16,6 @@ class Adversary(nn.Module):
         self.encoder = encoder
         self.domain_classifier = domain_classifier
         self.hidden_dim = args.hidden_dim
-
         return
 
     def forward(self,
@@ -33,5 +32,4 @@ class Adversary(nn.Module):
         expanded_labels = self.domain_classifier(for_dc_encodings)
 
         dc_output = expanded_labels.view(num_for_dc,batch_size,1).view(num_for_dc,batch_size).t()
-
         return dc_output

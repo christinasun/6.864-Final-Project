@@ -10,13 +10,9 @@ import numpy as np
 from scipy.sparse import vstack
 from sklearn.metrics.pairwise import cosine_similarity
 
-
-
 def compute_baseline(dev_data):
     dev_dataset = dev_data.dataset
-
     data_for_evaluation = []
-
     auc = AUCMeter()
 
     q_tfidf_tensors = [sample['qid_tfidf_tensor'] for sample in dev_dataset]
@@ -42,7 +38,6 @@ def compute_baseline(dev_data):
     print "Precision@1: {}".format(evaluation.get_precision(1))
     print "Precision@5: {}".format(evaluation.get_precision(5))
     print "AUC(): {}".format(auc.value(max_fpr=0.05))
-
     return
 
 if __name__ == '__main__':

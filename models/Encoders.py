@@ -42,7 +42,6 @@ class CNN(nn.Module):
         N, hd, co =  tanh_x_cropped.data.shape
         mask = torch.unsqueeze(mask,1)
         expanded_mask = mask.expand(N, hd, co)
-
         masked = torch.mul(expanded_mask,tanh_x_cropped)
 
         if self.pooling == 'mean':

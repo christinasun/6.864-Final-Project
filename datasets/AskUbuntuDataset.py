@@ -84,8 +84,6 @@ class AskUbuntuDataset(data.Dataset):
              'candidates': candidate_qids,
              'q_title_tensor': qid_tensors[0],
              'q_body_tensor': qid_tensors[1],
-             # 'candidate_title_tensors': candidate_title_tensors,
-             # 'candidate_body_tensors': candidate_body_tensors,
              'positive_title_tensors': positive_title_tensors,
              'positive_body_tensors': positive_body_tensors,
              'negative_title_tensors': negative_title_tensors,

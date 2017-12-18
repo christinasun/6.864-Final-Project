@@ -9,7 +9,7 @@ import numpy as np
 sys.path.append(dirname(dirname(realpath(__file__))))
 
 class TransferDatasetGenerator(data.Dataset):
-    def __init__(self, name, word_to_indx, max_seq_length=100, max_dataset_size=800):
+    def __init__(self, name, word_to_indx, max_seq_length=100):
         self.name = name
         self.word_to_indx  = word_to_indx
         self.max_length = max_seq_length

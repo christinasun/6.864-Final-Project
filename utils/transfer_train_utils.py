@@ -34,7 +34,6 @@ def train_model(label_predictor_train_data, adversary_train_data_generator, dev_
         print "-------------\nEpoch {}:\n".format(epoch)
         
         loss = run_epoch(label_predictor_train_data, adversary_train_data_generator, True, label_predictor, adversary, encoder_optimizer, domain_classifier_optimizer, args)
-
         print 'Train loss: {:.6f}\n'.format(loss)
 
         eval_utils.evaluate_model(dev_data, label_predictor, args)
@@ -121,7 +120,6 @@ def run_epoch(label_predictor_train_data, adversary_train_data_generator, is_tra
             body_tensors = body_tensors.cuda()
             MML_targets = MML_targets.cuda()
             BCE_targets = BCE_targets.cuda()
-
 
         if is_training:
             encoder_optimizer.zero_grad()

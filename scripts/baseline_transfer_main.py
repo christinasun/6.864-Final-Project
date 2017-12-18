@@ -41,7 +41,7 @@ if __name__ == '__main__':
     parser.add_argument('--debug', action='store_true', default=False, help='have print statements')
     parser.add_argument('--seed', type=int, default=100, help='how much of the query body to use [default 100]')
     args = parser.parse_args()
-    # update args and print
+    
     print "\nParameters:"
     for attr, value in sorted(args.__dict__.items()):
         print "\t{}={}".format(attr.upper(), value)
@@ -56,7 +56,6 @@ if __name__ == '__main__':
     ubuntu_dev_data = AskUbuntuDataset('dev', word_to_indx, max_seq_length=args.len_query)
     print "Getting Ubuntu Test Data..."
     ubuntu_test_data = AskUbuntuDataset('test', word_to_indx, max_seq_length=args.len_query)
-
     print "Getting Android Dev Data..."
     android_dev_data = AndroidDataset('dev', word_to_indx, max_seq_length=args.len_query)
     print "Getting Android Test Data..."
@@ -85,7 +84,6 @@ if __name__ == '__main__':
         paramter_num += np.prod(param.data.shape)
     print "Total number of parameters: {}".format(paramter_num)
     print "Number of trainable parameters: {}".format(paramter_num - embedding_paramter_num)
-
 
     # train
     if args.train:

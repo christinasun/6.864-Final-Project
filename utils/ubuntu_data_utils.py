@@ -11,10 +11,6 @@ TRAIN_FILE = os.path.join(DATA_PATH,"train_random.txt")
 DEV_SET_FILE = os.path.join(DATA_PATH,"dev.txt")
 TEST_SET_FILE = os.path.join(DATA_PATH,"test.txt")
 
-# TODO figure out when the people in the paper threw away examples
-# TODO determine what we want the max length to be and if we want to make it configurable using an argument
-# TODO determine if we want to add the option to use titles only
-
 def get_embeddings_tensor():
     with gzip.open(VECTORS_FILE) as f:
         content = f.readlines()
@@ -61,7 +57,6 @@ def get_train_examples():
             similar_qids = map(int, similar_qids.split(' '))
             random_qids = map(int, random_qids.split(' '))
             train_examples.append((int(qid), similar_qids, random_qids))
-
     return train_examples
 
 def get_examples_helper(dataset_file):
@@ -77,7 +72,6 @@ def get_examples_helper(dataset_file):
             bm25_scores = map(float, bm25_scores.split(' '))
             examples.append((int(qid), similar_qids, candidates, bm25_scores))
     return examples
-
 
 def get_test_examples():
     return get_examples_helper(TEST_SET_FILE)

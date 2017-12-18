@@ -15,7 +15,6 @@ WORD_SET_FILE = os.path.join('data/word_set.p')
 DATA_PATH = os.path.join(HOME_PATH,'data','ubuntu')
 UBUNTU_EMBEDDING_FILE = os.path.join(DATA_PATH,"vector","vectors_pruned.200.txt.gz")
 
-
 if __name__ == "__main__":
     ubuntu_data_dict = ubuntu_data_utils.get_data_dict()
     android_data_dict = android_data_utils.get_data_dict()
@@ -52,10 +51,6 @@ if __name__ == "__main__":
     for word in ubuntu_word_set: word_set.add(word)
     print "Length of word_set: {}".format(len(word_set))
 
-
-    # with open(WORD_SET_FILE,'wb+') as f:
-    #     p.dump(word_set,f)
-
     counter = 0
     saved_counter = 0
     with open(GLOVE_FILE) as glove_file:
@@ -73,7 +68,6 @@ if __name__ == "__main__":
     print "glove counter: {}".format(counter)
     print "saved glove counter: {}".format(saved_counter)
 
-
     counter = 0
     saved_counter = 0
     with gzip.open(UBUNTU_EMBEDDING_FILE) as ubuntu_embedding_file:
@@ -88,11 +82,3 @@ if __name__ == "__main__":
 
     print "ubuntu counter: {}".format(counter)
     print "saved ubuntu counter: {}".format(saved_counter)
-
-
-
-
-
-
-
-

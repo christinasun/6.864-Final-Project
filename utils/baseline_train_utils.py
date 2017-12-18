@@ -27,13 +27,11 @@ def train_model(train_data, dev_data, model, args):
         print "-------------\nEpoch {}:\n".format(epoch)
 
         loss = run_epoch(train_data, True, label_predictor, optimizer, args)
-
         print 'Train Multi-margin loss: {:.6f}\n'.format(loss)
 
         eval_utils.evaluate_model(dev_data, label_predictor, args)
 
         # Save model
-
         torch.save(model, join(args.save_path,'epoch_{}.pt'.format(epoch)))
 
 
@@ -61,10 +59,8 @@ def run_epoch(data, is_training, label_predictor, optimizer, args):
         q_title_tensors = autograd.Variable(batch['qid_title_tensor'])
         q_body_tensors = autograd.Variable(batch['qid_body_tensor'])
 
-
         candidate_title_tensors = torch.stack(batch['candidate_title_tensors'])
         candidate_body_tensors = torch.stack(batch['candidate_body_tensors'])
-
 
         if args.debug: misc_utils.print_shape_tensor('candidate_body_tensors', candidate_body_tensors)
 
@@ -79,7 +75,6 @@ def run_epoch(data, is_training, label_predictor, optimizer, args):
             random_sample3d = np.expand_dims(random_sample,1)
             inds3d[1:,i,:] = random_sample3d.repeat(args.len_query, 1)
         inds3d = torch.LongTensor(inds3d)
-
 
         selected_candidate_title_tensors = autograd.Variable(candidate_title_tensors.gather(0,inds3d))
         selected_candidate_body_tensors = autograd.Variable(candidate_body_tensors.gather(0,inds3d))

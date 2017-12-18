@@ -7,7 +7,6 @@ import utils.ubuntu_data_utils as ubuntu_data_utils
 import utils.android_data_utils as android_data_utils
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-
 class TfIdfDataset(data.Dataset):
 
     def __init__(self, name, source):
@@ -62,7 +61,6 @@ class TfIdfDataset(data.Dataset):
              'positive_tfidf_tensors': positive_tfidf_tensors
              }
         self.dataset.append(sample)
-
         return
 
     def __len__(self):

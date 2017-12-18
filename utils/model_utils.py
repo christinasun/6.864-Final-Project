@@ -5,7 +5,6 @@ from models.Encoders import CNN
 from models.Encoders import LSTM
 from models.DomainClassifier import DomainClassifier
 
-
 # Depending on arg, build dataset
 def get_model(embeddings, args):
     print("\nBuilding model...")

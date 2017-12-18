@@ -6,7 +6,6 @@ import torch
 import torch.utils.data as data
 import ubuntu_data_utils
 
-
 HOME_PATH = dirname(dirname(realpath(__file__)))
 DATA_PATH = os.path.join(HOME_PATH,'data/android')
 DATA_FILE = os.path.join(DATA_PATH,"corpus.tsv")
@@ -15,7 +14,6 @@ DEV_NEG_FILE = os.path.join(DATA_PATH,"dev.neg.txt")
 TEST_POS_FILE = os.path.join(DATA_PATH,"test.pos.txt")
 TEST_NEG_FILE = os.path.join(DATA_PATH,"test.neg.txt")
 GLOVE_FILE = os.path.join(HOME_PATH,'data/pruned_glove.840B.300d.txt')
-
 
 def get_data_dict():
     data_dict = {}
@@ -80,4 +78,3 @@ def get_test_examples():
 
 def get_dev_examples():
     return get_examples(DEV_POS_FILE, DEV_NEG_FILE)
-

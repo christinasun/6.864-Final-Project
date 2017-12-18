@@ -16,7 +16,6 @@ from datasets.AndroidDataset import AndroidDataset
 from datasets.TransferDatasetGenerator import TransferDatasetGenerator
 import numpy as np
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch AskUbuntu Question Retrieval Network')
     # learning
@@ -60,13 +59,12 @@ if __name__ == '__main__':
     if args.train:
         print "Getting Train Data..."
         label_predictor_train_data = AskUbuntuDataset('train', word_to_indx, max_seq_length=args.len_query, training_data_size=args.training_data_size)
-        adversary_train_data_generator = TransferDatasetGenerator('train', word_to_indx, max_seq_length=args.len_query, max_dataset_size=args.training_data_size)
+        adversary_train_data_generator = TransferDatasetGenerator('train', word_to_indx, max_seq_length=args.len_query)
 
     print "Getting Ubuntu Dev Data..."
     ubuntu_dev_data = AskUbuntuDataset('dev', word_to_indx, max_seq_length=args.len_query)
     print "Getting Ubuntu Test Data..."
     ubuntu_test_data = AskUbuntuDataset('test', word_to_indx, max_seq_length=args.len_query)
-    
     print "Getting Android Dev Data..."
     android_dev_data = AndroidDataset('dev', word_to_indx, max_seq_length=args.len_query)
     print "Getting Android Test Data..."
