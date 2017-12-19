@@ -13,7 +13,7 @@ class LabelPredictor(nn.Module):
         super(LabelPredictor, self).__init__()
         self.args = encoder.args
         self.encoder = encoder
-        self.hidden_dim = args.hidden_dim
+        self.hidden_dim = self.args.hidden_dim
         return
 
     def forward(self,
