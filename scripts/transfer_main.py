@@ -115,7 +115,7 @@ if __name__ == '__main__':
                                     encoder_model, domain_classifier_model, args)
 
     if args.eval:
-        label_predictor = LabelPredictor(args, encoder_model)
+        label_predictor = LabelPredictor(encoder_model)
 
         print "\nEvaluating on android dev data:"
         evaluation_utils.evaluate_model(android_dev_data, label_predictor, args)

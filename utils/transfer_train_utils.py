@@ -7,7 +7,6 @@ import sys
 from os.path import dirname, realpath, join
 sys.path.append(dirname(dirname(realpath(__file__))))
 import utils.evaluation_utils as eval_utils
-import utils.misc_utils as misc_utils
 from models.Adversary import Adversary
 from models.LabelPredictor import LabelPredictor
 from itertools import izip
@@ -23,8 +22,8 @@ def train_model(label_predictor_train_data, adversary_train_data_generator, dev_
     domain_classifier_lr = -args.domain_classifier_lr # we set the learning rate to negative to train the adversary
     domain_classifier_optimizer = torch.optim.Adam(domain_classifier_model.parameters(), lr=domain_classifier_lr)
 
-    label_predictor = LabelPredictor(args, encoder_model)
-    adversary = Adversary(args, encoder_model, domain_classifier_model)
+    label_predictor = LabelPredictor(encoder_model)
+    adversary = Adversary(encoder_model, domain_classifier_model)
 
     label_predictor.train()
     adversary.train()

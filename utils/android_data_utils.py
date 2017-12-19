@@ -1,10 +1,6 @@
 import os
 import numpy as np
 from os.path import dirname, realpath
-import gzip
-import torch
-import torch.utils.data as data
-import ubuntu_data_utils
 
 HOME_PATH = dirname(dirname(realpath(__file__)))
 DATA_PATH = os.path.join(HOME_PATH,'data/android')

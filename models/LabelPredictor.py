@@ -9,9 +9,9 @@ class LabelPredictor(nn.Module):
     # computes the cosine similarities between each query and all of its candidates.
     # It outputs these cosine similarity "labels".
 
-    def __init__(self, args, encoder):
+    def __init__(self, encoder):
         super(LabelPredictor, self).__init__()
-        self.args = args
+        self.args = encoder.args
         self.encoder = encoder
         self.hidden_dim = args.hidden_dim
         return

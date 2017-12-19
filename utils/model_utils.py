@@ -12,10 +12,10 @@ def get_model(embeddings, args):
     print("\nBuilding model...")
     if args.model_name == 'cnn':
         encoder = CNN(embeddings, args)
-        return LabelPredictor(args, encoder)
+        return LabelPredictor(encoder)
     elif args.model_name == 'lstm':
         encoder = LSTM(embeddings, args)
-        return LabelPredictor(args, encoder)
+        return LabelPredictor(encoder)
     elif args.model_name == 'adt-lstm':
         return LSTM(embeddings, args), DomainClassifier(args)
     else:

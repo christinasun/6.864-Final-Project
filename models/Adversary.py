@@ -7,10 +7,10 @@ class Adversary(nn.Module):
     # It takes in pairs of title/body tensors, encodes them using the encoder, and then feeds the encodings into the
     # domain classifier. The adversary outputs the predicted labels for each title/body pair.
 
-    def __init__(self, args, encoder, domain_classifier):
+    def __init__(self, encoder, domain_classifier):
         super(Adversary, self).__init__()
 
-        self.args = args
+        self.args = encoder.args
         self.encoder = encoder
         self.domain_classifier = domain_classifier
         self.hidden_dim = args.hidden_dim
