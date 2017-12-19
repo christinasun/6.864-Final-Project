@@ -92,6 +92,7 @@ class LSTM(nn.Module):
             lengths = torch.unsqueeze(lengths, 1)
             lengths = lengths.expand(mask.data.shape)
             mask = torch.div(mask, lengths)
+            mask = torch.unsqueeze(mask, 2)
 
         x = self.embedding_layer(tensor)
         batch_size = x.data.shape[0]
@@ -101,7 +102,6 @@ class LSTM(nn.Module):
         lstm_out, self.hidden = self.lstm(x_perm, self.hidden)
 
         N, hd, co = lstm_out.data.shape
-        mask = torch.unsqueeze(mask, 2)
         expanded_mask = mask.expand(N, hd, co)
         masked = torch.mul(expanded_mask, lstm_out)
 

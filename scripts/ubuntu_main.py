@@ -9,7 +9,7 @@ import utils.baseline_train_utils as train_utils
 import utils.model_utils as model_utils
 import utils.evaluation_utils as evaluation_utils
 from datasets import AskUbuntuDataset
-from models import LabelPredictor
+from utils.misc_utils import set_seeds
 import torch
 import numpy as np
 
@@ -56,9 +56,7 @@ if __name__ == '__main__':
     print "Getting Test Data..."
     test_data = AskUbuntuDataset.AskUbuntuDataset('test', word_to_indx, max_seq_length=args.len_query)
 
-    torch.manual_seed(args.seed)
-    if args.cuda:
-        torch.cuda.manual_seed(args.seed)
+    set_seeds(args)
 
     # model
     if args.snapshot is None:

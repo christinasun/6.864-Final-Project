@@ -7,7 +7,7 @@ import sys
 from os.path import dirname, realpath, join
 sys.path.append(dirname(dirname(realpath(__file__))))
 import utils.evaluation_utils as eval_utils
-import utils.debug_utils as misc_utils
+import utils.misc_utils as misc_utils
 from models.LabelPredictor import LabelPredictor
 
 NUM_NEGATIVE_EXCEPTION_MESSAGE = "The number of negative examples desired ({}) is larger than that available ({})."

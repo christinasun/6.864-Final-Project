@@ -9,6 +9,7 @@ import utils.android_data_utils as android_data_utils
 import utils.transfer_train_utils as adt_train_utils
 import utils.model_utils as model_utils
 import utils.evaluation_utils as evaluation_utils
+from utils.misc_utils import set_seeds
 
 from datasets.AskUbuntuDataset import AskUbuntuDataset
 from datasets.AndroidDataset import AndroidDataset
@@ -75,10 +76,7 @@ if __name__ == '__main__':
     print "Getting Android Test Data..."
     android_test_data = AndroidDataset('test', word_to_indx, max_seq_length=args.len_query)
 
-    random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    if args.cuda:
-        torch.cuda.manual_seed(args.seed)
+    set_seeds(args)
 
     # model
     if args.encoder_snapshot is None or args.domain_classifier_snapshot is None:
