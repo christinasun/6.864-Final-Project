@@ -64,18 +64,18 @@ We transfer the model to perform Question Retrieval on the Stack Exchange Androi
 
 \begin{table*}[ht]
 \centering
-\begin{tabular}{c|cccccccccc}
+\begin{tabular}{c|ccccccccccc}
 \hline
-Method & $h$ & $|\theta|$ & $n$ & $lr$ & $d$ & $m$ & $lr_2$ & $\lambda$ & $h_2$ & $h_3$ \\
+Method & $h$ & $|\theta|^{enc}$ & $n$ & $lr$ & $d$ & $m$ & $|\theta|^{dc}$ & $lr_2$ & $\lambda$ & $h_2$ & $h_3$ \\
 \hline
-CNN     & 670 & 403K & 3 & 0.001 & 0 & 0.5 & - & - & - & -\\
-LSTM    & 240 & 309K & - & 0.0003 & 0 & 0.5 & - & - & - & -\\
-Direct Transfer & 110 & TODO & - & 0.0003 & 0.4 & 0.2 & - & - & - & -\\
-Adversarial Domain Transfer & 110 & TODO & - & 0.0003 & 0.4 & 0.2 & 0.00001 & 0.01 & 300 & 150\\
-Exploration & - & - & - & - & - & - & - & - & - & -\\
+CNN     & 670 & 403K & 3 & 1e-3 & 0 & 0.5 & - & - & - & - & -\\
+LSTM    & 240 & 309K & - & 3e-4 & 0 & 0.5 & - & - & - & - & -\\
+Direct Transfer & 110 & 157K & - & 3e-4 & 0.4 & 0.2 & - & - & - & - & -\\
+Adversarial Domain Transfer & 110 & 157K & - & 3e-4 & 0.4 & 0.2 & 79K & 1e-5 & 1e-2 & 300 & 150\\
+Exploration & - & - & - & - & - & - & - & - & - & - & -\\
 \hline
 \end{tabular}
-\caption{Configuration of neural models. $h$ is the hidden dimension of the encoder, $|\theta|$ is the number of parameters, $n$ is the filter width, $lr$ is the encoder learning rate, $d$ is the dropout, and $m$ is the margin. For adaptive domain transfer, we also tune the domain classifier learning rate $lr_2$, the constant $\lambda$ used in calculating loss, and the hidden dimensions of the domain classifier feed forward network $h_2$ and $h_3$.}
+\caption{Configuration of neural models. $h$ is the hidden dimension of the encoder, $|\theta|^{enc}$ is the number of parameters for the encoder, $n$ is the filter width, $lr$ is the encoder learning rate, $d$ is the dropout, and $m$ is the margin. For adaptive domain transfer, we also tune the domain classifier learning rate $lr_2$, the constant $\lambda$ used in calculating loss, and the hidden dimensions of the domain classifier feed forward network $h_2$ and $h_3$. $|\theta|^{dc}$ is the number of parameters for the domain classifier. }
 \label{table1}
 \end{table*}
 
