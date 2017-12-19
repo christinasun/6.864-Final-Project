@@ -1,8 +1,11 @@
 .DS_Store
 model.pt
+.DS_Store
+./.DS_Store
 data/.DS_Store
 .idea/*
 *.pyc
+draft/*
 data/ubuntu/text_tokenized.txt
 data/ubuntu/vector/vectors_pruned.200.txt
 utils/__init__.pyc

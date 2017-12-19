@@ -40,22 +40,20 @@ class TfIdfDataset(data.Dataset):
 
     def update_dataset_from_dev_or_test_example(self, example):
         if self.source == 'ubuntu':
-            qid, similar_qids, candidate_qids, BM25_scores = example
+            qid, positive_qids, candidate_qids, BM25_scores = example
             negative_qids = [cpid for cpid in candidate_qids if cpid not in similar_qids]
 
         elif self.source == 'android':
-            qid, similar_qids, candidate_qids = example
-            negative_qids = candidate_qids
+            qid, positive_qids, negative_qids = example
 
-        positive_qids = similar_qids
         qid_tfidf_tensor = self.get_tfidf_tensor(' '.join(self.data_dict[qid]))
         positive_tfidf_tensors = [self.get_tfidf_tensor(' '.join(self.data_dict[cqid])) for cqid in positive_qids]
         negative_tfidf_tensors = [self.get_tfidf_tensor(' '.join(self.data_dict[cqid])) for cqid in negative_qids]
 
         sample = \
             {'qid': qid,
-             'similar_qids': similar_qids,
-             'candidates': candidate_qids,
+             'positive_qids': positive_qids,
+             'negative_qids': negative_qids,
              'qid_tfidf_tensor': qid_tfidf_tensor,
              'negative_tfidf_tensors': negative_tfidf_tensors,
              'positive_tfidf_tensors': positive_tfidf_tensors
@@ -67,8 +65,7 @@ class TfIdfDataset(data.Dataset):
         return len(self.dataset)
 
     def __getitem__(self,index):
-        sample = self.dataset[index]
-        return sample
+        return self.dataset[index]
 
     def get_tfidf_tensor(self, text_arr):
         return self.vectorizer.transform([text_arr])

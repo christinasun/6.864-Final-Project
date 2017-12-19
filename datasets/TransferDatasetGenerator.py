@@ -9,31 +9,29 @@ import numpy as np
 sys.path.append(dirname(dirname(realpath(__file__))))
 
 class TransferDatasetGenerator(data.Dataset):
-    def __init__(self, name, word_to_indx, max_seq_length=100):
+    def __init__(self, name, word_to_indx, num_samples=20):
         self.name = name
         self.word_to_indx  = word_to_indx
-        self.max_length = max_seq_length
-        self.num_samples = 20
+        self.num_samples = num_samples
         self.android_data_dict = android_data_utils.get_data_dict()
         self.ubuntu_data_dict = ubuntu_data_utils.get_data_dict()
 
         self.android_permutation = self.android_data_dict.keys()
         random.shuffle(self.android_permutation)
         self.android_pointer = 0
+
         self.ubuntu_permutation = self.ubuntu_data_dict.keys()
         random.shuffle(self.ubuntu_permutation)
         self.ubuntu_pointer = 0
 
     def reset_android_permutation(self):
-        self.android_permutation = self.android_data_dict.keys()
         random.shuffle(self.android_permutation)
 
     def reset_ubuntu_permutation(self):
-        self.ubuntu_permutation = self.ubuntu_data_dict.keys()
         random.shuffle(self.ubuntu_permutation)
 
     def get_new_dataset(self, dataset_size):
-        return [self.get_train_example() for sample in xrange(dataset_size)]
+        return [self.get_train_example() for _ in xrange(dataset_size)]
 
     def get_train_example(self):
         if self.android_pointer > len(self.android_permutation)-self.num_samples:
@@ -50,6 +48,7 @@ class TransferDatasetGenerator(data.Dataset):
         if self.ubuntu_pointer > len(self.ubuntu_permutation)-self.num_samples:
             self.ubuntu_pointer = 0
             self.reset_ubuntu_permutation()
+
         ubuntu_ids = self.ubuntu_permutation[self.ubuntu_pointer:self.ubuntu_pointer+self.num_samples]
         self.ubuntu_pointer += self.num_samples
         ubuntu_tensors = [map(self.get_indices_tensor,self.ubuntu_data_dict[ubuntu_id]) for ubuntu_id in ubuntu_ids]
@@ -65,9 +64,9 @@ class TransferDatasetGenerator(data.Dataset):
         random.shuffle(indexes)
 
         sample = {'id': [id for _, id in sorted(zip(indexes, ids))],
-                  'title_tensors': [title_tensor for _,title_tensor in sorted(zip(indexes, title_tensors))],
-                  'body_tensors': [body_tensor for _,body_tensor in sorted(zip(indexes, body_tensors))],
-                  'labels': torch.FloatTensor([label for _,label in sorted(zip(indexes, labels))])
+                  'title_tensors': [title_tensor for _, title_tensor in sorted(zip(indexes, title_tensors))],
+                  'body_tensors': [body_tensor for _, body_tensor in sorted(zip(indexes, body_tensors))],
+                  'labels': torch.FloatTensor([label for _, label in sorted(zip(indexes, labels))])
                   }
         return sample
 
@@ -75,8 +74,7 @@ class TransferDatasetGenerator(data.Dataset):
         return len(self.dataset)
 
     def __getitem__(self,index):
-        sample = self.dataset[index]
-        return sample
+        return self.dataset[index]
 
     def get_indices_tensor(self, text_arr):
         nil_indx = 0
@@ -85,5 +83,5 @@ class TransferDatasetGenerator(data.Dataset):
 
         if len(text_indx) < self.max_length:
             text_indx.extend( [nil_indx for _ in range(self.max_length - len(text_indx))])
-        x =  torch.LongTensor(text_indx)
-        return x
+
+        return torch.LongTensor(text_indx)
