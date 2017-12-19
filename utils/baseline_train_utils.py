@@ -18,18 +18,17 @@ def train_model(train_data, dev_data, model, args):
         model = model.cuda()
 
     optimizer = torch.optim.Adam(model.parameters() , lr=args.lr)
-    label_predictor = LabelPredictor(args, model)
 
-    label_predictor.train()
+    model.train()
 
     for epoch in range(1, args.epochs+1):
 
         print "-------------\nEpoch {}:\n".format(epoch)
 
-        loss = run_epoch(train_data, True, label_predictor, optimizer, args)
+        loss = run_epoch(train_data, True, model, optimizer, args)
         print 'Train Multi-margin loss: {:.6f}\n'.format(loss)
 
-        eval_utils.evaluate_model(dev_data, label_predictor, args)
+        eval_utils.evaluate_model(dev_data, model, args)
 
         # Save model
         torch.save(model, join(args.save_path,'epoch_{}.pt'.format(epoch)))

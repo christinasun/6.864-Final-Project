@@ -15,6 +15,7 @@ from datasets.AskUbuntuDataset import AskUbuntuDataset
 from datasets.AndroidDataset import AndroidDataset
 from datasets.TransferDatasetGenerator import TransferDatasetGenerator
 import numpy as np
+from models.LabelPredictor import LabelPredictor
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch AskUbuntu Question Retrieval Network')
@@ -110,7 +111,14 @@ if __name__ == '__main__':
         train_utils.train_model(label_predictor_train_data, adversary_train_data_generator, android_dev_data, encoder_model, domain_classifier_model, args)
 
     if args.eval:
-        print "\nEvaluating on dev data:"
-        evaluation_utils.evaluate_model(android_dev_data, encoder_model, args)
-        print "\nEvaluating on test data:"
-        evaluation_utils.evaluate_model(android_test_data, encoder_model, args)
+        label_predictor = LabelPredictor(args, encoder_model)
+
+        print "\nEvaluating on android dev data:"
+        evaluation_utils.evaluate_model(android_dev_data, label_predictor, args)
+        print "\nEvaluating on android test data:"
+        evaluation_utils.evaluate_model(android_test_data, label_predictor, args)
+
+        print "\nEvaluating on ubuntu dev data:"
+        evaluation_utils.evaluate_model(ubuntu_dev_data, label_predictor, args)
+        print "\nEvaluating on ubuntu test data:"
+        evaluation_utils.evaluate_model(ubuntu_test_data, label_predictor, args)

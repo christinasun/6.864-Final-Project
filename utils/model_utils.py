@@ -1,17 +1,21 @@
 import sys
 from os.path import dirname, realpath
+
 sys.path.append(dirname(dirname(realpath(__file__))))
 from models.Encoders import CNN
 from models.Encoders import LSTM
 from models.DomainClassifier import DomainClassifier
+from models.LabelPredictor import LabelPredictor
 
 # Depending on arg, build dataset
 def get_model(embeddings, args):
     print("\nBuilding model...")
     if args.model_name == 'cnn':
-        return CNN(embeddings, args)
+        encoder = CNN(embeddings, args)
+        return LabelPredictor(args, encoder)
     elif args.model_name == 'lstm':
-        return LSTM(embeddings, args)
+        encoder = LSTM(embeddings, args)
+        return LabelPredictor(args, encoder)
     elif args.model_name == 'adt-lstm':
         return LSTM(embeddings, args), DomainClassifier(args)
     else:

@@ -17,19 +17,17 @@ class AskUbuntuDataset(data.Dataset):
             train_examples = ubuntu_data_utils.get_train_examples()[:training_data_size]
             for example in train_examples:
                 self.update_dataset_from_train_example(example)
-            print "Number of AskUbuntu train examples: {}".format(len(self.dataset))
         elif name == 'dev':
             dev_examples = ubuntu_data_utils.get_dev_examples()
             for example in dev_examples:
                 self.update_dataset_from_dev_or_test_example(example)
-            print "Number of AskUbuntu dev examples: {}".format(len(self.dataset))
         elif name == 'test':
             test_examples = ubuntu_data_utils.get_test_examples()
             for example in test_examples:
                 self.update_dataset_from_dev_or_test_example(example)
-            print "Number of AskUbuntu test examples: {}".format(len(self.dataset))
         else:
             raise Exception("Data set name {} not supported!".format(name))
+        print "Number of AskUbuntu {} examples: {}".format(self.name, len(self.dataset))
 
     def update_dataset_from_train_example(self, example):
         # adds samples to dataset for each training example

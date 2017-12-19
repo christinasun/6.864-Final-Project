@@ -17,14 +17,14 @@ class AndroidDataset(data.Dataset):
             dev_examples = android_data_utils.get_dev_examples()
             for example in dev_examples:
                 self.update_dataset_from_dev_or_test_example(example)
-            print "Number of Android dev examples: {}".format(len(self.dataset))
         elif name == 'test':
             test_examples = android_data_utils.get_test_examples()
             for example in test_examples:
                 self.update_dataset_from_dev_or_test_example(example)
-            print "Number of Android dev examples: {}".format(len(self.dataset))
         else:
             raise Exception("Data set name {} not supported!".format(name))
+        print "Number of Android {} examples: {}".format(self.name, len(self.dataset))
+
 
     def update_dataset_from_dev_or_test_example(self, example):
         qid, similar_qids, random_qids = example

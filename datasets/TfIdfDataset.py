@@ -36,6 +36,7 @@ class TfIdfDataset(data.Dataset):
             test_examples = self.get_test_examples()
             for example in test_examples:
                 self.update_dataset_from_dev_or_test_example(example)
+        print "Number of {} tfidf {} examples: {}".format(self.source, self.name, len(self.dataset))
 
     def update_dataset_from_dev_or_test_example(self, example):
         if self.source == 'ubuntu':
