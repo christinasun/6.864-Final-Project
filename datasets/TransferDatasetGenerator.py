@@ -9,9 +9,10 @@ import numpy as np
 sys.path.append(dirname(dirname(realpath(__file__))))
 
 class TransferDatasetGenerator(data.Dataset):
-    def __init__(self, name, word_to_indx, num_samples=20):
+    def __init__(self, name, word_to_indx, max_seq_length=100, num_samples=20):
         self.name = name
         self.word_to_indx  = word_to_indx
+        self.max_seq_length = max_seq_length
         self.num_samples = num_samples
         self.android_data_dict = android_data_utils.get_data_dict()
         self.ubuntu_data_dict = ubuntu_data_utils.get_data_dict()
@@ -79,9 +80,9 @@ class TransferDatasetGenerator(data.Dataset):
     def get_indices_tensor(self, text_arr):
         nil_indx = 0
         unk_indx = 1
-        text_indx = [self.word_to_indx[x.lower()] if x.lower() in self.word_to_indx else unk_indx for x in text_arr.split()][:self.max_length]
+        text_indx = [self.word_to_indx[x.lower()] if x.lower() in self.word_to_indx else unk_indx for x in text_arr.split()][:self.max_seq_length]
 
-        if len(text_indx) < self.max_length:
-            text_indx.extend( [nil_indx for _ in range(self.max_length - len(text_indx))])
+        if len(text_indx) < self.max_seq_length:
+            text_indx.extend([nil_indx for _ in range(self.max_seq_length - len(text_indx))])
 
         return torch.LongTensor(text_indx)
