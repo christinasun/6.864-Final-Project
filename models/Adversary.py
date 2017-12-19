@@ -1,8 +1,6 @@
 import torch
-import torch.autograd as autograd
-import torch.nn.functional as F
 import torch.nn as nn
-import numpy as np
+
 
 class Adversary(nn.Module):
     # The adversary abstracts away the encoder and the domain classifier.
@@ -18,10 +16,7 @@ class Adversary(nn.Module):
         self.hidden_dim = args.hidden_dim
         return
 
-    def forward(self,
-                for_dc_title_tensors,
-                for_dc_body_tensors):
-
+    def forward(self, for_dc_title_tensors, for_dc_body_tensors):
         # get the encodings for the flattened out domain classifier tensors
         num_for_dc, batch_size, embedding_dim = for_dc_title_tensors.size()
         for_dc_title_encodings = self.encoder(for_dc_title_tensors.view(num_for_dc * batch_size, embedding_dim))
@@ -31,5 +26,5 @@ class Adversary(nn.Module):
 
         expanded_labels = self.domain_classifier(for_dc_encodings)
 
-        dc_output = expanded_labels.view(num_for_dc,batch_size,1).view(num_for_dc,batch_size).t()
+        dc_output = expanded_labels.view(num_for_dc, batch_size, 1).view(num_for_dc, batch_size).t()
         return dc_output

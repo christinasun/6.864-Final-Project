@@ -1,6 +1,5 @@
 import sys
 from os.path import dirname, realpath
-import torch
 import torch.utils.data as data
 sys.path.append(dirname(dirname(realpath(__file__))))
 import utils.ubuntu_data_utils as ubuntu_data_utils
