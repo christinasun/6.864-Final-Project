@@ -13,7 +13,7 @@ class Adversary(nn.Module):
         self.args = encoder.args
         self.encoder = encoder
         self.domain_classifier = domain_classifier
-        self.hidden_dim = args.hidden_dim
+        self.hidden_dim = self.args.hidden_dim
         return
 
     def forward(self, for_dc_title_tensors, for_dc_body_tensors):
