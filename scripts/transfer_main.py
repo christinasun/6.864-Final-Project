@@ -15,6 +15,7 @@ from datasets.AskUbuntuDataset import AskUbuntuDataset
 from datasets.AndroidDataset import AndroidDataset
 from datasets.TransferDatasetGenerator import TransferDatasetGenerator
 import numpy as np
+import random
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch AskUbuntu Question Retrieval Network')
@@ -70,6 +71,7 @@ if __name__ == '__main__':
     print "Getting Android Test Data..."
     android_test_data = AndroidDataset('test', word_to_indx, max_seq_length=args.len_query)
 
+    random.seed(args.seed)
     torch.manual_seed(args.seed)
     if args.cuda:
         torch.cuda.manual_seed(args.seed)
