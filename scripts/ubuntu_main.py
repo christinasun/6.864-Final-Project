@@ -38,7 +38,7 @@ if __name__ == '__main__':
     # other
     parser.add_argument('--len_query', type=int, default=100, help='how much of the query body to use [default 100]')
     parser.add_argument('--debug', action='store_true', default=False, help='have print statements')
-    parser.add_argument('--seed', type=int, default=100, help='how much of the query body to use [default 100]')
+    parser.add_argument('--seed', type=int, default=100, help='seed [default 100]')
     args = parser.parse_args()
     # update args and print
     print "\nParameters:"
