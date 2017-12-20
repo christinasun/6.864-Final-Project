@@ -10,11 +10,13 @@ import utils.android_data_utils as android_data_utils
 import utils.transfer_train_utils as train_utils
 import utils.model_utils as model_utils
 import utils.evaluation_utils as evaluation_utils
+from utils.misc_utils import set_seeds
 
 from datasets.AskUbuntuDataset import AskUbuntuDataset
 from datasets.AndroidDataset import AndroidDataset
 from datasets.TransferDatasetGenerator import TransferDatasetGenerator
 import numpy as np
+from models.LabelPredictor import LabelPredictor
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch AskUbuntu Question Retrieval Network')
@@ -70,9 +72,7 @@ if __name__ == '__main__':
     print "Getting Android Test Data..."
     android_test_data = AndroidDataset('test', word_to_indx, max_seq_length=args.len_query)
 
-    torch.manual_seed(args.seed)
-    if args.cuda:
-        torch.cuda.manual_seed(args.seed)
+    set_seeds(args)
 
     # model
     if args.encoder_snapshot is None or args.domain_classifier_snapshot is None:
@@ -110,7 +110,14 @@ if __name__ == '__main__':
         train_utils.train_model(label_predictor_train_data, adversary_train_data_generator, android_dev_data, encoder_model, domain_classifier_model, args)
 
     if args.eval:
-        print "\nEvaluating on dev data:"
-        evaluation_utils.evaluate_model(android_dev_data, encoder_model, args)
-        print "\nEvaluating on test data:"
-        evaluation_utils.evaluate_model(android_test_data, encoder_model, args)
+        label_predictor = LabelPredictor(encoder_model)
+
+        print "\nEvaluating on android dev data:"
+        evaluation_utils.evaluate_model(android_dev_data, label_predictor, args)
+        print "\nEvaluating on android test data:"
+        evaluation_utils.evaluate_model(android_test_data, label_predictor, args)
+
+        print "\nEvaluating on ubuntu dev data:"
+        evaluation_utils.evaluate_model(ubuntu_dev_data, label_predictor, args)
+        print "\nEvaluating on ubuntu test data:"
+        evaluation_utils.evaluate_model(ubuntu_test_data, label_predictor, args)

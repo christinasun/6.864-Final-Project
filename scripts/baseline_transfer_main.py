@@ -25,7 +25,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_negative', type=int, default=20, help='number of negative examples for training [default: 20]')
     parser.add_argument('--training_data_size', type=int, default = 1000000, help='number of training queries [default: 1000000]')
     # data loading
-    parser.add_argument('--num_workers', nargs='?', type=int, default=4, help='num workers for data loader')
+    parser.add_argument('--num_workers', nargs='?', type=int, default=4, help='number of workers for data loader')
     # model
     parser.add_argument('--model_name', nargs="?", type=str, default='lstm', help="model type, i.e dan, rnn, etc.")
     parser.add_argument('--hidden_dim', type=int, default=20, help='dimension of the hidden layer [default: 20]')

@@ -27,13 +27,13 @@ class AskUbuntuDataset(data.Dataset):
                 self.update_dataset_from_dev_or_test_example(example)
         else:
             raise Exception("Data set name {} not supported!".format(name))
+        print "Number of AskUbuntu {} examples: {}".format(self.name, len(self.dataset))
 
-    ## Convert one example to {x: example, y: label (always 0)}
     def update_dataset_from_train_example(self, example):
         # adds samples to dataset for each training example
         # each training example generates multiple samples
         qid, similar_qids, random_qids = example
-        qid_tensors = map(self.get_indices_tensor, self.data_dict[qid])
+        qid_title_tensor,  qid_body_tensor = map(self.get_indices_tensor, self.data_dict[qid])
 
         random_candidate_tensors = [map(self.get_indices_tensor, self.data_dict[cqid]) for cqid in random_qids]
         random_candidate_title_tensors, random_candidate_body_tensors = zip(*random_candidate_tensors)
@@ -42,23 +42,21 @@ class AskUbuntuDataset(data.Dataset):
 
         for similar_qid in similar_qids:
             candidates = [similar_qid] + random_qids
-            similar_qid_tensors = map(self.get_indices_tensor, self.data_dict[similar_qid])
+            similar_qid_title_tensor, similar_qid_body_tensor = map(self.get_indices_tensor, self.data_dict[similar_qid])
 
             sample = {'qid': qid,
                       'candidates': candidates,
-                      'qid_title_tensor': qid_tensors[0],
-                      'qid_body_tensor': qid_tensors[1],
-                      'candidate_title_tensors': [similar_qid_tensors[0]] + random_candidate_title_tensors,
-                      'candidate_body_tensors': [similar_qid_tensors[1]] + random_candidate_body_tensors
+                      'qid_title_tensor': qid_title_tensor,
+                      'qid_body_tensor': qid_body_tensor,
+                      'candidate_title_tensors': [similar_qid_title_tensor] + random_candidate_title_tensors,
+                      'candidate_body_tensors': [similar_qid_body_tensor] + random_candidate_body_tensors
                       }
             self.dataset.append(sample)
         return
 
     def update_dataset_from_dev_or_test_example(self, example):
         qid, similar_qids, candidate_qids, BM25_scores = example
-        qid_tensors = map(self.get_indices_tensor, self.data_dict[qid])
-
-        labels = [1 if cqid in similar_qids else 0 for cqid in candidate_qids]
+        q_title_tensor, q_body_tensor = map(self.get_indices_tensor, self.data_dict[qid])
 
         positive_qids = similar_qids
         positive_tensors = [map(self.get_indices_tensor, self.data_dict[qid]) for qid in positive_qids]
@@ -82,37 +80,22 @@ class AskUbuntuDataset(data.Dataset):
             {'qid': qid,
              'similar_qids': similar_qids,
              'candidates': candidate_qids,
-             'q_title_tensor': qid_tensors[0],
-             'q_body_tensor': qid_tensors[1],
+             'q_title_tensor': q_title_tensor,
+             'q_body_tensor': q_body_tensor,
              'positive_title_tensors': positive_title_tensors,
              'positive_body_tensors': positive_body_tensors,
              'negative_title_tensors': negative_title_tensors,
              'negative_body_tensors': negative_body_tensors,
              'BM25_scores': BM25_scores,
-             'labels': labels
              }
         self.dataset.append(sample)
         return
-
-    def get_random_samples_from_from_corpus(self, num_samples):
-        samples = []
-        for i in range(num_samples):
-            id = random.choice(self.data_dict.keys())
-            tensors = map(self.get_indices_tensor,self.data_dict[id])
-            title_tensor, body_tensor = zip(*tensors)
-            sample = {'id': id,
-                      'title_tensor': title_tensor,
-                      'body_tensor': body_tensor
-                      }
-            samples.append(sample)
-        return samples
 
     def __len__(self):
         return len(self.dataset)
 
     def __getitem__(self, index):
-        sample = self.dataset[index]
-        return sample
+        return self.dataset[index]
 
     def get_indices_tensor(self, text_arr):
         nil_indx = 0
@@ -122,5 +105,5 @@ class AskUbuntuDataset(data.Dataset):
 
         if len(text_indx) < self.max_seq_length:
             text_indx.extend([nil_indx for _ in range(self.max_seq_length - len(text_indx))])
-        x = torch.LongTensor(text_indx)
-        return x
+
+        return torch.LongTensor(text_indx)

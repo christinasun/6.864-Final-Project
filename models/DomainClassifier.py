@@ -1,16 +1,11 @@
-import torch
-import torch.autograd as autograd
-import torch.nn.functional as F
 import torch.nn as nn
-import numpy as np
 
 class DomainClassifier(nn.Module):
-
     def __init__(self, args):
         super(DomainClassifier, self).__init__()
 
         self.args = args
-        self.input_dim = args.hidden_dim
+        self.input_dim = args.hidden_dim  # the output dim of the encoders is the input dim to domain classifier
         self.hidden_1_dim = args.hidden_dim_dom1
         self.hidden_2_dim = args.hidden_dim_dom2
 
