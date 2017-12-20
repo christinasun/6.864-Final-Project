@@ -18,16 +18,19 @@
 * python scripts/transfer_main.py --hidden_dim 110 --encoder_lr .0003 --domain_classifier_lr .00001 --dropout 0.4 --margin 0.2 --lam .01 --train --cuda
 
 
-## The best performing models are saved in saved_models. To evaluate these models, run: 
+## To evaluate the best performing models (in saved_models), run: 
 
 **CNN:** 
+* python scripts/ubuntu_main.py --snapshot saved_models/final_models/cnn_encoder.pt --eval --cuda
 
 **LSTM:** 
+* python scripts/ubuntu_main.py --snapshot saved_models/final_models/lstm_encoder.pt --eval --cuda
 
 **TF-IDF:** 
 * python scripts/tfidf_main.py
 
 **Direct Transfer:**
+* python scripts/direct_transfer_main.py --snapshot saved_models/final_models/direct_transfer_encoder.pt --eval --cuda
 
 **Adversarial Domain Transfer:** 
 * python scripts/transfer_main.py --encoder_snapshot saved_models/final_models/adt_encoder.pt --domain_classifier_snapshot saved_models/final_models/adt_domain_classifier.pt --eval --cuda
