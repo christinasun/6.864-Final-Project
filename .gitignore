@@ -3,13 +3,9 @@
 data/.DS_Store
 .idea/*
 *.pyc
-data/ubuntu/text_tokenized.txt
-data/ubuntu/vector/vectors_pruned.200.txt
 utils/__init__.pyc
-data/glove.6B.200d.txt
-data/word_set.p
 data/glove*
 data/pruned_glove*
 saved_models/*
 data/pruned_glove.840B.300d.txt
-data/word_set.p
+
