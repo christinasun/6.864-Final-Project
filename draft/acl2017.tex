@@ -66,7 +66,7 @@ We transfer the model to perform Question Retrieval on the Stack Exchange Androi
 \centering
 \begin{tabular}{c|ccccccccccc}
 \hline
-Method & $h$ & $|\theta|^{enc}$ & $n$ & $lr$ & $d$ & $m$ & $|\theta|^{dc}$ & $lr_2$ & $\lambda$ & $h_2$ & $h_3$ \\
+Method & $h$ & $|\theta_{enc}|$ & $n$ & $lr$ & $d$ & $m$ & $|\theta_{dc}|$ & $lr_2$ & $\lambda$ & $h_2$ & $h_3$ \\
 \hline
 CNN     & 670 & 403K & 3 & 1e-3 & 0 & 0.5 & - & - & - & - & -\\
 LSTM    & 240 & 309K & - & 3e-4 & 0 & 0.5 & - & - & - & - & -\\
@@ -75,7 +75,7 @@ Adversarial Domain Transfer & 110 & 157K & - & 3e-4 & 0.4 & 0.2 & 79K & 1e-5 & 1
 Exploration & - & - & - & - & - & - & - & - & - & - & -\\
 \hline
 \end{tabular}
-\caption{Configuration of neural models. $h$ is the hidden dimension of the encoder, $|\theta|^{enc}$ is the number of parameters for the encoder, $n$ is the filter width, $lr$ is the encoder learning rate, $d$ is the dropout, and $m$ is the margin. For adaptive domain transfer, we also tune the domain classifier learning rate $lr_2$, the constant $\lambda$ used in calculating loss, and the hidden dimensions of the domain classifier feed forward network $h_2$ and $h_3$. $|\theta|^{dc}$ is the number of parameters for the domain classifier. }
+\caption{Configuration of neural models. $h$ is the hidden dimension of the encoder, $|\theta_{enc}|$ is the number of parameters for the encoder, $n$ is the filter width, $lr$ is the encoder learning rate, $d$ is the dropout, and $m$ is the margin. For adaptive domain transfer, we also tune the domain classifier learning rate $lr_2$, the constant $\lambda$ used in calculating loss, and the hidden dimensions of the domain classifier feed forward network $h_2$ and $h_3$. $|\theta_{dc}|$ is the number of parameters for the domain classifier. }
 \label{table1}
 \end{table*}
 
@@ -97,14 +97,14 @@ LSTM & 58.3 & 72.2 & 61.4 & 46.7 & 58.3 & 72.2 & 61.4 & 46.7\\
 
 \begin{table}
 \centering
-\begin{tabular}{cc}
+\begin{tabular}{ccc}
 \hline
-Method & AUC \\
+Method & Dev AUC & Test AUC \\
 \hline
-TF-IDF & 0.739 \\
-Direct Transfer & 0.639 \\
-Adversarial Domain Transfer & 0.716 \\
-Exploration & TODO \\
+TF-IDF & 0.707 & 0.739 \\
+Direct Transfer & TODO & TODO \\
+Adv. Dom. Transfer & 0.697 & 0.696 \\
+Exploration & TODO & TODO \\
 \hline
 \end{tabular}
 \caption{Comparative results between the CNN and LSTM models on the question similarity task. }
@@ -159,10 +159,7 @@ All models were implemented using PyTorch, version \texttt{0.2.0\_3}. We used th
 The CNN and LSTM models beat the existing BM25 scores in every metric. Scores are shown in Table~\ref{table2}. The AUC scores for the TF-IDF, direct transfer, and adversarial domain transfer models AUC are reported in Table~\ref{table3}. In general, the LSTM model performed better than the CNN model. Thus, we used the LSTM encoder in the adversarial domain transfer task. The adversarial domain transfer model achieved a 12.0\% relative increase in AUC score over the baseline (direct transfer model). We found that increasing dropout to 0.4 and using a larger $\lambda$ value (effectively increasing the amount of regularization) was integral in improving performance. 
 
 \section{Conclusion}
-We implement recurrent and convolutional neural models for encoding questions into semantic vector representations, which are then compared for the task of similar question retrieval in question answering forums. We also use domain adaptation techniques for the case where annotated data is readily available in one domain but not another. Although we beat the target scores for every model, we could not perform an extensive hyper-parameter search, explore different pooling strategies, or attempt using titles only in order to find the best models, due to time constraints. 
-
-\subsection*{Source Code}
-The source code is located at \url{https://github.com/christinasun/6.864-Final-Project}. Instructions for running the final models described in this paper are found in the \texttt{README}. 
+We implement recurrent and convolutional neural models for encoding questions into semantic vector representations, which are then compared for the task of similar question retrieval in question answering forums. We also use domain adaptation techniques for the case where annotated data is readily available in one domain but not another. Although we beat the target scores for every model, we could not perform an extensive hyper-parameter search, explore different pooling strategies, or attempt using titles only in order to find the best models, due to time constraints. \footnote{The source code is located at \url{https://github.com/christinasun/6.864-Final-Project}. Instructions for running the final models described in this paper are found in the \texttt{README}.}
 
 \nocite{*}
 \bibliography{acl2017}
