@@ -16,16 +16,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch AskUbuntu Question Retrieval Network')
     # learning
     parser.add_argument('--lr', type=float, default=0.001, help='initial learning rate [default: 0.001]')
-    parser.add_argument('--dropout', type=float, default=0.2, help='initial learning rate [default: 0.2]')
+    parser.add_argument('--dropout', type=float, default=0.2, help='dropout [default: 0.2]')
     parser.add_argument('--margin', type=float, default=0.5, help='margin size [default: 0.5]')
     parser.add_argument('--epochs', type=int, default=10, help='number of epochs for train [default: 10]')
     parser.add_argument('--batch_size', type=int, default=20, help='batch size for training [default: 20]')
-    parser.add_argument('--num_negative', type=int, default=20, help='# negative examples for training [default: 20]')
-    parser.add_argument('--training_data_size', type=int, default = 1000000, help='Number of training queries [default: 1000000]')
+    parser.add_argument('--num_negative', type=int, default=20, help='number of negative examples for training [default: 20]')
+    parser.add_argument('--training_data_size', type=int, default = 1000000, help='number of training queries [default: 1000000]')
     # data loading
-    parser.add_argument('--num_workers', nargs='?', type=int, default=4, help='num workers for data loader')
+    parser.add_argument('--num_workers', nargs='?', type=int, default=4, help='number of workers for data loader')
     # model
-    parser.add_argument('--model_name', nargs="?", type=str, default='cnn', help="Form of model, i.e dan, rnn, etc.")
+    parser.add_argument('--model_name', nargs="?", type=str, default='cnn', help="model type, i.e dan, rnn, etc.")
     parser.add_argument('--hidden_dim', type=int, default=20, help='dimension of the hidden layer [default: 20]')
     # device
     parser.add_argument('--cuda', action='store_true', default=False, help='enable the gpu')
