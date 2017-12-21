@@ -4,7 +4,7 @@
 
 **CNN:** 
 * python scripts/ubuntu_main.py --model_name cnn --hidden_dim 670 --lr .001 --dropout 0 --margin 0.5 --train --cuda --seed 5 
-* (reported model at epoch 4)
+* (reported model at epoch 4).
 
 **LSTM:** 
 * python scripts/ubuntu_main.py --model_name lstm --hidden_dim 240 --lr .0003 --dropout 0 --margin 0.5 --train --cuda --seed 3
