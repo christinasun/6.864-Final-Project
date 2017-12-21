@@ -1,10 +1,15 @@
 # 6.864-Final-Project
 
+To run the following commands, first download the pruned glove embeddings and saved models from here: https://drive.google.com/open?id=1RSjdXU9ycwvTqQkPpJOvS-gMcYqNNjaD
+
+Unzip pruned_glove.840B.300d.txt.zip inside the data folder. Unzip saved_models.zip in the main folder. 
+
+
 ## To train the models with reported parameters, run: 
 
 **CNN:** 
 * python scripts/ubuntu_main.py --model_name cnn --hidden_dim 670 --lr .001 --dropout 0 --margin 0.5 --train --cuda --seed 5 
-* (reported model at epoch 4).
+* (reported model at epoch 4)
 
 **LSTM:** 
 * python scripts/ubuntu_main.py --model_name lstm --hidden_dim 240 --lr .0003 --dropout 0 --margin 0.5 --train --cuda --seed 3
