@@ -7,7 +7,7 @@ import torch
 
 sys.path.append(dirname(dirname(realpath(__file__))))
 import utils.android_data_utils as android_data_utils
-import utils.transfer_train_utils as train_utils
+import utils.exploration_train_utils as train_utils
 import utils.model_utils as model_utils
 import utils.evaluation_utils as evaluation_utils
 from utils.misc_utils import set_seeds
