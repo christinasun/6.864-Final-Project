@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
     # model
     if args.encoder_snapshot is None or args.domain_classifier_snapshot is None:
-        encoder_model, domain_classifier_model, reconstruction_model = model_utils.get_model(embeddings, args)
+        encoder_model, domain_classifier_model, reconstruction_model, unpooled_model = model_utils.get_model(embeddings, args)
 
     else :
         print 'Loading models from {} and {} ...'.format(args.encoder_snapshot, args.domain_classifier_snapshot)
@@ -108,7 +108,7 @@ if __name__ == '__main__':
         print "\nTraining..."
         if not os.path.exists(args.save_path):
             os.makedirs(args.save_path)
-        train_utils.train_model(label_predictor_train_data, adversary_train_data_generator, android_dev_data, encoder_model, domain_classifier_model, reconstruction_model, args)
+        train_utils.train_model(label_predictor_train_data, adversary_train_data_generator, android_dev_data, encoder_model, domain_classifier_model, reconstruction_model, unpooled_model, args)
 
     if args.eval:
         label_predictor = LabelPredictor(encoder_model)

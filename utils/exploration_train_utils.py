@@ -12,30 +12,34 @@ from models.LabelPredictor import LabelPredictor
 from models.Reconstructor import Reconstructor
 from itertools import izip
 
-def train_model(label_predictor_train_data, adversary_train_data_generator, dev_data, encoder_model, domain_classifier_model, reconstructor_model, args):
+def train_model(label_predictor_train_data, adversary_train_data_generator, dev_data, encoder_model, domain_classifier_model, reconstructor_model, unpooled_model, args):
 
     if args.cuda:
         encoder_model = encoder_model.cuda()
         domain_classifier_model = domain_classifier_model.cuda()
         reconstructor_model = reconstructor_model.cuda()
+        unpooled_model = unpooled_model.cuda()
 
     encoder_optimizer = torch.optim.Adam(encoder_model.parameters() , lr=args.encoder_lr)
 
     domain_classifier_lr = -args.domain_classifier_lr # we set the learning rate to negative to train the adversary
     domain_classifier_optimizer = torch.optim.Adam(domain_classifier_model.parameters(), lr=domain_classifier_lr)
 
+    reconstructor_optimizer = torch.optim.Adam(reconstructor_model.parameters() , lr=args.encoder_lr)
+
     label_predictor = LabelPredictor(encoder_model)
     adversary = Adversary(encoder_model, domain_classifier_model)
-    reconstructor = Reconstructor(reconstructor_model)
+    reconstructor = Reconstructor(unpooled_model, reconstructor_model)
 
     label_predictor.train()
     adversary.train()
+    reconstructor.train()
 
     for epoch in range(1, args.epochs+1):
 
         print "-------------\nEpoch {}:\n".format(epoch)
         
-        loss = run_epoch(label_predictor_train_data, adversary_train_data_generator, True, label_predictor, adversary, reconstructor, encoder_optimizer, domain_classifier_optimizer, args)
+        loss = run_epoch(label_predictor_train_data, adversary_train_data_generator, True, label_predictor, adversary, reconstructor, encoder_optimizer, domain_classifier_optimizer, reconstructor_optimizer, args)
         print 'Train loss: {:.6f}\n'.format(loss)
 
         eval_utils.evaluate_model(dev_data, label_predictor, args)
@@ -44,9 +48,11 @@ def train_model(label_predictor_train_data, adversary_train_data_generator, dev_
         torch.save(encoder_model, join(args.save_path,'encoder_epoch_{}.pt'.format(epoch)))
         torch.save(domain_classifier_model, join(args.save_path,'domain_classifier_epoch_{}.pt'.format(epoch)))
 
+def mse_loss(input, target):
+    return torch.sum((input - target)^2) / input.data.nelement()
 
 def run_epoch(label_predictor_train_data, adversary_train_data_generator, is_training, label_predictor, adversary, reconstructor,
-              encoder_optimizer, domain_classifier_optimizer, args):
+              encoder_optimizer, domain_classifier_optimizer, reconstructor_optimizer, args):
     '''
     Train model for one pass of train data, and return loss, acccuracy
     '''
@@ -69,12 +75,15 @@ def run_epoch(label_predictor_train_data, adversary_train_data_generator, is_tra
     if is_training:
         label_predictor.train()
         adversary.train()
+        reconstructor.train()
     else:
         label_predictor.eval()
         adversary.eval()
+        reconstructor.eval()
 
     encoder_loss_function = torch.nn.MultiMarginLoss(p=1, margin=args.margin, weight=None, size_average=True)
     domain_classifier_loss_function = torch.nn.BCELoss(weight=None, size_average=True)
+    reconstructor_loss_function = torch.nn.MSELoss(size_average=True)
 
     for label_predictor_batch, adversary_batch in tqdm(izip(data_loader_label_predictor, data_loader_train_adversary)):
 
@@ -148,8 +157,10 @@ def run_epoch(label_predictor_train_data, adversary_train_data_generator, is_tra
         # if args.debug: misc_utils.print_shape_variable('domain_labels', domain_labels)
         domain_classifier_loss = domain_classifier_loss_function(domain_labels, BCE_targets)
 
-        reconstruction_loss = reconstructor(q_title_tensors, q_body_tensors,
+        unpooled, recon = reconstructor(q_title_tensors, q_body_tensors,
                                     selected_candidate_title_tensors, selected_candidate_body_tensors)
+        recon = autograd.Variable(recon.data, requires_grad=False)
+        reconstruction_loss = reconstructor_loss_function(unpooled, recon)
 
         loss = reconstruction_loss+encoder_loss-(args.lam*domain_classifier_loss)
 
@@ -157,6 +168,7 @@ def run_epoch(label_predictor_train_data, adversary_train_data_generator, is_tra
             loss.backward()
             encoder_optimizer.step()
             domain_classifier_optimizer.step()
+            reconstructor_optimizer.step()
 
         losses.append(loss.cpu().data[0])
 

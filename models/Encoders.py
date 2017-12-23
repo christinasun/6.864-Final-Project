@@ -120,6 +120,43 @@ class LSTM(nn.Module):
         # print("output: ", output.size())
         return output
 
+class CNN_unpooled(nn.Module):
+    def __init__(self, embeddings, args, kernel_size=3):
+        super(CNN_unpooled, self).__init__()
+        self.args = args
+        vocab_size, embed_dim = embeddings.shape
+
+        self.embedding_layer = nn.Embedding(vocab_size, embed_dim)
+        self.embedding_layer.weight.data = torch.from_numpy(embeddings)
+        self.embedding_layer.requires_grad = False
+
+        self.hidden_dim = args.hidden_dim
+        self.conv = nn.Conv1d(embed_dim, self.hidden_dim, kernel_size, padding=kernel_size - 1)
+        self.tanh = nn.Tanh()
+        self.dropout = nn.Dropout(p=self.args.dropout)
+        self.pooling = 'mean'
+        self.name = 'cnn'
+
+    def forward(self, tensor):
+        mask = (tensor != 0)
+        if self.args.cuda:
+            mask = mask.type(torch.cuda.FloatTensor)
+        else:
+            mask = mask.type(torch.FloatTensor)
+
+        x = self.embedding_layer(tensor)  # (batch size, width (length of text), height (embedding dim))
+        x_perm = x.permute(0, 2, 1)
+        hiddens = self.conv(x_perm)
+        post_dropout = self.dropout(hiddens)
+        tanh_x = self.tanh(post_dropout)
+        tanh_x_cropped = tanh_x[:, :, :self.args.len_query]
+
+        N, hd, co = tanh_x_cropped.data.shape
+        mask = torch.unsqueeze(mask, 1)
+        expanded_mask = mask.expand(N, hd, co)
+        output = torch.mul(expanded_mask, tanh_x_cropped)
+        return output
+
 class CNN_recon(nn.Module):
     def __init__(self, embeddings, args, kernel_size=3):
         super(CNN_recon, self).__init__()
@@ -138,7 +175,7 @@ class CNN_recon(nn.Module):
         self.name = 'cnn'
 
         self.tanh = nn.Tanh()
-        self.lin = nn.Linear(self.hidden_dim*self.args.len_query, self.hidden_dim)
+        self.lin = nn.Linear(self.hidden_dim*self.args.len_query, self.hidden_dim*self.args.len_query)
 
     def forward(self, tensor):
         mask = (tensor != 0)
@@ -164,7 +201,7 @@ class CNN_recon(nn.Module):
 
         hiddens = hiddens[:, :, :self.args.len_query]
         hiddens = hiddens.contiguous().view(N,hd*co)
-        x_hat = self.tanh(self.lin(hiddens))
+        x_hat = self.tanh(self.lin(hiddens)).view(N,hd,co)
 
         mask = torch.unsqueeze(mask, 1)
         expanded_mask = mask.expand(N, hd, co)
@@ -178,7 +215,4 @@ class CNN_recon(nn.Module):
             output = themax
         else:
             raise Exception("Pooling method {} not implemented".format(self.pooling))
-        recon_loss = torch.norm(x_hat.sub(output), 2, 1)
-        recon_loss = torch.unsqueeze(recon_loss, 1)
-        recon_loss = torch.div(recon_loss, lengths_only)
-        return recon_loss
+        return x_hat
