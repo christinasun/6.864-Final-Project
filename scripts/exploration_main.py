@@ -7,7 +7,7 @@ import torch
 
 sys.path.append(dirname(dirname(realpath(__file__))))
 import utils.android_data_utils as android_data_utils
-import utils.transfer_train_utils as train_utils
+import utils.exploration_train_utils as train_utils
 import utils.model_utils as model_utils
 import utils.evaluation_utils as evaluation_utils
 from utils.misc_utils import set_seeds
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     # data loading
     parser.add_argument('--num_workers', nargs='?', type=int, default=4, help='num workers for data loader')
     # model
-    parser.add_argument('--model_name', nargs="?", type=str, default='adt-lstm', help="Form of model, i.e dan, rnn, etc.")
+    parser.add_argument('--model_name', nargs="?", type=str, default='exploration', help="Form of model, i.e dan, rnn, etc.")
     parser.add_argument('--hidden_dim', type=int, default=20, help='dimension of the hidden layer [default: 20]')
     parser.add_argument('--hidden_dim_dom1', type=int, default=300, help='dimension of the hidden layer [default: 300]')
     parser.add_argument('--hidden_dim_dom2', type=int, default=150, help='dimension of the hidden layer [default: 150]')
@@ -76,7 +76,8 @@ if __name__ == '__main__':
 
     # model
     if args.encoder_snapshot is None or args.domain_classifier_snapshot is None:
-        encoder_model, domain_classifier_model = model_utils.get_model(embeddings, args)
+        encoder_model, domain_classifier_model, reconstruction_model, unpooled_model = model_utils.get_model(embeddings, args)
+
     else :
         print 'Loading models from {} and {} ...'.format(args.encoder_snapshot, args.domain_classifier_snapshot)
         try:
@@ -107,7 +108,7 @@ if __name__ == '__main__':
         print "\nTraining..."
         if not os.path.exists(args.save_path):
             os.makedirs(args.save_path)
-        train_utils.train_model(label_predictor_train_data, adversary_train_data_generator, android_dev_data, encoder_model, domain_classifier_model, args)
+        train_utils.train_model(label_predictor_train_data, adversary_train_data_generator, android_dev_data, encoder_model, domain_classifier_model, reconstruction_model, unpooled_model, args)
 
     if args.eval:
         label_predictor = LabelPredictor(encoder_model)
