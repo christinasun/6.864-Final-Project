@@ -1,23 +1,31 @@
 import torch
+import torch.nn.functional as F
 import torch.nn as nn
 
-
 class Reconstructor(nn.Module):
-
     def __init__(self, encoder):
         super(Reconstructor, self).__init__()
-
         self.args = encoder.args
         self.encoder = encoder
         self.hidden_dim = self.args.hidden_dim
         return
 
-    def forward(self, for_dc_title_tensors, for_dc_body_tensors):
-        # get the encodings for the flattened out domain classifier tensors
-        num_for_dc, batch_size, embedding_dim = for_dc_title_tensors.size()
-        for_dc_title_encodings = self.encoder(for_dc_title_tensors.view(num_for_dc * batch_size, embedding_dim))
-        for_dc_body_encodings = self.encoder(for_dc_title_tensors.view(num_for_dc * batch_size, embedding_dim))
-        for_dc_encodings_before_mean = torch.stack([for_dc_title_encodings, for_dc_body_encodings])
-        for_dc_encodings = torch.mean(for_dc_encodings_before_mean, dim=0)
+    def forward(self,
+                q_title_tensors,
+                q_body_tensors,
+                candidate_title_tensors,
+                candidate_body_tensors):
+        q_title_encodings = self.encoder(q_title_tensors)
+        q_body_encodings = self.encoder(q_body_tensors)
+        # q_encoding_before_mean = torch.stack([q_title_encodings, q_body_encodings])
+        # q_encoding = torch.mean(q_encoding_before_mean, dim=0)
 
-        return for_dc_encodings
+        # get the encodings for the flattened out candidate tensors
+        num_candidates, batch_size, embedding_dim = candidate_title_tensors.size()
+        candidate_title_encodings = self.encoder(candidate_title_tensors.view(num_candidates * batch_size, embedding_dim))
+        candidate_body_encodings = self.encoder(candidate_body_tensors.view(num_candidates * batch_size, embedding_dim))
+        # candidate_encodings_before_mean = torch.stack([candidate_title_encodings, candidate_body_encodings])
+        # candidate_encodings = torch.mean(candidate_encodings_before_mean, dim=0)
+
+        #fix this later
+        return 5

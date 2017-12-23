@@ -12,7 +12,7 @@ from models.LabelPredictor import LabelPredictor
 from models.Reconstructor import Reconstructor
 from itertools import izip
 
-def train_model(label_predictor_train_data, adversary_train_data_generator, dev_data, encoder_model, domain_classifier_model, reconstruction_model, args):
+def train_model(label_predictor_train_data, adversary_train_data_generator, dev_data, encoder_model, domain_classifier_model, reconstructor_model, args):
 
     if args.cuda:
         encoder_model = encoder_model.cuda()
@@ -26,7 +26,7 @@ def train_model(label_predictor_train_data, adversary_train_data_generator, dev_
 
     label_predictor = LabelPredictor(encoder_model)
     adversary = Adversary(encoder_model, domain_classifier_model)
-    reconstructor = Reconstructor(reconstructio_model)
+    reconstructor = Reconstructor(reconstructor_model)
 
     label_predictor.train()
     adversary.train()
@@ -45,7 +45,7 @@ def train_model(label_predictor_train_data, adversary_train_data_generator, dev_
         torch.save(domain_classifier_model, join(args.save_path,'domain_classifier_epoch_{}.pt'.format(epoch)))
 
 
-def run_epoch(label_predictor_train_data, adversary_train_data_generator, is_training, label_predictor, adversary, reconstructor
+def run_epoch(label_predictor_train_data, adversary_train_data_generator, is_training, label_predictor, adversary, reconstructor,
               encoder_optimizer, domain_classifier_optimizer, args):
     '''
     Train model for one pass of train data, and return loss, acccuracy

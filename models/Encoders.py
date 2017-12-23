@@ -122,7 +122,7 @@ class LSTM(nn.Module):
 
 class CNN_recon(nn.Module):
     def __init__(self, embeddings, args, kernel_size=3):
-        super(CNN, self).__init__()
+        super(CNN_recon, self).__init__()
         self.args = args
         vocab_size, embed_dim = embeddings.shape
 
