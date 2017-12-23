@@ -5,23 +5,23 @@ from tqdm import tqdm
 import numpy as np
 import sys
 from os.path import dirname, realpath, join
+
 sys.path.append(dirname(dirname(realpath(__file__))))
 import utils.evaluation_utils as eval_utils
 import utils.misc_utils as misc_utils
 
 NUM_NEGATIVE_EXCEPTION_MESSAGE = "The number of negative examples desired ({}) is larger than that available ({})."
 
-def train_model(train_data, dev_data, model, args):
 
+def train_model(train_data, dev_data, model, args):
     if args.cuda:
         model = model.cuda()
 
-    optimizer = torch.optim.Adam(model.parameters() , lr=args.lr)
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
     model.train()
 
-    for epoch in range(1, args.epochs+1):
-
+    for epoch in range(1, args.epochs + 1):
         print "-------------\nEpoch {}:\n".format(epoch)
 
         loss = run_epoch(train_data, True, model, optimizer, args)
@@ -30,7 +30,7 @@ def train_model(train_data, dev_data, model, args):
         eval_utils.evaluate_model(dev_data, model, args)
 
         # Save model
-        torch.save(model, join(args.save_path,'epoch_{}.pt'.format(epoch)))
+        torch.save(model, join(args.save_path, 'epoch_{}.pt'.format(epoch)))
 
 
 def run_epoch(data, is_training, label_predictor, optimizer, args):
@@ -60,26 +60,22 @@ def run_epoch(data, is_training, label_predictor, optimizer, args):
         candidate_title_tensors = torch.stack(batch['candidate_title_tensors'])
         candidate_body_tensors = torch.stack(batch['candidate_body_tensors'])
 
-        if args.debug: misc_utils.print_shape_tensor('candidate_body_tensors', candidate_body_tensors)
-
         # Generate random sampling of negative examples
         # We do - 1 because candidate_title_tensors includes the title tensor for the query itself (at position 0)
         num_available_candidates = candidate_title_tensors.shape[0] - 1
         num_negative = min(num_available_candidates, args.num_negative)
-        inds3d = np.zeros((num_negative + 1, args.batch_size, args.len_query),dtype=np.long)
+        inds3d = np.zeros((num_negative + 1, args.batch_size, args.len_query), dtype=np.long)
         for i in xrange(args.batch_size):
             # we do + 1 so we are only choosing among the negative examples (0 is reserved for the query itself)
             random_sample = np.random.choice(num_available_candidates, num_negative) + 1
-            random_sample3d = np.expand_dims(random_sample,1)
-            inds3d[1:,i,:] = random_sample3d.repeat(args.len_query, 1)
+            random_sample3d = np.expand_dims(random_sample, 1)
+            inds3d[1:, i, :] = random_sample3d.repeat(args.len_query, 1)
         inds3d = torch.LongTensor(inds3d)
 
-        selected_candidate_title_tensors = autograd.Variable(candidate_title_tensors.gather(0,inds3d))
-        selected_candidate_body_tensors = autograd.Variable(candidate_body_tensors.gather(0,inds3d))
-        if args.debug: misc_utils.print_shape_variable('selected_candidate_body_tensors', selected_candidate_body_tensors)
+        selected_candidate_title_tensors = autograd.Variable(candidate_title_tensors.gather(0, inds3d))
+        selected_candidate_body_tensors = autograd.Variable(candidate_body_tensors.gather(0, inds3d))
 
-        targets = autograd.Variable(torch.LongTensor([0]*args.batch_size))
-        if args.debug: misc_utils.print_shape_variable('targets', targets)
+        targets = autograd.Variable(torch.LongTensor([0] * args.batch_size))
 
         if args.cuda:
             q_title_tensors = q_title_tensors.cuda()
@@ -91,9 +87,7 @@ def run_epoch(data, is_training, label_predictor, optimizer, args):
         if is_training:
             optimizer.zero_grad()
         cosine_similarities = label_predictor(q_title_tensors, q_body_tensors,
-                                    selected_candidate_title_tensors, selected_candidate_body_tensors)
-        if args.debug: misc_utils.print_shape_variable('cosine_similarities', cosine_similarities)
-        if args.debug: print "cosine_similarities: {}".format(cosine_similarities)
+                                              selected_candidate_title_tensors, selected_candidate_body_tensors)
 
         loss = loss_function(cosine_similarities, targets)
 
