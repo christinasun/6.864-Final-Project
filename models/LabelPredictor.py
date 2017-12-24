@@ -63,6 +63,8 @@ class LabelPredictor(nn.Module):
         lp_output = expanded_cosine_sims.view(num_candidates, batch_size, 1).view(num_candidates, batch_size).t()
 
         if self.reconstruction:
-            return lp_output, total_loss/total_words_num
+            print "avg reconstruction loss"
+            print total_loss/(total_words_num * embedding_dim)
+            return lp_output, total_loss/(total_words_num * embedding_dim)
         else:
             return lp_output
