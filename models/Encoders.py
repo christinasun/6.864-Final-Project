@@ -134,7 +134,7 @@ class CNN_all(nn.Module):
         self.name = 'cnn'
 
         self.tanh = nn.Tanh()
-        self.lin = nn.Linear(self.hidden_dim*self.args.len_query, self.embed_dim*self.args.len_query)
+        self.lin = nn.Linear(self.hidden_dim, self.embed_dim)
 
     def forward(self, tensor):
         mask = (tensor != 0)
@@ -172,9 +172,20 @@ class CNN_all(nn.Module):
             raise Exception("Pooling method {} not implemented".format(self.pooling))
 
         hiddens = hiddens[:, :, :self.args.len_query]
-        hiddens = hiddens.contiguous().view(N,hd*co)
-        x_hat = self.tanh(self.lin(hiddens)).view(N,self.embed_dim,co)
-        x_emb = autograd.Variable(x_perm.data, requires_grad=False)
-        mse_loss = F.mse_loss(x_hat, x_emb, size_average=False)
+        hiddens = hiddens.permute(0,2,1)
+        # print "hiddens"
+        # print hiddens
+        #hiddens1 = hiddens.contiguous().view(N,hd*co)
+        # x_hat = self.tanh(self.lin(hiddens1)).view(N,self.embed_dim,co)
+        # print "xhat"
+        # x_hat
+        x_hat = self.tanh(self.lin(hiddens))
+        # print "xhat_2"
+        # print x_hat2
+
+        # x_emb = autograd.Variable(x_perm.data, requires_grad=False)
+        # print "x"
+        # print x
+        mse_loss = F.mse_loss(x_hat, x, size_average=False)
         return output_pooled, mse_loss, total_num_words*hd
         # return output_pooled, x_hat, x_perm
