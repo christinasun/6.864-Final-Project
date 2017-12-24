@@ -9,11 +9,12 @@ class LabelPredictor(nn.Module):
     # computes the cosine similarities between each query and all of its candidates.
     # It outputs these cosine similarity "labels".
 
-    def __init__(self, encoder):
+    def __init__(self, encoder, reconstruction=False):
         super(LabelPredictor, self).__init__()
         self.args = encoder.args
         self.encoder = encoder
         self.hidden_dim = self.args.hidden_dim
+        self.reconstruction = reconstruction
         return
 
     def forward(self,
@@ -21,15 +22,27 @@ class LabelPredictor(nn.Module):
                 q_body_tensors,
                 candidate_title_tensors,
                 candidate_body_tensors):
-        q_title_encodings = self.encoder(q_title_tensors)
-        q_body_encodings = self.encoder(q_body_tensors)
+        if self.reconstruction:
+            q_title_encodings, q_title_loss, q_title_words_num = self.encoder(q_title_tensors)
+            q_body_encodings, q_body_loss, q_body_words_num = self.encoder(q_body_tensors)
+            total_loss = q_title_loss + q_body_loss
+            total_words_num = q_title_words_num + q_body_words_num
+        else:
+            q_title_encodings = self.encoder(q_title_tensors)
+            q_body_encodings = self.encoder(q_body_tensors)
         q_encoding_before_mean = torch.stack([q_title_encodings, q_body_encodings])
         q_encoding = torch.mean(q_encoding_before_mean, dim=0)
 
         # get the encodings for the flattened out candidate tensors
         num_candidates, batch_size, embedding_dim = candidate_title_tensors.size()
-        candidate_title_encodings = self.encoder(candidate_title_tensors.view(num_candidates * batch_size, embedding_dim))
-        candidate_body_encodings = self.encoder(candidate_body_tensors.view(num_candidates * batch_size, embedding_dim))
+        if self.reconstruction:
+            candidate_title_encodings, candidate_title_loss, candidate_title_words_num = title_losses = self.encoder(candidate_title_tensors.view(num_candidates * batch_size, embedding_dim))
+            candidate_body_encodings,  candidate_body_loss, candidate_body_words_num = self.encoder(candidate_body_tensors.view(num_candidates * batch_size, embedding_dim))
+            total_loss = total_loss + candidate_title_loss + candidate_body_loss
+            total_words_num = total_words_num + candidate_title_words_num + candidate_body_words_num
+        else:
+            candidate_title_encodings = self.encoder(candidate_title_tensors.view(num_candidates * batch_size, embedding_dim))
+            candidate_body_encodings = self.encoder(candidate_body_tensors.view(num_candidates * batch_size, embedding_dim))
         candidate_encodings_before_mean = torch.stack([candidate_title_encodings, candidate_body_encodings])
         candidate_encodings = torch.mean(candidate_encodings_before_mean, dim=0)
 
@@ -44,4 +57,8 @@ class LabelPredictor(nn.Module):
 
         # un-flatten cosine similarities so that we get output of size batch_size * num_candidates (t() is transpose)
         lp_output = expanded_cosine_sims.view(num_candidates, batch_size, 1).view(num_candidates, batch_size).t()
-        return lp_output
+
+        if self.reconstruction:
+            return lp_output, total_loss/total_words_num
+        else:
+            return lp_output
