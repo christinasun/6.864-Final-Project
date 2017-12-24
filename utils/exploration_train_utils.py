@@ -79,7 +79,7 @@ def run_epoch(label_predictor_train_data, adversary_train_data_generator, is_tra
 
     encoder_loss_function = torch.nn.MultiMarginLoss(p=1, margin=args.margin, weight=None, size_average=True)
     domain_classifier_loss_function = torch.nn.BCELoss(weight=None, size_average=True)
-    # reconstructor_loss_function = torch.nn.MSELoss(size_average=True)
+    reconstructor_loss_function = torch.nn.MSELoss(size_average=True)
 
     for label_predictor_batch, adversary_batch in tqdm(izip(data_loader_label_predictor, data_loader_train_adversary)):
 
@@ -153,9 +153,12 @@ def run_epoch(label_predictor_train_data, adversary_train_data_generator, is_tra
         # if args.debug: misc_utils.print_shape_variable('domain_labels', domain_labels)
         domain_classifier_loss = domain_classifier_loss_function(domain_labels, BCE_targets)
 
-        recon_losses = reconstructor(q_title_tensors, q_body_tensors,
-                                    selected_candidate_title_tensors, selected_candidate_body_tensors)
-        # reconstruction_loss = reconstructor_loss_function(unpooled, recon)
+        # x_hats, x_embs = reconstructor(q_title_tensors, q_body_tensors,
+        #                             selected_candidate_title_tensors, selected_candidate_body_tensors)
+        # x_embs = autograd.Variable(x_embs.data, requires_grad=False)
+        # reconstruction_loss = reconstructor_loss_function(x_hats, x_embs)
+
+        x_hats, x_embs = reconstructor(q_title_tensors, q_body_tensors, selected_candidate_title_tensors, selected_candidate_body_tensors)
         reconstruction_loss = torch.mean(recon_losses)
 
         loss = reconstruction_loss+encoder_loss-(args.lam*domain_classifier_loss)

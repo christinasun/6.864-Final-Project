@@ -176,3 +176,4 @@ class CNN_all(nn.Module):
         loss = nn.MSELoss()
         mse_loss = loss(x_hat, x_emb)
         return output_pooled, mse_loss
+        # return output_pooled, x_hat, x_perm

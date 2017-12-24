@@ -19,8 +19,8 @@ class Adversary(nn.Module):
     def forward(self, for_dc_title_tensors, for_dc_body_tensors):
         # get the encodings for the flattened out domain classifier tensors
         num_for_dc, batch_size, embedding_dim = for_dc_title_tensors.size()
-        for_dc_title_encodings, _ = self.encoder(for_dc_title_tensors.view(num_for_dc * batch_size, embedding_dim))
-        for_dc_body_encodings, _ = self.encoder(for_dc_title_tensors.view(num_for_dc * batch_size, embedding_dim))
+        for_dc_title_encodings, _= self.encoder(for_dc_title_tensors.view(num_for_dc * batch_size, embedding_dim))
+        for_dc_body_encodings, _= self.encoder(for_dc_title_tensors.view(num_for_dc * batch_size, embedding_dim))
         for_dc_encodings_before_mean = torch.stack([for_dc_title_encodings, for_dc_body_encodings])
         for_dc_encodings = torch.mean(for_dc_encodings_before_mean, dim=0)
 
