@@ -4,23 +4,21 @@ To run the following commands, first download the pruned glove embeddings and sa
 
 Unzip pruned_glove.840B.300d.txt.zip inside the data folder. Unzip saved_models.zip in the main folder. 
 
+Use PyTorch version 0.2.0_3
 
 ## To train the models with reported parameters, run: 
 
 **CNN:** 
-* python scripts/ubuntu_main.py --model_name cnn --hidden_dim 670 --lr .001 --dropout 0 --margin 0.5 --train --cuda --seed 5 
-* (reported model at epoch 4)
+* python scripts/ubuntu_main.py --model_name cnn --hidden_dim 670 --lr .001 --dropout 0 --margin 0.5 --train --cuda
 
 **LSTM:** 
-* python scripts/ubuntu_main.py --model_name lstm --hidden_dim 240 --lr .0003 --dropout 0 --margin 0.5 --train --cuda --seed 3
-* (reported model at epoch 1)
+* python scripts/ubuntu_main.py --model_name lstm --hidden_dim 240 --lr .0003 --dropout 0 --margin 0.5 --train --cuda
 
 **TF-IDF:** 
 * python scripts/tfidf_main.py
 
 **Direct Transfer:** 
-* python scripts/direct_transfer_main.py --hidden_dim 110 --lr .0003 --dropout 0.4 --margin 0.2 --train --cuda --seed 5
-* (reported model at epoch 4)
+* python scripts/direct_transfer_main.py --hidden_dim 110 --lr .0003 --dropout 0.4 --margin 0.2 --train --cuda
 
 **Adversarial Domain Transfer:** 
 * python scripts/transfer_main.py --hidden_dim 110 --encoder_lr .0003 --domain_classifier_lr .00001 --dropout 0.4 --margin 0.2 --lam .01 --train --cuda
