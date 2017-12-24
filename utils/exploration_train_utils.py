@@ -128,7 +128,8 @@ def run_epoch(label_predictor_train_data, adversary_train_data_generator, is_tra
 
         cosine_similarities, reconstruction_loss = label_predictor(q_title_tensors, q_body_tensors,
                                     selected_candidate_title_tensors, selected_candidate_body_tensors)
-
+        print "reconstruction loss"
+        print reconstruction_loss
         domain_labels = adversary(title_tensors, body_tensors)
 
         # if args.debug: misc_utils.print_shape_variable('cosine_similarities', cosine_similarities)
@@ -153,7 +154,7 @@ def run_epoch(label_predictor_train_data, adversary_train_data_generator, is_tra
         # reconstruction_loss = reconstructor_loss_function(x_hats, x_embs)
 
 
-        loss = reconstruction_loss + encoder_loss-(args.lam*domain_classifier_loss)
+        loss = (args.reconstruction_lam * reconstruction_loss) + encoder_loss - (args.domain_classifier_lam * domain_classifier_loss)
 
         if is_training:
             loss.backward()

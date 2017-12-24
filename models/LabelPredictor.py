@@ -27,6 +27,10 @@ class LabelPredictor(nn.Module):
             q_body_encodings, q_body_loss, q_body_words_num = self.encoder(q_body_tensors)
             total_loss = q_title_loss + q_body_loss
             total_words_num = q_title_words_num + q_body_words_num
+            # print "total loss"
+            # print total_loss
+            # print "total num words"
+            # print total_words_num
         else:
             q_title_encodings = self.encoder(q_title_tensors)
             q_body_encodings = self.encoder(q_body_tensors)

@@ -23,7 +23,8 @@ if __name__ == '__main__':
     # learning
     parser.add_argument('--encoder_lr', type=float, default=0.001, help='initial learning rate [default: 0.001]')
     parser.add_argument('--domain_classifier_lr', type=float, default=0.001, help='initial learning rate [default: 0.001]')
-    parser.add_argument('--lam', type=float, default=0.001, help='lambda [default: 0.001]')
+    parser.add_argument('--domain_classifier_lam', type=float, default=0.001, help='lambda [default: 0.001]')
+    parser.add_argument('--reconstruction_lam', type=float, default=0.001, help='lambda [default: 0.001]')
     parser.add_argument('--dropout', type=float, default=0.2, help='initial learning rate [default: 0.001]')
     parser.add_argument('--margin', type=float, default=0.5, help='margin size [default: 0.5]')
     parser.add_argument('--epochs', type=int, default=6, help='number of epochs for train [default: 256]')
