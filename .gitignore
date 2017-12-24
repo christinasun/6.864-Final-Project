@@ -1,5 +1,8 @@
 .DS_Store
+data/word*
+data/ubuntu/*
 ./.DS_Store
+.DS*
 data/.DS_Store
 .idea/*
 *.pyc
@@ -8,3 +11,5 @@ data/glove*
 data/pruned_glove*
 saved_models/*
 data/pruned_glove.840B.300d.txt
+draft/*
+model.pt

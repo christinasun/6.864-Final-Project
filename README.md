@@ -40,5 +40,5 @@ Unzip pruned_glove.840B.300d.txt.zip inside the data folder. Unzip saved_models.
 **Direct Transfer:**
 * python scripts/direct_transfer_main.py --snapshot saved_models/direct_transfer_encoder.pt --eval --cuda
 
-**Adversarial Domain Transfer:** 
+**Adversarial Domain Transfer:**
 * python scripts/transfer_main.py --encoder_snapshot saved_models/adt_encoder.pt --domain_classifier_snapshot saved_models/adt_domain_classifier.pt --eval --cuda
