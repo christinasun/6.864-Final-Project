@@ -59,19 +59,31 @@ def evaluate_model(dev_data, model, args):
                 negative_body_tensors_i = negative_body_tensors_i.cuda()
 
         if positive_title_tensors[i].shape[0]:
-            pos_cosine_sims, _ = model(q_title_tensor_i,
-                                    q_body_tensor_i,
-                                    positive_title_tensors_i,
-                                    positive_body_tensors_i)
+            if args.model_name == "exploration":
+                pos_cosine_sims, _ = model(q_title_tensor_i,
+                                        q_body_tensor_i,
+                                        positive_title_tensors_i,
+                                        positive_body_tensors_i)
+            else:
+                pos_cosine_sims = model(q_title_tensor_i,
+                                        q_body_tensor_i,
+                                        positive_title_tensors_i,
+                                        positive_body_tensors_i)
             pos_cosine_sims_np = pos_cosine_sims.data.cpu().numpy()
         else:
             pos_cosine_sims_np = np.array([[]])
 
         if negative_title_tensors[i].shape[0]:
-            neg_cosine_sims, _ = model(q_title_tensor_i,
-                                    q_body_tensor_i,
-                                    negative_title_tensors_i,
-                                    negative_body_tensors_i)
+            if args.model_name == "exploration":
+                neg_cosine_sims, _ = model(q_title_tensor_i,
+                                        q_body_tensor_i,
+                                        negative_title_tensors_i,
+                                        negative_body_tensors_i)
+            else:
+                neg_cosine_sims = model(q_title_tensor_i,
+                                        q_body_tensor_i,
+                                        negative_title_tensors_i,
+                                        negative_body_tensors_i)
             neg_cosine_sims_np = neg_cosine_sims.data.cpu().numpy()
         else:
             neg_cosine_sims_np = np.array([[]])
