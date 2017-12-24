@@ -3,8 +3,6 @@ from os.path import dirname, realpath
 
 sys.path.append(dirname(dirname(realpath(__file__))))
 from models.Encoders import CNN
-from models.Encoders import CNN_unpooled
-from models.Encoders import CNN_recon
 from models.Encoders import CNN_all
 from models.Encoders import LSTM
 from models.DomainClassifier import DomainClassifier
