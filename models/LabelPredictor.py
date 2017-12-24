@@ -40,7 +40,7 @@ class LabelPredictor(nn.Module):
         # get the encodings for the flattened out candidate tensors
         num_candidates, batch_size, embedding_dim = candidate_title_tensors.size()
         if self.reconstruction:
-            candidate_title_encodings, candidate_title_loss, candidate_title_words_num = title_losses = self.encoder(candidate_title_tensors.view(num_candidates * batch_size, embedding_dim))
+            candidate_title_encodings, candidate_title_loss, candidate_title_words_num = self.encoder(candidate_title_tensors.view(num_candidates * batch_size, embedding_dim))
             candidate_body_encodings,  candidate_body_loss, candidate_body_words_num = self.encoder(candidate_body_tensors.view(num_candidates * batch_size, embedding_dim))
             total_loss = total_loss + candidate_title_loss + candidate_body_loss
             total_words_num = total_words_num + candidate_title_words_num + candidate_body_words_num
