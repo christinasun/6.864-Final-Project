@@ -174,7 +174,6 @@ class CNN_all(nn.Module):
         hiddens = hiddens.contiguous().view(N,hd*co)
         x_hat = self.tanh(self.lin(hiddens)).view(N,self.embed_dim,co)
         x_emb = autograd.Variable(x_perm.data, requires_grad=False)
-        loss = F.mse_loss()
-        mse_loss = loss(x_hat, x_emb)
+        mse_loss = F.mse_loss(x_hat, x_emb)
         return output_pooled, mse_loss
         # return output_pooled, x_hat, x_perm
