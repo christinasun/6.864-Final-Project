@@ -158,7 +158,7 @@ def run_epoch(label_predictor_train_data, adversary_train_data_generator, is_tra
         # x_embs = autograd.Variable(x_embs.data, requires_grad=False)
         # reconstruction_loss = reconstructor_loss_function(x_hats, x_embs)
 
-        x_hats, x_embs = reconstructor(q_title_tensors, q_body_tensors, selected_candidate_title_tensors, selected_candidate_body_tensors)
+        recon_losses = reconstructor(q_title_tensors, q_body_tensors, selected_candidate_title_tensors, selected_candidate_body_tensors)
         reconstruction_loss = torch.mean(recon_losses)
 
         loss = reconstruction_loss+encoder_loss-(args.lam*domain_classifier_loss)
