@@ -145,7 +145,7 @@ def run_epoch(label_predictor_train_data, adversary_train_data_generator, is_tra
         # if args.debug: misc_utils.print_shape_variable('domain_labels', domain_labels)
         domain_classifier_loss = domain_classifier_loss_function(domain_labels, BCE_targets)
 
-        loss = encoder_loss-(args.domain_classifier_lam*domain_classifier_loss)
+        loss = encoder_loss-(args.lam*domain_classifier_loss)
 
         if is_training:
             loss.backward()
