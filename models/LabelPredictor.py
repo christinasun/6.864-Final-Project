@@ -21,15 +21,15 @@ class LabelPredictor(nn.Module):
                 q_body_tensors,
                 candidate_title_tensors,
                 candidate_body_tensors):
-        q_title_encodings, _= self.encoder(q_title_tensors)
-        q_body_encodings, _ = self.encoder(q_body_tensors)
+        q_title_encodings = self.encoder(q_title_tensors)
+        q_body_encodings = self.encoder(q_body_tensors)
         q_encoding_before_mean = torch.stack([q_title_encodings, q_body_encodings])
         q_encoding = torch.mean(q_encoding_before_mean, dim=0)
 
         # get the encodings for the flattened out candidate tensors
         num_candidates, batch_size, embedding_dim = candidate_title_tensors.size()
-        candidate_title_encodings, _= self.encoder(candidate_title_tensors.view(num_candidates * batch_size, embedding_dim))
-        candidate_body_encodings, _= self.encoder(candidate_body_tensors.view(num_candidates * batch_size, embedding_dim))
+        candidate_title_encodings = self.encoder(candidate_title_tensors.view(num_candidates * batch_size, embedding_dim))
+        candidate_body_encodings = self.encoder(candidate_body_tensors.view(num_candidates * batch_size, embedding_dim))
         candidate_encodings_before_mean = torch.stack([candidate_title_encodings, candidate_body_encodings])
         candidate_encodings = torch.mean(candidate_encodings_before_mean, dim=0)
 
