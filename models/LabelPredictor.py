@@ -64,7 +64,9 @@ class LabelPredictor(nn.Module):
 
         if self.reconstruction:
             if self.args.debug: print "avg reconstruction loss"
-            if self.args.debug: print total_loss/(total_words_num * embedding_dim)
+            if self.args.debug: print total_loss
+            if self.args.debug: print (total_words_num * embedding_dim)
+            if self.args.debug: print self.encoder.reconstructor.weight
             return lp_output, total_loss/(total_words_num * embedding_dim)
         else:
             return lp_output
