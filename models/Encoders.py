@@ -143,6 +143,7 @@ class CNN_all(nn.Module):
             mask = mask.type(torch.FloatTensor)
 
         lengths = torch.sum(mask, 1)
+        lengths = torch.clamp(lengths,1,100)
         total_num_words = sum(lengths)
         if self.pooling == 'mean':
             lengths = torch.unsqueeze(lengths, 1)
