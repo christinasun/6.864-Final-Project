@@ -30,6 +30,7 @@ class CNN(nn.Module):
 
         if self.pooling == 'mean':
             lengths = torch.sum(mask, 1)
+            lengths = torch.clamp(lengths, 1, 100)
             lengths = torch.unsqueeze(lengths, 1)
             lengths = lengths.expand(mask.data.shape)
             mask = torch.div(mask, lengths)
@@ -90,6 +91,7 @@ class LSTM(nn.Module):
 
         if self.pooling == 'mean':
             lengths = torch.sum(mask, 1)
+            lengths = torch.clamp(lengths, 1, 100)
             lengths = torch.unsqueeze(lengths, 1)
             lengths = lengths.expand(mask.data.shape)
             mask = torch.div(mask, lengths)
