@@ -22,6 +22,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch AskUbuntu Question Retrieval Network')
     # learning
     parser.add_argument('--encoder_lr', type=float, default=0.001, help='initial learning rate [default: 0.001]')
+    parser.add_argument('--reconstructor_lr', type=float, default=0.000001, help='initial learning rate [default: 0.001]')
     parser.add_argument('--domain_classifier_lr', type=float, default=0.001, help='initial learning rate [default: 0.001]')
     parser.add_argument('--domain_classifier_lam', type=float, default=0.000001, help='lambda [default: 0.000001]')
     parser.add_argument('--reconstruction_lam', type=float, default=0.000001, help='lambda [default: 0.000001]')

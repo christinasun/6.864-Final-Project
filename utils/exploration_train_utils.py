@@ -17,8 +17,9 @@ def train_model(label_predictor_train_data, adversary_train_data_generator, dev_
         encoder_model = encoder_model.cuda()
         domain_classifier_model = domain_classifier_model.cuda()
 
-    encoder_optimizer = torch.optim.Adam(encoder_model.parameters() , lr=args.encoder_lr)
-
+    encoder_optimizer = torch.optim.Adam([
+        {'params': encoder_model.base.parameters()},
+        {'params': encoder_model.reconstructor.parameters(), 'lr': args.reconstructor_lr}] , lr=args.encoder_lr)
     domain_classifier_lr = -args.domain_classifier_lr # we set the learning rate to negative to train the adversary
     domain_classifier_optimizer = torch.optim.Adam(domain_classifier_model.parameters(), lr=domain_classifier_lr)
 

@@ -127,14 +127,13 @@ class CNN_all(nn.Module):
         self.embedding_layer.requires_grad = False
 
         self.hidden_dim = args.hidden_dim
-        self.conv = nn.Conv1d(self.embed_dim, self.hidden_dim, kernel_size, padding=kernel_size - 1)
+        self.base = nn.Conv1d(self.embed_dim, self.hidden_dim, kernel_size, padding=kernel_size - 1)
         self.tanh = nn.Tanh()
         self.dropout = nn.Dropout(p=self.args.dropout)
         self.pooling = 'mean'
         self.name = 'cnn'
 
-        self.tanh = nn.Tanh()
-        self.lin = nn.Linear(self.hidden_dim, self.embed_dim)
+        self.reconstructor = nn.Linear(self.hidden_dim, self.embed_dim)
 
     def forward(self, tensor):
         mask = (tensor != 0)
@@ -152,7 +151,7 @@ class CNN_all(nn.Module):
 
         x = self.embedding_layer(tensor)  # (batch size, width (length of text), height (embedding dim))
         x_perm = x.permute(0, 2, 1)
-        hiddens = self.conv(x_perm)
+        hiddens = self.base(x_perm)
         post_dropout = self.dropout(hiddens)
         tanh_x = self.tanh(post_dropout)
         tanh_x_cropped = tanh_x[:, :, :self.args.len_query]
@@ -179,7 +178,7 @@ class CNN_all(nn.Module):
         # x_hat = self.tanh(self.lin(hiddens1)).view(N,self.embed_dim,co)
         # print "xhat"
         # x_hat
-        x_hat = self.tanh(self.lin(hiddens))
+        x_hat = self.tanh(self.reconstructor(hiddens))
         # print "xhat_2"
         # print x_hat2
 
