@@ -129,20 +129,8 @@ def run_epoch(label_predictor_train_data, adversary_train_data_generator, is_tra
 
         domain_labels = adversary(title_tensors, body_tensors)
 
-        # if args.debug: misc_utils.print_shape_variable('cosine_similarities', cosine_similarities)
-        # if args.debug: print "cosine_similarities: {}".format(cosine_similarities)
-        # if args.debug: misc_utils.print_shape_variable('domain_labels', domain_labels)
-        # if args.debug: print "domain_labels: {}".format(domain_labels)
-
         encoder_loss = encoder_loss_function(cosine_similarities, MML_targets)
 
-        # if args.debug: misc_utils.print_shape_variable('domain_labels', domain_labels)
-        # if args.debug: misc_utils.print_shape_variable('BCE_targets', BCE_targets)
-        # if args.debug: print 'BCE_targets', BCE_targets.t()
-        # if args.debug: print 'domain labels', domain_labels
-
-        # if args.debug: misc_utils.print_shape_variable('BCE_targets', BCE_targets)
-        # if args.debug: misc_utils.print_shape_variable('domain_labels', domain_labels)
         domain_classifier_loss = domain_classifier_loss_function(domain_labels, BCE_targets)
 
         loss = encoder_loss-(args.lam*domain_classifier_loss)

@@ -1,5 +1,6 @@
 # 6.864-Final-Project
 
+
 To run the following commands, first download the pruned glove embeddings and saved models from here: https://drive.google.com/open?id=1RSjdXU9ycwvTqQkPpJOvS-gMcYqNNjaD
 
 Unzip pruned_glove.840B.300d.txt.zip inside the data folder. Unzip saved_models.zip in the main folder. 
