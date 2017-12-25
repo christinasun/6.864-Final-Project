@@ -18,13 +18,13 @@ def train_model(label_predictor_train_data, adversary_train_data_generator, dev_
         domain_classifier_model = domain_classifier_model.cuda()
 
     encoder_optimizer = torch.optim.Adam([
-        {'params': encoder_model.base.parameters()},
+        {'params': encoder_model.encoder.parameters()},
         {'params': encoder_model.reconstructor.parameters(), 'lr': args.reconstructor_lr}] , lr=args.encoder_lr)
     domain_classifier_lr = -args.domain_classifier_lr # we set the learning rate to negative to train the adversary
     domain_classifier_optimizer = torch.optim.Adam(domain_classifier_model.parameters(), lr=domain_classifier_lr)
 
-    label_predictor = LabelPredictor(encoder_model, reconstruction=True)
-    adversary = Adversary(encoder_model, domain_classifier_model, reconstruction=True)
+    label_predictor = LabelPredictor(encoder_model)
+    adversary = Adversary(encoder_model, domain_classifier_model)
 
     label_predictor.train()
     adversary.train()
@@ -131,27 +131,8 @@ def run_epoch(label_predictor_train_data, adversary_train_data_generator, is_tra
                                     selected_candidate_title_tensors, selected_candidate_body_tensors)
         domain_labels = adversary(title_tensors, body_tensors)
 
-        # if args.debug: misc_utils.print_shape_variable('cosine_similarities', cosine_similarities)
-        # if args.debug: print "cosine_similarities: {}".format(cosine_similarities)
-        # if args.debug: misc_utils.print_shape_variable('domain_labels', domain_labels)
-        # if args.debug: print "domain_labels: {}".format(domain_labels)
-
         encoder_loss = encoder_loss_function(cosine_similarities, MML_targets)
-
-        # if args.debug: misc_utils.print_shape_variable('domain_labels', domain_labels)
-        # if args.debug: misc_utils.print_shape_variable('BCE_targets', BCE_targets)
-        # if args.debug: print 'BCE_targets', BCE_targets.t()
-        # if args.debug: print 'domain labels', domain_labels
-
-        # if args.debug: misc_utils.print_shape_variable('BCE_targets', BCE_targets)
-        # if args.debug: misc_utils.print_shape_variable('domain_labels', domain_labels)
         domain_classifier_loss = domain_classifier_loss_function(domain_labels, BCE_targets)
-
-        # x_hats, x_embs = reconstructor(q_title_tensors, q_body_tensors,
-        #                             selected_candidate_title_tensors, selected_candidate_body_tensors)
-        # x_embs = autograd.Variable(x_embs.data, requires_grad=False)
-        # reconstruction_loss = reconstructor_loss_function(x_hats, x_embs)
-
 
         loss = (args.reconstruction_lam * reconstruction_loss) + encoder_loss - (args.domain_classifier_lam * domain_classifier_loss)
 

@@ -35,7 +35,7 @@ if __name__ == '__main__':
     # data loading
     parser.add_argument('--num_workers', nargs='?', type=int, default=4, help='num workers for data loader')
     # model
-    parser.add_argument('--model_name', nargs="?", type=str, default='exploration', help="Form of model, i.e dan, rnn, etc.")
+    parser.add_argument('--model_name', nargs="?", type=str, default='adt-cnn-recon', help="Form of model, i.e dan, rnn, etc.")
     parser.add_argument('--hidden_dim', type=int, default=20, help='dimension of the hidden layer [default: 20]')
     parser.add_argument('--hidden_dim_dom1', type=int, default=300, help='dimension of the hidden layer [default: 300]')
     parser.add_argument('--hidden_dim_dom2', type=int, default=150, help='dimension of the hidden layer [default: 150]')

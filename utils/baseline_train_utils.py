@@ -48,7 +48,7 @@ def run_epoch(data, is_training, label_predictor, optimizer, args):
     if is_training:
         label_predictor.train()
     else:
-        model.eval()
+        label_predictor.eval()
 
     loss_function = torch.nn.MultiMarginLoss(p=1, margin=args.margin, weight=None, size_average=True)
 

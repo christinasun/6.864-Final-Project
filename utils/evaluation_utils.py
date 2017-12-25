@@ -59,7 +59,7 @@ def evaluate_model(dev_data, model, args):
                 negative_body_tensors_i = negative_body_tensors_i.cuda()
 
         if positive_title_tensors[i].shape[0]:
-            if args.model_name == "exploration":
+            if model.encoder.with_recon_loss:
                 pos_cosine_sims, _ = model(q_title_tensor_i,
                                         q_body_tensor_i,
                                         positive_title_tensors_i,
@@ -74,7 +74,7 @@ def evaluate_model(dev_data, model, args):
             pos_cosine_sims_np = np.array([[]])
 
         if negative_title_tensors[i].shape[0]:
-            if args.model_name == "exploration":
+            if model.encoder.with_recon_loss:
                 neg_cosine_sims, _ = model(q_title_tensor_i,
                                         q_body_tensor_i,
                                         negative_title_tensors_i,

@@ -7,19 +7,19 @@ class Adversary(nn.Module):
     # It takes in pairs of title/body tensors, encodes them using the encoder, and then feeds the encodings into the
     # domain classifier. The adversary outputs the predicted labels for each title/body pair.
 
-    def __init__(self, encoder, domain_classifier, reconstruction=False):
+    def __init__(self, encoder, domain_classifier):
         super(Adversary, self).__init__()
-        self.reconstruction = reconstruction
         self.args = encoder.args
         self.encoder = encoder
         self.domain_classifier = domain_classifier
         self.hidden_dim = self.args.hidden_dim
+        self.with_recon_loss = self.encoder.with_recon_loss
         return
 
     def forward(self, for_dc_title_tensors, for_dc_body_tensors):
         # get the encodings for the flattened out domain classifier tensors
         num_for_dc, batch_size, embedding_dim = for_dc_title_tensors.size()
-        if self.reconstruction:
+        if self.with_recon_loss:
             for_dc_title_encodings, _, _ = self.encoder(for_dc_title_tensors.view(num_for_dc * batch_size, embedding_dim))
             for_dc_body_encodings, _, _ = self.encoder(for_dc_title_tensors.view(num_for_dc * batch_size, embedding_dim))
         else:
