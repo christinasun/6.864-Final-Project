@@ -18,12 +18,23 @@ Use PyTorch version 0.2.0_3
 **TF-IDF:** 
 * python scripts/tfidf_main.py
 
-**Direct Transfer:** 
+**Direct Transfer (CNN):**
+* python scripts/direct_transfer_main.py TODO
+
+**Direct Transfer (LSTM):** 
 * python scripts/direct_transfer_main.py --hidden_dim 110 --lr .0003 --dropout 0.4 --margin 0.2 --train --cuda
 
-**Adversarial Domain Transfer:** 
+**Adversarial Domain Transfer (CNN):**
+* python scripts/transfer_main.py TODO
+
+**Adversarial Domain Transfer (LSTM):** 
 * python scripts/transfer_main.py --hidden_dim 110 --encoder_lr .0003 --domain_classifier_lr .00001 --dropout 0.4 --margin 0.2 --lam .01 --train --cuda
 
+**Exploration (CNN):**
+* python scripts/exploration_main.py TODO
+
+**Exploration (LSTM):**
+* python scripts/exploration_main.py TODO
 
 ## To evaluate the best performing models (in saved_models), run: 
 
@@ -36,8 +47,20 @@ Use PyTorch version 0.2.0_3
 **TF-IDF:** 
 * python scripts/tfidf_main.py
 
-**Direct Transfer:**
+**Direct Transfer (CNN):**
 * python scripts/direct_transfer_main.py --snapshot saved_models/direct_transfer_encoder.pt --eval --cuda
 
-**Adversarial Domain Transfer:**
+**Direct Transfer (LSTM):**
+* python scripts/direct_transfer_main.py --snapshot saved_models/direct_transfer_lstm_encoder.pt --eval --cuda
+
+**Adversarial Domain Transfer (CNN):**
 * python scripts/transfer_main.py --encoder_snapshot saved_models/adt_encoder.pt --domain_classifier_snapshot saved_models/adt_domain_classifier.pt --eval --cuda
+
+**Adversarial Domain Transfer (LSTM):**
+* python scripts/transfer_main.py --encoder_snapshot saved_models/adt_lstm_encoder.pt --domain_classifier_snapshot saved_models/adt_lstm_domain_classifier.py --eval --cuda
+
+**Exploration (CNN):**
+* python scripts/exploration_main.py --encoder_snapshot saved_models/exploration_cnn_encoder.pt --domain_classifier_snapshot saved_models/exploration_cnn_domain_classifier.py --eval --cuda
+
+**Exploration (LSTM):**
+* python scripts/exploration_main.py --encoder_snapshot saved_models/exploration_lstm_encoder.pt --domain_classifier_snapshot saved_models/exploration_lstm_domain_classifier.py --eval --cuda
