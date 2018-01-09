@@ -3,7 +3,26 @@
 
 To run the following commands, first download the pruned glove embeddings and saved models from here: https://www.dropbox.com/sh/yjps1opsa0drm9r/AAAlBByJgx6YTVR1z40UH6uNa?dl=0
 
-Put pruned_glove.840B.300d.txt inside the data folder. Put the saved_models folder the main folder. 
+Put pruned_glove.840B.300d.txt inside the data folder. Put the saved_models folder the main folder. The final directory structure should look like this:
+
+*6.864-Final-Project
+**saved_models
+***cnn_adt_dc.pt
+***lstm_adt_dc.pt
+***cnn_adt_encoder.pt
+***lstm_adt_encoder.pt
+***cnn_adt_recon_dc.pt
+***lstm_adt_recon_dc.pt
+***cnn_adt_recon_encoder.pt
+***lstm_adt_recon_encoder.pt
+***cnn_direct_transfer.pt
+***lstm_direct_transfer.pt
+***cnn_encoder.pt
+***lstm_encoder.pt
+**data
+***pruned_glove.840B.300d.txt
+
+
 
 Use PyTorch version 0.2.0_3
 
@@ -19,19 +38,19 @@ Use PyTorch version 0.2.0_3
 * python scripts/tfidf_main.py
 
 **Direct Transfer (CNN):**
-* python scripts/direct_transfer_main.py --cuda --train --model_name cnn --hidden_dim 110 --encoder_lr 0.00001 --dropout 0.2 --margin 0.2 --epochs 10
+* python scripts/direct_transfer_main.py --train --cuda --hidden_dim 110 --encoder_lr 0.0001 --dropout 0.3 --margin 0.2
 
 **Direct Transfer (LSTM):** 
-* python scripts/direct_transfer_main.py --hidden_dim 110 --lr .0003 --dropout 0.4 --margin 0.2 --train --cuda
+* python scripts/direct_transfer_main.py --train --cuda --model_name lstm --hidden_dim 110 --lr .0003 --dropout 0.2 --margin 0.2
 
 **Adversarial Domain Transfer (CNN):**
-* python scripts/transfer_main.py --cuda --train --hidden_dim 110 --encoder_lr .0001 --dropout .2 --margin .2 --domain_classifier_lr .001 --lam .01
+* python scripts/transfer_main.py --train --cuda --hidden_dim 110 --encoder_lr .0001 --dropout 0.3 --margin .2 --domain_classifier_lr .001 --lam .01
 
 **Adversarial Domain Transfer (LSTM):** 
-* python scripts/transfer_main.py --train --cuda --hidden_dim 110 --encoder_lr .0003 --domain_classifier_lr .00001 --dropout 0.4 --margin 0.2 --lam .01 --train --cuda
+* python scripts/transfer_main.py --train --cuda --model_name 'adt-lstm' --hidden_dim 110 --encoder_lr .0003 --dropout 0.2 --margin 0.2 --domain_classifier_lr .000015 --lam .01
 
 **Exploration (CNN):**
-* python scripts/exploration_main.py --train --cuda --hidden_dim 110 --encoder_lr .0001 --dropout 0.3 --margin 0.2 --domain_classifier_lr .00001 --domain_classifier_lam .01 --reconstructor_lr .0001 --reconstruction_lam .001
+* python scripts/exploration_main.py --train --cuda --hidden_dim 110 --encoder_lr .0001 --dropout 0.3 --margin 0.2 --domain_classifier_lr .001 --domain_classifier_lam .01 --reconstructor_lr .0001 --reconstruction_lam .001
 
 **Exploration (LSTM):**
 * python scripts/exploration_main.py --train --cuda --model_name adt-lstm-recon --hidden_dim 110 --encoder_lr .0003 --dropout 0.2 --margin 0.2 --domain_classifier_lr .000015 --domain_classifier_lam .01 --reconstructor_lr .001 --reconstruction_lam .0001
