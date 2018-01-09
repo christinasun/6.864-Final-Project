@@ -48,13 +48,13 @@ Use PyTorch version 0.2.0_3
 * python scripts/tfidf_main.py
 
 **Direct Transfer (CNN):**
-* python scripts/direct_transfer_main.py --snapshot saved_models/direct_transfer_encoder.pt --eval --cuda
+* python scripts/direct_transfer_main.py --snapshot saved_models/direct_transfer_cnn_encoder.pt --eval --cuda
 
 **Direct Transfer (LSTM):**
 * python scripts/direct_transfer_main.py --snapshot saved_models/direct_transfer_lstm_encoder.pt --eval --cuda
 
 **Adversarial Domain Transfer (CNN):**
-* python scripts/transfer_main.py --encoder_snapshot saved_models/adt_encoder.pt --domain_classifier_snapshot saved_models/adt_domain_classifier.pt --eval --cuda
+* python scripts/transfer_main.py --encoder_snapshot saved_models/adt_cnn_encoder.pt --domain_classifier_snapshot saved_models/adt_cnn_domain_classifier.pt --eval --cuda
 
 **Adversarial Domain Transfer (LSTM):**
 * python scripts/transfer_main.py --encoder_snapshot saved_models/adt_lstm_encoder.pt --domain_classifier_snapshot saved_models/adt_lstm_domain_classifier.py --eval --cuda
