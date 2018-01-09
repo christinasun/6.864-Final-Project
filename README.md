@@ -6,21 +6,21 @@ To run the following commands, first download the pruned glove embeddings and sa
 Put pruned_glove.840B.300d.txt inside the data folder. Put the saved_models folder the main folder. The final directory structure should look like this:
 
 * 6.864-Final-Project
-..* saved_models
-....* cnn_adt_dc.pt
-....*  lstm_adt_dc.pt
-....* cnn_adt_encoder.pt
-....* lstm_adt_encoder.pt
-....* cnn_adt_recon_dc.pt
-....* lstm_adt_recon_dc.pt
-....* cnn_adt_recon_encoder.pt
-....* lstm_adt_recon_encoder.pt
-....* cnn_direct_transfer.pt
-....* lstm_direct_transfer.pt
-....* cnn_encoder.pt
-....* lstm_encoder.pt
-..* data
-....* pruned_glove.840B.300d.txt
+    * saved_models
+        * cnn_adt_dc.pt
+        * lstm_adt_dc.pt
+        * cnn_adt_encoder.pt
+        * lstm_adt_encoder.pt
+        * cnn_adt_recon_dc.pt
+        * lstm_adt_recon_dc.pt
+        * cnn_adt_recon_encoder.pt
+        * lstm_adt_recon_encoder.pt
+        * cnn_direct_transfer.pt
+        * lstm_direct_transfer.pt
+        * cnn_encoder.pt
+        * lstm_encoder.pt
+    * data
+        * pruned_glove.840B.300d.txt
 
 
 
