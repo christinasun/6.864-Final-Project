@@ -48,19 +48,19 @@ Use PyTorch version 0.2.0_3
 * python scripts/tfidf_main.py
 
 **Direct Transfer (CNN):**
-* python scripts/direct_transfer_main.py --snapshot saved_models/direct_transfer_cnn_encoder.pt --eval --cuda
+* python scripts/direct_transfer_main.py --snapshot saved_models/cnn_direct_transfer.pt --eval --cuda
 
 **Direct Transfer (LSTM):**
-* python scripts/direct_transfer_main.py --snapshot saved_models/direct_transfer_lstm_encoder.pt --eval --cuda
+* python scripts/direct_transfer_main.py --snapshot saved_models/lstm_direct_transfer.pt --eval --cuda
 
 **Adversarial Domain Transfer (CNN):**
-* python scripts/transfer_main.py --encoder_snapshot saved_models/adt_cnn_encoder.pt --domain_classifier_snapshot saved_models/adt_cnn_domain_classifier.pt --eval --cuda
+* python scripts/transfer_main.py --encoder_snapshot saved_models/cnn_adt_encoder.pt --domain_classifier_snapshot saved_models/cnn_adt_dc.pt --eval --cuda
 
 **Adversarial Domain Transfer (LSTM):**
-* python scripts/transfer_main.py --encoder_snapshot saved_models/adt_lstm_encoder.pt --domain_classifier_snapshot saved_models/adt_lstm_domain_classifier.pt --eval --cuda
+* python scripts/transfer_main.py --encoder_snapshot saved_models/lstm_adt_encoder.pt --domain_classifier_snapshot saved_models/lstm_adt_dc.pt --eval --cuda
 
 **Exploration (CNN):**
-* python scripts/exploration_main.py --encoder_snapshot saved_models/exploration_cnn_encoder.pt --domain_classifier_snapshot saved_models/exploration_cnn_domain_classifier.pt --eval --cuda
+* python scripts/exploration_main.py --encoder_snapshot saved_models/cnn_adt_recon_encoder.pt --domain_classifier_snapshot saved_models/cnn_adt_recon_dc.pt --eval --cuda
 
 **Exploration (LSTM):**
-* python scripts/exploration_main.py --encoder_snapshot saved_models/exploration_lstm_encoder.pt --domain_classifier_snapshot saved_models/exploration_lstm_domain_classifier.pt --eval --cuda
+* python scripts/exploration_main.py --encoder_snapshot saved_models/lstm_adt_recon_encoder.pt --domain_classifier_snapshot saved_models/lstm_adt_recon_dc.pt --eval --cuda
