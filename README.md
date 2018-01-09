@@ -7,6 +7,8 @@ Put pruned_glove.840B.300d.txt inside the data folder. Put the saved_models fold
 
 * 6.864-Final-Project
     * saved_models
+        * cnn_encoder.pt
+        * lstm_encoder.pt
         * cnn_adt_dc.pt
         * lstm_adt_dc.pt
         * cnn_adt_encoder.pt
