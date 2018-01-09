@@ -29,7 +29,7 @@ if __name__ == '__main__':
     # data loading
     parser.add_argument('--num_workers', nargs='?', type=int, default=4, help='num workers for data loader')
     # model
-    parser.add_argument('--model_name', nargs="?", type=str, default='lstm', help="model type, i.e dan, rnn, etc.")
+    parser.add_argument('--model_name', nargs="?", type=str, default='cnn', help="model type, i.e dan, rnn, etc.")
     parser.add_argument('--hidden_dim', type=int, default=20, help='dimension of the hidden layer [default: 20]')
     # device
     parser.add_argument('--cuda', action='store_true', default=False, help='enable the gpu')
