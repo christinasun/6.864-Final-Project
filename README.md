@@ -1,9 +1,9 @@
 # 6.864-Final-Project
 
 
-To run the following commands, first download the pruned glove embeddings and saved models from here: https://drive.google.com/open?id=1RSjdXU9ycwvTqQkPpJOvS-gMcYqNNjaD
+To run the following commands, first download the pruned glove embeddings and saved models from here: https://www.dropbox.com/sh/yjps1opsa0drm9r/AAAlBByJgx6YTVR1z40UH6uNa?dl=0
 
-Unzip pruned_glove.840B.300d.txt.zip inside the data folder. Unzip saved_models.zip in the main folder. 
+Put pruned_glove.840B.300d.txt inside the data folder. Put the saved_models folder the main folder. 
 
 Use PyTorch version 0.2.0_3
 
@@ -57,10 +57,10 @@ Use PyTorch version 0.2.0_3
 * python scripts/transfer_main.py --encoder_snapshot saved_models/adt_cnn_encoder.pt --domain_classifier_snapshot saved_models/adt_cnn_domain_classifier.pt --eval --cuda
 
 **Adversarial Domain Transfer (LSTM):**
-* python scripts/transfer_main.py --encoder_snapshot saved_models/adt_lstm_encoder.pt --domain_classifier_snapshot saved_models/adt_lstm_domain_classifier.py --eval --cuda
+* python scripts/transfer_main.py --encoder_snapshot saved_models/adt_lstm_encoder.pt --domain_classifier_snapshot saved_models/adt_lstm_domain_classifier.pt --eval --cuda
 
 **Exploration (CNN):**
-* python scripts/exploration_main.py --encoder_snapshot saved_models/exploration_cnn_encoder.pt --domain_classifier_snapshot saved_models/exploration_cnn_domain_classifier.py --eval --cuda
+* python scripts/exploration_main.py --encoder_snapshot saved_models/exploration_cnn_encoder.pt --domain_classifier_snapshot saved_models/exploration_cnn_domain_classifier.pt --eval --cuda
 
 **Exploration (LSTM):**
-* python scripts/exploration_main.py --encoder_snapshot saved_models/exploration_lstm_encoder.pt --domain_classifier_snapshot saved_models/exploration_lstm_domain_classifier.py --eval --cuda
+* python scripts/exploration_main.py --encoder_snapshot saved_models/exploration_lstm_encoder.pt --domain_classifier_snapshot saved_models/exploration_lstm_domain_classifier.pt --eval --cuda
