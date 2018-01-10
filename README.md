@@ -40,7 +40,7 @@ Use PyTorch version 0.2.0_3
 * python scripts/tfidf_main.py
 
 **Direct Transfer (CNN):**
-* python scripts/direct_transfer_main.py --train --cuda --hidden_dim 110 --encoder_lr 0.0001 --dropout 0.3 --margin 0.2
+* python scripts/direct_transfer_main.py --train --cuda --hidden_dim 110 --lr 0.0001 --dropout 0.3 --margin 0.2
 
 **Direct Transfer (LSTM):** 
 * python scripts/direct_transfer_main.py --train --cuda --model_name lstm --hidden_dim 110 --lr .0003 --dropout 0.2 --margin 0.2
